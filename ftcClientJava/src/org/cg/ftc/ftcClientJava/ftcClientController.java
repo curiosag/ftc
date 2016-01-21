@@ -157,7 +157,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 				try {
 					return getQueryResult();
 				} catch (Exception e) {
-					return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "Exception occured: " + e.getMessage());
+					return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "Exception occured: " + e.getClass().getSimpleName() + " " +  e.getMessage());
 				}
 			}
 		}, new Continuation<QueryResult>() {

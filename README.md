@@ -2,7 +2,7 @@
 
 # Google Fusion Tables Console
 
-Google fusion tables client for easy and comfortable query prototyping. Find details on the project page.
+Google fusion tables client for easy and comfortable query prototyping. Find details on the [project page](http://curiosag.github.io/ftc).
 
 ## Features
 * Optionally use table names rather than IDs to refence your own fusion tables
