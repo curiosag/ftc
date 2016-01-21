@@ -1,0 +1,5 @@
+create view v as 
+(	select A.a,  from 
+	Fuetterungen as A left outer join Fuetterungen as B 
+		on A.b = B.id
+);

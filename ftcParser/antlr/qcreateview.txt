@@ -1,0 +1,1 @@
+CREATE VIEW animals AS (SELECT * FROM 1tqv1e7y689555xxx5_eeee345ee_CvWxxxhg9gc A left outer join smthg as B on A.id = B.id);

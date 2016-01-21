@@ -1,0 +1,5 @@
+alter table 'View of Fuetterungen' rename to vFuetterungen;
+SELECT SUM(age) FROM population;
+INSERT INTO 1e7y6mtqv892222222222_bbbbbbbbb_CvWhg9gc (Product, Inventory) VALUES ('Red Shoes', 25);
+INSERT INTO 1e7y6mtqv892222222222_bbbbbbbbb_CvWhg9gc (Product, Inventory) VALUES ('Blue Shoes', 50);
+DELETE FROM table_id WHERE ROWID = '123.45';

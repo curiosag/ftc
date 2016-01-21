@@ -1,0 +1,9 @@
+SELECT A.C1, B.C2, Average(N) 
+FROM table1 as a LEFT OUTER JOIN table2 as b ON a.id = b.id
+WHERE A.C2 CONTAINS IGNORING CASE 'smthg'
+AND ROWID = -1 AND X = 'a'
+GROUP BY A.C1
+ORDER BY F ASC
+OFFSET 212
+LIMIT 11;
+

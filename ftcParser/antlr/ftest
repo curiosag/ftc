@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# run TestRig
+
+if [ $1 ]; then
+  ./runTest FusionTablesSql fusionTablesSql $1 $2 
+else
+  echo "no grammar file defined"
+fi
+
+
+
+
+
+

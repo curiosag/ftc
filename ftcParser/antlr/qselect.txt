@@ -1,0 +1,30 @@
+select A from ah 
+where ROWID = 'a';
+
+select A.a, loc_col from ah 
+where F = -1
+and ST_INTERSECTS(loc_col,  CIRCLE(LATLNG(1, 1), 1))
+and ST_INTERSECTS(loc_col, RECTANGLE( LATLNG(2, 2), LATLNG(2, 2)) )
+order by st_distance(loc_col, LATLNG(0, 0));
+
+select A.a from oh 
+where F IN ('a', 'b', '-1');
+select B.b from eh 
+where E BETWEEN 'a' AND '-1';
+
+select A.a from ah where F = -1;
+select * from ah where ROWID = -1 AND X = 'a';
+select X.* from ah where ROWID = -1 OR X = 'a';
+
+SELECT A.C1, B.C2, Average(N) 
+FROM table1 a LEFT OUTER JOIN table2 as b ON a.id = b.id
+WHERE A.C2 CONTAINS IGNORING CASE 'smthg'
+AND ROWID = -1 AND X = 'a'
+GROUP BY A.C1
+ORDER BY F ASC
+OFFSET 212
+LIMIT 11;
+
+SELECT SUM(age) FROM population;
+SELECT * FROM 1tqv1e7y689555xxx5_eeee345ee_CvWxxxhg9gc WHERE location = 'Canada';
+SELECT animal, favorite_food FROM 1tqv1e7y689555xxx5_eeee345ee_CvWxxxhg9gc WHERE location = 'China';

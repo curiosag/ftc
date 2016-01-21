@@ -1,0 +1,28 @@
+#!/bin/bash
+
+GRAMMARFILE=$1".g4"
+JAVA_PARSER=$1"Parser.java"
+PACKAGE="parser"
+
+echo "processing grammar: " $GRAMMARFILE "  mode:" $2
+echo "facio tabula rasa"
+
+rm *.class
+rm *.java
+rm *.tokens
+rm *~
+
+echo "generating java files"
+# generate java files from grammar
+
+if [ "$2" = "package" ]; then
+   # generate java files from grammar
+   echo "generating into package '"$PACKAGE"'"
+   java -Xmx500M -cp "/usr/local/lib/antlr-4.5-complete.jar" org.antlr.v4.Tool -listener -visitor -package $PACKAGE $GRAMMARFILE 
+else
+   java -Xmx500M -cp "/usr/local/lib/antlr-4.5-complete.jar" org.antlr.v4.Tool -listener -visitor $GRAMMARFILE 
+fi
+
+echo "compiling"
+# -g option needed, otherwise grun won't recognize parser class file
+javac -g `pwd`"/"*.java

@@ -1,0 +1,1 @@
+insert into a (col1, col2) values (1, 2);

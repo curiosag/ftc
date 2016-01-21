@@ -1,0 +1,373 @@
+###################################################
+#
+#	data extraction for code completion
+#
+###################################################
+
+Token range and cursor position. Indexing is 0 based.
+
+Let's take  		"Select b|"  
+where "|" is the cursor  
+
+index of b is 7, token range of b is 7 to 7
+the cursor(|) is at index 8, after b
+ 
+recognition of the context of the cursor must always take 
+
+	for the case above: ((index of cursor) - 1) 
+
+	for a case like "Select |b": (index of cursor)
+	
+	otherwise it could be both, like in "Select  ab|c"  
+
+###################################################
+#
+# COLUMN NAMES
+#
+# relevant contexts
+#	result column context (after "select")
+#	aggregate and spatial statements
+#	ordering statements
+#	in expressions
+#
+# cases to cover
+#
+# only context, but no column data
+#	in result column context:
+#		immediately after "select"
+#		after "," following previous column
+#	e.g. aggregate statements after "("
+#
+# only qualifying table name, but no column name ("select A. from A")
+# only column data, no qualifying table name  
+# 		ok case ("select a from A")
+#   	fragmentary case ("select .a from A")
+#
+# result in all cases: context info "column"
+#
+#
+######################################################
+# symptom: error plus exception, only Result_columnContext without value
+#
+# retrieval: entry/exit Result_columnContext  matching cursorPos, 
+#	     no terminal node, only exception
+#
+# result: only context info "result column"
+		
+'Select x,  from smthg;' cursor after pos: 8
+         ^
+
+'Select   from smthg;' cursor after pos: 6
+       ^|
+
+'Select ' cursor after pos: 6
+       ^|
+line 1:7 no viable alternative at input '<EOF>'
+Bad token <EOF> from 7 to 6
+- Rule: FusionTablesSqlContext from 0 to 5 
+- Rule: Sql_stmtContext from 0 to 5 
+- Rule: Select_stmtContext from 0 to 5 
+- Terminal: >>Select<< from 0 to 5 
++ Rule: Result_columnContext from 5 to 7  (indices swapped)
+exit Result_columnContext   after exception null
+
+######################################################
+# symptom: error plus exception with value in terminal node
+#
+# retrieval: wait for terminal after entry Result_columnContext  matching cursorPos
+#
+# result: context info "result column"
+#	  prefix for column name, table name or alias (>>bbx<<)
+
+'Select a,    bbx' cursor after pos: 15
+                ^|
+line 1:16 mismatched input '<EOF>' expecting K_FROM
+Bad token <EOF> from 16 to 15
++ Rule: FusionTablesSqlContext from 0 to 15
+...
+- Terminal: >>a<< from 7 to 7
+- Terminal: >>,<< from 8 to 8
++ Rule: Result_columnContext from 13 to 15
++ Rule: Qualified_column_nameContext from 13 to 15
++ Rule: Column_nameContext from 13 to 15
++ Rule: IdentifierContext from 13 to 15
++ Rule: String_literalContext from 13 to 15
++ Terminal: >>bbx<< from 13 to 15
+exit Select_stmtContext   after exception null
+- Error: <missing ';'> from -1 to -1
+
+######################################################
+# symptom: error plus exception after ".", value in error nodes
+#
+# retrieval: entry/exit Result_columnContext matching cursorPos 
+#	     note all error nodes	
+#
+# result: context info "result column"
+#	  full table name (>>bbx<<)
+  
+'Select a,    bbx.' cursor after pos: 16
+                 ^|
+line 1:17 no viable alternative at input 'bbx.'
+Bad token <EOF> from 17 to 16
++ Rule: FusionTablesSqlContext from 0 to 16
++ Rule: Sql_stmtContext from 0 to 16
++ Rule: Select_stmtContext from 0 to 16
+- Terminal: >>Select<< from 0 to 5
+...
+- Terminal: >>a<< from 7 to 7
+- Terminal: >>,<< from 8 to 8
++ Rule: Result_columnContext from 13 to 16
+- Error: bbx from 13 to 15
++ Error: . from 16 to 16
+exit Result_columnContext   after exception null
+exit Select_stmtContext   after exception null
+- Error: <missing ';'> from -1 to -1
+
+
+######################################################
+# symptom: ok case 
+#
+# retrieval: terminal after Result_columnContext matching cursorPos
+#
+# result: context info "result column"
+#	  full table name (optional)
+#	  prefix column name (>>bbx<<)
+	  
+
+'Select x from AA;' cursor after pos: 7
+        ^|
++ Rule: FusionTablesSqlContext from 0 to 16 
++ Rule: Sql_stmtContext from 0 to 16 
++ Rule: Select_stmtContext from 0 to 15 
+- Terminal: >>Select<< from 0 to 5 
++ Rule: Result_columnContext from 7 to 7 
++ Rule: Qualified_column_nameContext from 7 to 7 
++ Rule: Column_nameContext from 7 to 7 
++ Rule: IdentifierContext from 7 to 7 
++ Rule: String_literalContext from 7 to 7 
++ Terminal: >>x<< from 7 to 7 
+
+'Select a,    bbx from smthg;' cursor after pos: 15
+                ^|
++ Rule: FusionTablesSqlContext from 0 to 27
+...
++ Rule: String_literalContext from 13 to 15
++ Terminal: >>bbx<< from 13 to 15
+
+'Select a.x from AA;' cursor after pos: 9
+          ^|
++ Rule: FusionTablesSqlContext from 0 to 18 
++ Rule: Sql_stmtContext from 0 to 18 
++ Rule: Select_stmtContext from 0 to 17 
+- Terminal: >>Select<< from 0 to 5 
++ Rule: Result_columnContext from 7 to 9 
++ Rule: Qualified_column_nameContext from 7 to 9 
+- Rule: Table_nameContext from 7 to 7 
+- Rule: IdentifierContext from 7 to 7 e
+- Rule: String_literalContext from 7 to 7 
+- Terminal: >>a<< from 7 to 7 
+- Terminal: >>.<< from 8 to 8 
++ Rule: Column_nameContext from 9 to 9 
++ Rule: IdentifierContext from 9 to 9 
++ Rule: String_literalContext from 9 to 9 
++ TerminalW: >>x<< from 9 to 9 
+- Terminal: >>from<< from 11 to 14 
+- Rule: Table_name_with_aliasContext from 16 to 17 
+- Rule: Table_nameContext from 16 to 17 
+- Rule: IdentifierContext from 16 to 17 
+- Rule: String_literalContext from 16 to 17 
+- Terminal: >>AA<< from 16 to 17 
+- Terminal: >>;<< from 18 to 18 
+
+#####################################################
+#
+# TABLE NAMES
+#
+#####################################################
+#
+# result in all cases: context info "table name"
+
+
+'Select a from ' cursor after pos: 12
+             ^|
+line 1:14 mismatched input '<EOF>' expecting STRING_LITERAL
+Bad token <EOF> from 14 to 13
++ Rule: FusionTablesSqlContext from 0 to 12 
+...
++ Terminal: >>from<< from 9 to 12 
++ Rule: Table_name_with_aliasContext from 12 to 14  (indices swapped)
++ Rule: Table_nameContext from 12 to 14  (indices swapped)
++ Rule: IdentifierContext from 12 to 14  (indices swapped)
++ Rule: String_literalContext from 12 to 14  (indices swapped)
+exit String_literalContext   after exception null
+- Error: <missing ';'> from -1 to -1 
+
+'Select a from ;' cursor after pos: 12
+             ^|
+line 1:14 missing STRING_LITERAL at ';'
+Bad token ; from 14 to 14
++ Rule: FusionTablesSqlContext from 0 to 14 
+...
++ Terminal: >>from<< from 9 to 12 
++ Rule: Table_name_with_aliasContext from 12 to 14  (indices swapped)
++ Rule: Table_nameContext from 12 to 14  (indices swapped)
++ Rule: IdentifierContext from 12 to 14  (indices swapped)
++ Rule: String_literalContext from 12 to 14  (indices swapped)
+
+'Select a from AAx' cursor after pos: 12
+             ^|
+Bad token <EOF> from 17 to 16
++ Rule: FusionTablesSqlContext from 0 to 16 
+...
++ Terminal: >>from<< from 9 to 12 
+- Rule: Table_name_with_aliasContext from 14 to 16 
+- Rule: Table_nameContext from 14 to 16 
+- Rule: IdentifierContext from 14 to 16 
+- Rule: String_literalContext from 14 to 16 
+- Terminal: >>AAx<< from 14 to 16 
+- Error: <missing ';'> from -1 to -1 
+
+'Select a from AAx left outer join' cursor after pos: 32
+                                 ^|
+line 1:33 mismatched input '<EOF>' expecting STRING_LITERAL
+Bad token <EOF> from 33 to 32
++ Rule: FusionTablesSqlContext from 0 to 32 
+...
+- Terminal: >>from<< from 9 to 12 
+- Rule: Table_name_with_aliasContext from 14 to 16 
+- Rule: Table_nameContext from 14 to 16 
+- Rule: IdentifierContext from 14 to 16 
+- Rule: String_literalContext from 14 to 16 
+- Terminal: >>AAx<< from 14 to 16 
++ Rule: Join_clauseContext from 18 to 32 
+- Terminal: >>left<< from 18 to 21 
+- Terminal: >>outer<< from 23 to 27 
++ Terminal: >>join<< from 29 to 32 
++ Rule: Table_name_with_aliasContext from 32 to 33  (indices swapped)
++ Rule: Table_nameContext from 32 to 33  (indices swapped)
++ Rule: IdentifierContext from 32 to 33  (indices swapped)
++ Rule: String_literalContext from 32 to 33  (indices swapped)
+exit String_literalContext   after exception null
+exit Join_clauseContext   after exception null
+- Error: <missing ';'> from -1 to -1 
+
+'Select a from AAx left outer join ' cursor after pos: 33
+                                  ^|
+line 1:34 mismatched input '<EOF>' expecting STRING_LITERAL
+Bad token <EOF> from 34 to 33
+- Rule: FusionTablesSqlContext from 0 to 32 
+...
+- Terminal: >>from<< from 9 to 12 
+- Rule: Table_name_with_aliasContext from 14 to 16 
+- Rule: Table_nameContext from 14 to 16 
+- Rule: IdentifierContext from 14 to 16 
+- Rule: String_literalContext from 14 to 16 
+- Terminal: >>AAx<< from 14 to 16 
+- Rule: Join_clauseContext from 18 to 32 
+- Terminal: >>left<< from 18 to 21 
+- Terminal: >>outer<< from 23 to 27 
+- Terminal: >>join<< from 29 to 32 
++ Rule: Table_name_with_aliasContext from 32 to 34  (indices swapped)
++ Rule: Table_nameContext from 32 to 34  (indices swapped)
++ Rule: IdentifierContext from 32 to 34  (indices swapped)
++ Rule: String_literalContext from 32 to 34  (indices swapped)
+exit String_literalContext   after exception null
+exit Join_clauseContext   after exception null
+- Error: <missing ';'> from -1 to -1 
+
+######################################################
+# 
+
+'Select a from AA left outer join x' cursor after pos: 33
+                                  ^|
+line 1:34 mismatched input '<EOF>' expecting K_ON
+Bad token <EOF> from 34 to 33
++ Rule: FusionTablesSqlContext from 0 to 33 
+...
+- Terminal: >>from<< from 9 to 12 
+- Rule: Table_name_with_aliasContext from 14 to 15 
+- Rule: Table_nameContext from 14 to 15 
+- Rule: IdentifierContext from 14 to 15 
+- Rule: String_literalContext from 14 to 15 
+- Terminal: >>AA<< from 14 to 15 
++ Rule: Join_clauseContext from 17 to 33 
+- Terminal: >>left<< from 17 to 20 
+- Terminal: >>outer<< from 22 to 26 
+- Terminal: >>join<< from 28 to 31 
++ Rule: Table_name_with_aliasContext from 33 to 33 
++ Rule: Table_nameContext from 33 to 33 
++ Rule: IdentifierContext from 33 to 33 
++ Rule: String_literalContext from 33 to 33 
++ Terminal: >>x<< from 33 to 33 
+exit Join_clauseContext   after exception null
+- Error: <missing ';'> from -1 to -1 
+
+
+######################################################
+# ok case, maybe only partial name
+
+'Select a from AA left outer join x on a.a = b.b;' cursor after pos: 33
+                                  ^|
++ Rule: FusionTablesSqlContext from 0 to 47 
+...
+- Terminal: >>from<< from 9 to 12 
+- Rule: Table_name_with_aliasContext from 14 to 15 
+- Rule: Table_nameContext from 14 to 15 
+- Rule: IdentifierContext from 14 to 15 
+- Rule: String_literalContext from 14 to 15 
+- Terminal: >>AA<< from 14 to 15 
++ Rule: Join_clauseContext from 17 to 46 
+- Terminal: >>left<< from 17 to 20 
+- Terminal: >>outer<< from 22 to 26 
+- Terminal: >>join<< from 28 to 31 
++ Rule: Table_name_with_aliasContext from 33 to 33 
++ Rule: Table_nameContext from 33 to 33 
++ Rule: IdentifierContext from 33 to 33 
++ Rule: String_literalContext from 33 to 33 
++ Terminal: >>x<< from 33 to 33 
+- Terminal: >>on<< from 35 to 36 
+- Rule: Qualified_column_nameContext from 38 to 40 
+- Rule: Table_nameContext from 38 to 38 
+- Rule: IdentifierContext from 38 to 38 
+- Rule: String_literalContext from 38 to 38 
+- Terminal: >>a<< from 38 to 38 
+- Terminal: >>.<< from 39 to 39 
+- Rule: Column_nameContext from 40 to 40 
+- Rule: IdentifierContext from 40 to 40 
+- Rule: String_literalContext from 40 to 40 
+- Terminal: >>a<< from 40 to 40 
+- Terminal: >>=<< from 42 to 42 
+- Rule: Qualified_column_nameContext from 44 to 46 
+- Rule: Table_nameContext from 44 to 44 
+- Rule: IdentifierContext from 44 to 44 
+- Rule: String_literalContext from 44 to 44 
+- Terminal: >>b<< from 44 to 44 
+- Terminal: >>.<< from 45 to 45 
+- Rule: Column_nameContext from 46 to 46 
+- Rule: IdentifierContext from 46 to 46 
+- Rule: String_literalContext from 46 to 46 
+- Terminal: >>b<< from 46 to 46 
+- Terminal: >>;<< from 47 to 47 
+
+############################################
+# same case (error missing ";" is irrelevant) 
+'Select a from AA left outer join x on a.a = b.b' cursor after pos: 33
+                                  ^|
+line 1:47 missing ';' at '<EOF>'
+Bad token <EOF> from 47 to 46
++ Rule: FusionTablesSqlContext from 0 to 46 
+...
+- Terminal: >>a<< from 40 to 40 
+- Terminal: >>=<< from 42 to 42 
+- Rule: Qualified_column_nameContext from 44 to 46 
+- Rule: Table_nameContext from 44 to 44 
+- Rule: IdentifierContext from 44 to 44 
+- Rule: String_literalContext from 44 to 44 
+- Terminal: >>b<< from 44 to 44 
+- Terminal: >>.<< from 45 to 45 
+- Rule: Column_nameContext from 46 to 46 
+- Rule: IdentifierContext from 46 to 46 
+- Rule: String_literalContext from 46 to 46 
+- Terminal: >>b<< from 46 to 46 
+- Error: <missing ';'> from -1 to -1 
+

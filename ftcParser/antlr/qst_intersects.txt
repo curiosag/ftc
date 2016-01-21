@@ -1,0 +1,6 @@
+select A.a, loc_col from ah 
+where F = -1
+and ST_INTERSECTS(loc_col,  CIRCLE(LATLNG(1, 1), 1))
+and ST_INTERSECTS(loc_col, RECTANGLE( LATLNG(2, 2), LATLNG(2, 2)) )
+order by st_distance(loc_col, LATLNG(0, 0));
+

@@ -1,0 +1,5 @@
+INSERT INTO 1e7y6mtqv892222222222_bbbbbbbbb_CvWhg9gc (Product, Inventory) VALUES ('Red Shoes', 25);
+  INSERT INTO 1e7y6mtqv892222222222_bbbbbbbbb_CvWhg9gc (Product, Inventory) VALUES ('Blue Shoes', 50);
+    INSERT INTO 1e7y6mtqv892222222222_bbbbbbbbb_CvWhg9gc (Product, Inventory) VALUES ('Yellow Shoes', 130);
+    INSERT INTO 1e7y6mtqv892222222222_bbbbbbbbb_CvWhg9gc (Product, Inventory) VALUES ('Purple Shoes', 6);
+    INSERT INTO 1e7y6mtqv892222222222_bbbbbbbbb_CvWhg9gc (Product, Inventory) VALUES ('Black Shoes', 3000);

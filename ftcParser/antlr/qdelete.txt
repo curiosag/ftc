@@ -1,0 +1,2 @@
+DELETE FROM table_id;
+DELETE FROM table_id WHERE ROWID = '123.45';

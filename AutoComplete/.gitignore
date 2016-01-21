@@ -1,0 +1,9 @@
+ant-classes
+bin
+dist
+javadoc
+*.class
+autocomplete_*.zip
+build
+.gradle
+/target/

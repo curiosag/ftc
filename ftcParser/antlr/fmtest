@@ -1,0 +1,4 @@
+#!/bin/bash
+
+gmake FusionTablesSql
+ftest $1 $2

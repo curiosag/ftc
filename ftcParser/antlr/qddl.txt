@@ -1,0 +1,1 @@
+alter table 'View of Fuetterungen' rename to vFuetterungen;
