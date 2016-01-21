@@ -3,5 +3,7 @@
 /.metadata/
 /.git/
 /target/
+/RSyntaxTextArea/target
+/.recommenders/
 *.class
 *.jar
