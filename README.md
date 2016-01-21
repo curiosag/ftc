@@ -11,11 +11,16 @@ Google fusion tables client for easy and comfortable query prototyping. Find det
 * Augmented query syntax covering DROP TABLE and ALTER TABLE/RENAME
 * Query history
 * CSV export
-* Maven managed dependencies and build, complete Eclipse Mars workspace included
+
 
 ### Requirements
 
 Java 7
+
+### Build
+
+Using maven or Eclipse (mars) after importing contained projects.
+Main-Class: org.cg.ftc.ftcClientJava.Client
 
 ### Credits
 
