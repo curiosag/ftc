@@ -24,12 +24,21 @@ public final class CmdHistory {
 	}
 
 	public CmdHistory(StringStorage storage) {
-		cmdHistory = new StringList(storage);
+		cmdHistory = createCmdHistory(storage);
+
 		if (cmdHistory.isEmpty()) {
 			cmdHistory.add(tailSentinel);
 			cmdHistory.add(headSentinel);
 		}
 		currPos = headSentinelIdx();
+	}
+
+	private StringList createCmdHistory(StringStorage storage) {
+		StringList result = new StringList(storage);
+		if (result.size() < 2
+				|| !(result.get(0).equals(tailSentinel) && result.get(result.size() - 1).equals(headSentinel)))
+			result.clear();
+		return result;
 	}
 
 	private String top() {
@@ -40,7 +49,7 @@ public final class CmdHistory {
 		if (!cmd.equals(top())) {
 			if (cmdHistory.size() > MAX_CMDHISTORY)
 				cmdHistory.remove(tailSentinelIdx + 1);
-			
+
 			cmdHistory.set(headSentinelIdx(), cmd);
 			cmdHistory.add(headSentinel);
 			cmdHistory.writeToStorage();

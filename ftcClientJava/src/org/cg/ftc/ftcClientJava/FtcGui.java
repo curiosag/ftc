@@ -431,7 +431,7 @@ public class FtcGui extends JFrame implements ActionListener {
 
 	static FtcGui createAndShowGUI(SyntaxElementSource s, CompletionsSource c, ClientSettings clientSettings) {
 		UIManager.put("swing.boldMetal", Boolean.FALSE);
-
+		
 		FtcGui result = new FtcGui(s, c, clientSettings);
 		result.setPreferredSize(new Dimension(clientSettings.width, clientSettings.height));
 		result.setLocation(clientSettings.x, clientSettings.y);

@@ -172,9 +172,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 	private QueryResult getQueryResult() {
 		String sql = model.queryText.getValue();
-
-		history.add(sql);
-
+		
 		return queryHandler.getQueryResult(sql);
 	}
 

@@ -66,6 +66,7 @@ public class Client {
 
 			@Override
 			public void run() {
+				
 				FtcGui ui = FtcGui.createAndShowGUI(controller, controller, clientSettings);
 
 				ui.setActionListener(controller);
