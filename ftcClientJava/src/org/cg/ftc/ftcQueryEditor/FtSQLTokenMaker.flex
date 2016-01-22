@@ -4,7 +4,7 @@
  * FtSQLTokenMaker.java - Scanner for Google FusionTablesSQL.
  * 
  */
-package ftcQueryEditor;
+package org.cg.ftc.ftcQueryEditor;
 
 import java.io.*;
 import javax.swing.text.Segment;

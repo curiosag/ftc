@@ -276,13 +276,20 @@ public class QueryHandler extends Observable {
 		if (Op.in(statementType, StatementType.SELECT))
 			prepared = addLimit(prepared);
 
+		QueryResult result;
+		
 		if (r.problemsEncountered.isPresent())
 			return packQueryResult(r.problemsEncountered.get());
 
 		else if (preview)
-			return packQueryResult(prepared);
+			result = packQueryResult(prepared);
 		else
-			return connector.fetch(prepared);
+			result = connector.fetch(prepared);
+		
+		if (Op.in(statementType, StatementType.CREATE_VIEW, StatementType.DROP))
+			reloadTableList();
+		
+		return result;
 	}
 
 	private String addLimit(String refactored) {

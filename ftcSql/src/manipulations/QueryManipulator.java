@@ -33,7 +33,8 @@ public class QueryManipulator {
 
 	static {
 		statementTypes.put("ALTER", StatementType.ALTER);
-		statementTypes.put("CREATE", StatementType.CREATE_VIEW);
+		statementTypes.put("CREATE VIEW", StatementType.CREATE_VIEW);
+		statementTypes.put("CREATE TABLE AS", StatementType.CTAS);
 		statementTypes.put("DELETE", StatementType.DELETE);
 		statementTypes.put("INSERT", StatementType.INSERT);
 		statementTypes.put("SELECT", StatementType.SELECT);
@@ -75,7 +76,7 @@ public class QueryManipulator {
 
 	private static StatementType getStatementType(String query) {
 		// avoids the xpath listener complications and is more efficient
-		query = query.trim().toUpperCase();
+		query = StringUtil.coalesce(query.trim().toUpperCase(), " ");
 		for (Entry<String, StatementType> e : statementTypes.entrySet())
 			if (query.startsWith(e.getKey()))
 				return e.getValue();
@@ -83,8 +84,7 @@ public class QueryManipulator {
 		return StatementType.UNKNOWN;
 	}
 
-	// Xpath will use an error listener internally that prints stuff to the
-	// console
+	// Xpath will use an error listener internally that prints stuff to stdout/stderr
 	@SuppressWarnings("unused")
 	private StatementType getStatementType(FusionTablesSqlParser parser) {
 		String xpath = "//" + Const.rulename_sql_stmt;

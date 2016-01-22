@@ -27,7 +27,7 @@ public class Const {
 	public static final String tooltipMemorizeQuery = "Memorize query";
 	
 	public static final String languageId = "text/ftSql";
-	public static final String tokenizerClassId = "ftcQueryEditor.FtSQLTokenMaker";
+	public static final String tokenizerClassId = "org.cg.ftc.ftcQueryEditor.FtSQLTokenMaker";
 	
 	
 }

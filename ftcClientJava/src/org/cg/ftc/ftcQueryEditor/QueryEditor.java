@@ -41,7 +41,7 @@ import com.google.common.eventbus.Subscribe;
 import manipulations.QueryPatching;
 
 public class QueryEditor extends JRootPane implements SyntaxConstants {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	private RTextScrollPane scrollPane;
@@ -54,16 +54,16 @@ public class QueryEditor extends JRootPane implements SyntaxConstants {
 	private final WaitStateDisplay waitStateDisplay;
 
 	static {
-		preloadClasses(); 
+		preloadClasses();
 	}
-	
+
 	/**
-	 * There are some class reference issues otherwise in RSTA editor
+	 * There are obvious class reference issues in RSTA editor otherwise
 	 */
 	private static void preloadClasses() {
-		 FtSQLTokenMaker tokenMaker = new FtSQLTokenMaker();
+		new FtSQLTokenMaker();
 	}
-	
+
 	private final Event onStartParsing = new Event() {
 
 		@Override
@@ -89,7 +89,6 @@ public class QueryEditor extends JRootPane implements SyntaxConstants {
 		this.clientSettings = clientSettings;
 
 		queryText = createTextArea();
-		queryText.setSyntaxEditingStyle(SYNTAX_STYLE_NONE);
 		queryText.addParser(new GftParser(syntaxElementSource, onStartParsing, onFinshParsing));
 		queryText.setMarkOccurrences(false);
 		queryText.setHighlightCurrentLine(clientSettings.highlightCurrentLine);
@@ -105,9 +104,9 @@ public class QueryEditor extends JRootPane implements SyntaxConstants {
 		scrollPane.setLineNumbersEnabled(clientSettings.lineNumbersEnabled);
 
 		setTheme(clientSettings.editorThemeXml);
-		
+
 		URL url = getClass().getResource(Const.resourcePath + "bookmark.png");
-			
+
 		gutter.setBookmarkIcon(new ImageIcon(url));
 
 		getContentPane().add(scrollPane);
@@ -117,6 +116,7 @@ public class QueryEditor extends JRootPane implements SyntaxConstants {
 
 		setCompletionProvider();
 		setTokenMaker();
+		queryText.setSyntaxEditingStyle(Const.languageId);
 
 		registerForLongOperationEvent();
 	}

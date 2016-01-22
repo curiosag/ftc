@@ -37,34 +37,36 @@ public class Snippets {
 
 	/**
 	 * every parameters starting with "c" are used for columns, triggering
-	 * column retrieval in completions, "t"s are for tables
+	 * column retrieval in completions, "t"s are for tables. focus is on first table parameter,
+	 * if both tables and columns occur
 	 * 
 	 * @return
 	 */
 	private Completions getSqlStatementExpressions() {
 		Completions result = new Completions(noBoundaries);
 
-		result.addSnippet(SqlCompletionType.ftSql, "alter table", "ALTER TABLE ${t} RENAME TO ${name}${cursor}; ");
+		result.addSnippet(SqlCompletionType.ftSql, "rename table", "ALTER TABLE ${t} RENAME TO ${name}${cursor}; ");
 		result.addSnippet(SqlCompletionType.ftSql, "drop table", "DROP TABLE ${t}${cursor}; ");
-		// ${cursor} logic doesen't really work here, because it can't be placed
-		// after $t. first table gets chosen, then column
+		
 		result.addSnippet(SqlCompletionType.ftSql, "select", "SELECT ${c} FROM ${t};");
-		result.addSnippet(SqlCompletionType.ftSql, "insert single",
+		result.addSnippet(SqlCompletionType.ftSql, "insert, single column",
 				"INSERT INTO ${t} (${c}) \nVALUES (${value}${cursor});");
-		result.addSnippet(SqlCompletionType.ftSql, "insert multi",
+		result.addSnippet(SqlCompletionType.ftSql, "insert, multiple columns",
 				"INSERT INTO ${t} (${c1}, ${c2}) \nVALUES (${value1}, ${value2}${cursor});");
 
-		result.addSnippet(SqlCompletionType.ftSql, "delete", "DELETE FROM ${t} WHERE ${c}=${value}${cursor}; ");
+		result.addSnippet(SqlCompletionType.ftSql, "delete single row", "DELETE FROM ${t} WHERE ROWID='${value}'${cursor}; ");
 		result.addSnippet(SqlCompletionType.ftSql, "delete all", "DELETE FROM ${t}${cursor}; ");
-
-		result.addSnippet(SqlCompletionType.ftSql, "update single", "UPDATE ${t} SET ${c} = ${value1} WHERE ROWID='${rowidValue}'${cursor};");
-		result.addSnippet(SqlCompletionType.ftSql, "update multi",
+		// bit of a ruse to avoid to have to cover the case, that there is no parameter at all (causes exception now)
+		result.addSnippet(SqlCompletionType.ftSql, "show tables", "SHOW TABLES ${ }${cursor}; ");
+		
+		result.addSnippet(SqlCompletionType.ftSql, "update, single column", "UPDATE ${t} SET ${c} = ${value1} WHERE ROWID='${rowidValue}'${cursor};");
+		result.addSnippet(SqlCompletionType.ftSql, "update, multiple columns",
 				"UPDATE ${t} SET ${c1} = ${value1}, ${c2} = ${value2}  WHERE ROWID='${rowidValue}' ${cursor}; ");
 
 		result.addSnippet(SqlCompletionType.ftSql, "describe table", "DESCRIBE ${t}${cursor};");
 
-		result.addSnippet(SqlCompletionType.ftSql, "create view single", "CREATE VIEW ${identifier} AS (SELECT ${c} FROM ${t}) WHERE ;");
-		result.addSnippet(SqlCompletionType.ftSql, "create view multi", "CREATE VIEW ${identifier} AS (SELECT ${c1}, ${c2} \nFROM ${t1} AS ${id1} \nLEFT OUTER JOIN ${t2}) as ${id2} \nON ${id1}.${c3}=${id2}.${c4};");
+		result.addSnippet(SqlCompletionType.ftSql, "create view, single base table", "CREATE VIEW ${identifier} AS (SELECT ${c} FROM ${t}) WHERE ;");
+		result.addSnippet(SqlCompletionType.ftSql, "create view, multiple base tables", "CREATE VIEW ${identifier} AS (SELECT ${c1}, ${c2} \nFROM ${t1} AS ${id1} \nLEFT OUTER JOIN ${t2}) as ${id2} \nON ${id1}.${c3}=${id2}.${c4};");
 
 		
 		return result;
