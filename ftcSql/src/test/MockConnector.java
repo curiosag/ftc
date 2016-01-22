@@ -94,4 +94,9 @@ public class MockConnector implements Connector {
 	public void clearStoredLoginData() {
 	}
 
+	@Override
+	public QueryResult copyTable(String tableId) {
+		return null;
+	}
+
 }

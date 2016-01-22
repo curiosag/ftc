@@ -149,8 +149,8 @@ public class QueryManipulator {
 		String nameFrom = null;
 		String nameTo = null;
 
-		nameFrom = getNextTerminal(names, parser);
-		nameTo = getNextTerminal(names, parser);
+		nameFrom = StringUtil.stripQuotes(getNextTerminal(names, parser));
+		nameTo = StringUtil.stripQuotes(getNextTerminal(names, parser));
 
 		return resolveTableNames(nameFrom, nameTo, errorListener.getErrors());
 	}
@@ -189,7 +189,7 @@ public class QueryManipulator {
 		String xpath = "//string_literal";
 
 		Iterator<ParseTree> name = XPath.findAll(parser.fusionTablesSql(), xpath, parser).iterator();
-		String tableName = getNextTerminal(name, parser);
+		String tableName = StringUtil.stripQuotes(getNextTerminal(name, parser));
 
 		return resolveTableNames(tableName, null, errorListener.getErrors());
 	}

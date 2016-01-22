@@ -1,9 +1,8 @@
-/bin/
-/lib/
-/.metadata/
-/.git/
-/target/
-/RSyntaxTextArea/target
-/.recommenders/
+bin/
+lib/
+.metadata/
+.git/
+target/
+.recommenders/
 *.class
 *.jar

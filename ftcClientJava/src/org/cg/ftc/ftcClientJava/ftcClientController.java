@@ -117,7 +117,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		case Const.previousCommand:
 			history.prev(historyScrollDestination);
 			break;
-
+			
 		case Const.nextCommand:
 			history.next(historyScrollDestination);
 			break;
@@ -172,7 +172,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 	private QueryResult getQueryResult() {
 		String sql = model.queryText.getValue();
-		
+		history.add(sql);
 		return queryHandler.getQueryResult(sql);
 	}
 
@@ -290,16 +290,6 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	@Override
 	public Completions get(String query, int cursorPos) {
 		return queryHandler.getPatcher(query, cursorPos).getCompletions();
-	}
-
-	private boolean checkCredentialsPlausible() {
-		boolean result = !(StringUtil.emptyOrNull(model.clientSecret.getValue())
-				|| StringUtil.emptyOrNull(model.clientId.getValue()));
-
-		if (!result)
-			logging.Info("incomplete authentication credentials");
-
-		return result;
 	}
 
 	private ConnectionStatus resetConnector() {

@@ -27,5 +27,7 @@ public interface Connector {
   void deleteTable(String tableId) throws IOException;
 
   String renameTable(String tableId, String newName);
+  
+  QueryResult copyTable(String tableId);
 
 }

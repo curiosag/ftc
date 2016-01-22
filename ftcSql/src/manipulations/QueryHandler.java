@@ -273,7 +273,7 @@ public class QueryHandler extends Observable {
 		RefactoredSql r = createManipulator(query).refactorQuery();
 
 		String prepared = r.refactored;
-		if (!Op.in(statementType, StatementType.DESCRIBE, StatementType.SHOW))
+		if (Op.in(statementType, StatementType.SELECT))
 			prepared = addLimit(prepared);
 
 		if (r.problemsEncountered.isPresent())
@@ -336,14 +336,14 @@ public class QueryHandler extends Observable {
 		case SELECT:
 			return hdlQuery(ftr.statementType, query, execute);
 
-		// case INSERT:
-		// return hdlQuery(query, ftr, preview);
-		//
-		// case UPDATE:
-		// return hdlQuery(query, ftr, preview);
-		//
-		// case DELETE:
-		// return hdlQuery(query, ftr, preview);
+		 case INSERT:
+		 return hdlQuery(ftr.statementType, query, execute);
+		
+		 case UPDATE:
+		 return hdlQuery(ftr.statementType, query, execute);
+		
+		 case DELETE:
+		 return hdlQuery(ftr.statementType, query, execute);
 
 		case CREATE_VIEW:
 			return hdlQuery(ftr.statementType, query, execute);
@@ -357,9 +357,17 @@ public class QueryHandler extends Observable {
 		case SHOW:
 			return hdlQuery(ftr.statementType, query, execute);
 
+		case CTAS:
+			return hdlCtas(ftr.statementType, query, execute);
+			
 		default:
 			return packQueryResult("Statement not covered: " + query);
 		}
+	}
+
+	private QueryResult hdlCtas(StatementType statementType, String query, boolean execute2) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	private static QueryResult packQueryResult(String msg) {
@@ -398,6 +406,9 @@ public class QueryHandler extends Observable {
 		case SHOW:
 			return hdlQuery(ftr.statementType, query, preview).message.or("");
 
+		case CTAS:
+			return hdlCtas(ftr.statementType, query, execute).message.or("");			
+			
 		default:
 			return "Statement not covered: " + query;
 		}

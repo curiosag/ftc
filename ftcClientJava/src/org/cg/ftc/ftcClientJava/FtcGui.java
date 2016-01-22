@@ -3,11 +3,9 @@ package org.cg.ftc.ftcClientJava;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
-import javax.swing.text.Document;
-
 import org.cg.common.check.Check;
-import org.cg.common.interfaces.AbstractKeyListener;
 import org.cg.common.interfaces.OnValueChangedEvent;
 import org.cg.common.misc.SimpleObservable;
 import org.cg.common.swing.WindowClosingListener;
@@ -23,11 +21,10 @@ import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 
-public class FtcGui extends JFrame implements ActionListener {
+public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	private static final long serialVersionUID = 1L;
-	public static final Dimension dimensionButtons = new Dimension(45, 22);
+	private static final Dimension dimensionButtons = new Dimension(45, 22);
 	
-
 	private QueryEditor queryEditor;
 
 	private JEditorPane opResult;
@@ -37,12 +34,12 @@ public class FtcGui extends JFrame implements ActionListener {
 	private JSpinner fieldDefaultLimit;
 	private JSpinner fieldAuthTimeout;
 
-	JSplitPane splitPaneH;
-	JSplitPane splitPaneV;
-	JPanel authPanel;
-	JButton buttonExecSql;
-	JButton buttonCancel;
-	JButton buttonAuthenticate;
+	private JSplitPane splitPaneH;
+	private JSplitPane splitPaneV;
+	private JPanel authPanel;
+	private JButton buttonExecSql;
+	private JButton buttonCancel;
+	private JButton buttonAuthenticate;
 
 	private JTable dataTable = null;
 
@@ -70,6 +67,7 @@ public class FtcGui extends JFrame implements ActionListener {
 
 	}
 
+	@Override
 	public void setActionListener(ActionListener l) {
 		passOnactionListener = l;
 	}
@@ -108,43 +106,52 @@ public class FtcGui extends JFrame implements ActionListener {
 		};
 	}
 
-	public void addQueryTextKeyListener(AbstractKeyListener k) {
-		queryEditor.addKeyListener(k);
-	}
-
 	private ActionListener getPassOnactionListener() {
 		Check.notNull(passOnactionListener);
 		return passOnactionListener;
 	}
 
-	public Document opResultDocument() {
-		return opResult.getDocument();
-	}
-
+	@Override
 	public Observer createClientIdObserver() {
 		return Observism.createObserver(textFieldClientId);
 	}
 
+	@Override
 	public Observer createClientSecretObserver() {
 		return Observism.createObserver(textFieldClientSecret);
 	}
 
+	@Override
 	public void addClientIdChangedListener(OnValueChangedEvent e) {
 		Observism.addValueChangedListener(textFieldClientId, e);
 	}
 
+	@Override
 	public void addClientSecretChangedListener(OnValueChangedEvent e) {
 		Observism.addValueChangedListener(textFieldClientSecret, e);
 	}
 
+	@Override
+	public void addResultTextChangedListener(DocumentListener listener) {
+		opResult.getDocument().addDocumentListener(listener);
+	}
+	
+	@Override
+	public void addQueryTextChangedListener(DocumentListener listener) {
+		queryEditor.getDocument().addDocumentListener(listener);
+	}
+	
+	@Override
 	public Observer createOpResultObserver() {
 		return Observism.createObserver(opResult);
 	}
 
+	@Override
 	public Observer createQueryObserver() {
 		return Observism.createObserver(queryEditor.queryText);
 	}
 
+	@Override
 	public Observer createResultDataObserver() {
 		return new Observer() {
 
@@ -299,6 +306,8 @@ public class FtcGui extends JFrame implements ActionListener {
 		buttonPane.add(buttonPreview);
 		buttonPane.add(buttonExecSql);
 		buttonPane.add(buttonCancel);
+		buttonPane.add(createSpacer(spacerWidht));
+		
 		buttonPane.add(buttonListTables);
 
 		buttonPane.add(createSpacer(spacerWidht));
@@ -425,11 +434,7 @@ public class FtcGui extends JFrame implements ActionListener {
 		return resultPane;
 	}
 
-	public Document queryTextDocument() {
-		return queryEditor.getDocument();
-	}
-
-	static FtcGui createAndShowGUI(SyntaxElementSource s, CompletionsSource c, ClientSettings clientSettings) {
+	static FrontEnd createAndShowGUI(SyntaxElementSource s, CompletionsSource c, ClientSettings clientSettings) {
 		UIManager.put("swing.boldMetal", Boolean.FALSE);
 		
 		FtcGui result = new FtcGui(s, c, clientSettings);

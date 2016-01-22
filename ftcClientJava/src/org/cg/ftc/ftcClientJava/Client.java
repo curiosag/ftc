@@ -2,12 +2,8 @@ package org.cg.ftc.ftcClientJava;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Observer;
-
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
-
 import org.cg.common.check.Check;
 import org.cg.common.core.AbstractLogger;
 import org.cg.common.core.DelegatingLogger;
@@ -38,11 +34,6 @@ public class Client {
 		connectors.put(ConnectorTypes.gftConnector,
 				new FusionTablesConnector(logging, noAuth, Client.class));
 	}
-
-	private static void interlace(Document d, Observer textModelObserver, TextModel m) {
-		d.addDocumentListener(m.getListener());
-		m.addObserver(textModelObserver);
-	}
 	
 	private static Connector getConnector() {
 		Connector result = connectors.get(connectorType);
@@ -66,19 +57,21 @@ public class Client {
 
 			@Override
 			public void run() {
-				
-				FtcGui ui = FtcGui.createAndShowGUI(controller, controller, clientSettings);
+				FrontEnd ui = FtcGui.createAndShowGUI(controller, controller, clientSettings);
 
-				ui.setActionListener(controller);
 				model.resultData.addObserver(ui.createResultDataObserver());
+				
 				model.clientId.addObserver(ui.createClientIdObserver());
 				model.clientSecret.addObserver(ui.createClientSecretObserver());
+				model.resultText.addObserver(ui.createOpResultObserver());
+				model.queryText.addObserver(ui.createQueryObserver());
+				
+				ui.setActionListener(controller);
 				ui.addClientIdChangedListener(createOnValueChangedEvent(model.clientId));
 				ui.addClientSecretChangedListener(createOnValueChangedEvent(model.clientSecret));
-
-				interlace(ui.opResultDocument(), ui.createOpResultObserver(), model.resultText);
-				interlace(ui.queryTextDocument(), ui.createQueryObserver(), model.queryText);
-
+				ui.addResultTextChangedListener(model.resultText.getListener());
+				ui.addQueryTextChangedListener(model.queryText.getListener());
+				
 				model.clientId.setValue(clientSettings.clientId);
 				model.clientSecret.setValue(clientSettings.clientSecret);
 

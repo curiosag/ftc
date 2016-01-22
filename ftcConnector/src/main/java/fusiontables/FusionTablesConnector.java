@@ -1,7 +1,6 @@
 package main.java.fusiontables;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -17,7 +16,9 @@ import javax.swing.table.DefaultTableModel;
 
 import org.cg.common.check.Check;
 import org.cg.common.core.Logging;
+import org.cg.common.http.HttpResult;
 import org.cg.common.http.HttpStatus;
+import org.cg.common.http.Request;
 import org.cg.ftc.shared.interfaces.*;
 import org.cg.ftc.shared.structures.*;
 
@@ -57,6 +58,8 @@ public class FusionTablesConnector implements Connector {
 
 	private final Logging logger;
 
+	private Optional<String> accessToken = Optional.absent();
+	
 	public FusionTablesConnector(Logging logger, Optional<AuthInfo> authInfo, Class<?> dataStoreCarrierNode) {
 		Check.notNull(authInfo);
 		Check.notNull(logger);
@@ -100,6 +103,7 @@ public class FusionTablesConnector implements Connector {
 		try {
 			credential = authorize(authStream);
 			result = new ConnectionStatus(HttpStatus.SC_OK);
+			accessToken = Optional.of(credential.getAccessToken());
 		} catch (Exception e) {
 			logger.Error("Failed to authorize: " + e.getMessage());
 			fusiontables = Optional.absent();
@@ -164,6 +168,11 @@ public class FusionTablesConnector implements Connector {
 		List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
 		for (Column c : t.getColumns())
 			columns.add(new ColumnInfo(c.getName(), c.getType(), c.getKind()));
+		return addRowid(columns);
+	}
+
+	private List<ColumnInfo> addRowid(List<ColumnInfo> columns) {
+		columns.add(new ColumnInfo("ROWID", "ROWID", "ROWID"));
 		return columns;
 	}
 
@@ -319,6 +328,8 @@ public class FusionTablesConnector implements Connector {
 		if (status != HttpStatus.SC_OK)
 			return createErrorResult(status, json);
 
+		System.out.println(json);
+		
 		ObjectMapper jsonmapper = new ObjectMapper();
 		try {
 			GftResponseJson data = jsonmapper.readValue(json, GftResponseJson.class);
@@ -338,6 +349,15 @@ public class FusionTablesConnector implements Connector {
 		} catch (IOException e) {
 			logger.Error(e.getMessage());
 		}
+	}
+
+	@Override
+	public QueryResult copyTable(String tableId) {
+		Check.isTrue(accessToken.isPresent());
+		String url = String.format("https://www.googleapis.com/fusiontables/v1/tables/%s/copy?key=%s", tableId, accessToken.get());
+		HttpResult res = new Request(url, "").post();
+		
+		return new QueryResult(res.responseCode, null, res.toString());
 	}
 
 }
