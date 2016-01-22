@@ -160,7 +160,6 @@ img {
 header {
   width:270px;
   float:left;
-  position:fixed;
   -webkit-font-smoothing:subpixel-antialiased;
 }
 
@@ -229,6 +228,12 @@ section {
   padding-bottom:50px;
 }
 
+wide_section {
+  width:1024px;
+  float:left;
+  padding-bottom:50px;
+}
+
 small {
   font-size:11px;
 }
@@ -243,7 +248,6 @@ hr {
 footer {
   width:270px;
   float:left;
-  position:fixed;
   bottom:50px;
   -webkit-font-smoothing:subpixel-antialiased;
 }
@@ -255,7 +259,7 @@ footer {
     margin:0;
   }
 
-  header, section, footer {
+  header, section, footer, wide_section {
     float:none;
     position:static;
     width:auto;
