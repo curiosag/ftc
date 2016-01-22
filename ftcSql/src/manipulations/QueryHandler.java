@@ -273,22 +273,21 @@ public class QueryHandler extends Observable {
 		RefactoredSql r = createManipulator(query).refactorQuery();
 
 		String prepared = r.refactored;
-		if (Op.in(statementType, StatementType.SELECT))
+		if (statementType == StatementType.SELECT)
 			prepared = addLimit(prepared);
 
 		QueryResult result;
-		
+
 		if (r.problemsEncountered.isPresent())
 			return packQueryResult(r.problemsEncountered.get());
 
 		else if (preview)
 			result = packQueryResult(prepared);
-		else
+		else {
 			result = connector.fetch(prepared);
-		
-		if (Op.in(statementType, StatementType.CREATE_VIEW, StatementType.DROP))
-			reloadTableList();
-		
+			if (Op.in(statementType, StatementType.CREATE_VIEW, StatementType.DROP, StatementType.ALTER))
+				onStructureChanged();
+		}
 		return result;
 	}
 
@@ -343,14 +342,14 @@ public class QueryHandler extends Observable {
 		case SELECT:
 			return hdlQuery(ftr.statementType, query, execute);
 
-		 case INSERT:
-		 return hdlQuery(ftr.statementType, query, execute);
-		
-		 case UPDATE:
-		 return hdlQuery(ftr.statementType, query, execute);
-		
-		 case DELETE:
-		 return hdlQuery(ftr.statementType, query, execute);
+		case INSERT:
+			return hdlQuery(ftr.statementType, query, execute);
+
+		case UPDATE:
+			return hdlQuery(ftr.statementType, query, execute);
+
+		case DELETE:
+			return hdlQuery(ftr.statementType, query, execute);
 
 		case CREATE_VIEW:
 			return hdlQuery(ftr.statementType, query, execute);
@@ -366,7 +365,7 @@ public class QueryHandler extends Observable {
 
 		case CTAS:
 			return hdlCtas(ftr.statementType, query, execute);
-			
+
 		default:
 			return packQueryResult("Statement not covered: " + query);
 		}
@@ -414,8 +413,8 @@ public class QueryHandler extends Observable {
 			return hdlQuery(ftr.statementType, query, preview).message.or("");
 
 		case CTAS:
-			return hdlCtas(ftr.statementType, query, execute).message.or("");			
-			
+			return hdlCtas(ftr.statementType, query, execute).message.or("");
+
 		default:
 			return "Statement not covered: " + query;
 		}
@@ -509,12 +508,8 @@ public class QueryHandler extends Observable {
 	}
 
 	private void onStructureChanged() {
-		new Thread(new Runnable() {
-			public void run() {
-				reloadTableList();
-				notifyObservers();
-			}
-		}).start();
+		reloadTableList();
+		notifyObservers();
 	}
 
 }

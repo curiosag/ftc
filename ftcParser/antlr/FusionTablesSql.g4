@@ -103,7 +103,7 @@ show_tables_stmt
 
 alter_table_stmt
  : K_ALTER K_TABLE table_name_in_ddl
-   ( K_RENAME K_TO table_name_in_ddl )
+   ( K_RENAME K_TO identifier )
  ;
 
 create_view_stmt

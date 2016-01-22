@@ -500,14 +500,14 @@ public class FusionTablesSqlParser extends Parser {
 	public static class Alter_table_stmtContext extends ParserRuleContext {
 		public TerminalNode K_ALTER() { return getToken(FusionTablesSqlParser.K_ALTER, 0); }
 		public TerminalNode K_TABLE() { return getToken(FusionTablesSqlParser.K_TABLE, 0); }
-		public List<Table_name_in_ddlContext> table_name_in_ddl() {
-			return getRuleContexts(Table_name_in_ddlContext.class);
-		}
-		public Table_name_in_ddlContext table_name_in_ddl(int i) {
-			return getRuleContext(Table_name_in_ddlContext.class,i);
+		public Table_name_in_ddlContext table_name_in_ddl() {
+			return getRuleContext(Table_name_in_ddlContext.class,0);
 		}
 		public TerminalNode K_RENAME() { return getToken(FusionTablesSqlParser.K_RENAME, 0); }
 		public TerminalNode K_TO() { return getToken(FusionTablesSqlParser.K_TO, 0); }
+		public IdentifierContext identifier() {
+			return getRuleContext(IdentifierContext.class,0);
+		}
 		public Alter_table_stmtContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -545,7 +545,7 @@ public class FusionTablesSqlParser extends Parser {
 			setState(117);
 			match(K_TO);
 			setState(118);
-			table_name_in_ddl();
+			identifier();
 			}
 			}
 		}
@@ -3528,7 +3528,7 @@ public class FusionTablesSqlParser extends Parser {
 		"\2\2\2e]\3\2\2\2e^\3\2\2\2e_\3\2\2\2e`\3\2\2\2ea\3\2\2\2eb\3\2\2\2ec\3"+
 		"\2\2\2ed\3\2\2\2fg\3\2\2\2gh\7\3\2\2h\5\3\2\2\2ij\5H%\2j\7\3\2\2\2kl\5"+
 		"H%\2l\t\3\2\2\2mn\7\27\2\2no\5\6\4\2o\13\3\2\2\2pq\79\2\2qr\7<\2\2r\r"+
-		"\3\2\2\2st\7\7\2\2tu\7;\2\2uv\5\6\4\2vw\7\63\2\2wx\7=\2\2xy\5\6\4\2y\17"+
+		"\3\2\2\2st\7\7\2\2tu\7;\2\2uv\5\6\4\2vw\7\63\2\2wx\7=\2\2xy\5D#\2y\17"+
 		"\3\2\2\2z{\7\24\2\2{|\7@\2\2|}\5N(\2}~\7\n\2\2~\177\7H\2\2\177\u0080\7"+
 		"\65\2\2\u0080\u0085\5&\24\2\u0081\u0082\7\4\2\2\u0082\u0084\5&\24\2\u0083"+
 		"\u0081\3\2\2\2\u0084\u0087\3\2\2\2\u0085\u0083\3\2\2\2\u0085\u0086\3\2"+
