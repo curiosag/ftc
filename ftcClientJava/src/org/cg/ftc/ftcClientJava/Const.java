@@ -8,7 +8,7 @@ public class Const {
 	public static final String fileSave = "fileSave";
 	public static final String exportCsv = "exportCsv";
 	public static final String execSql = "execSql";
-	public static final String listTables = "listTables";
+	public static final String listTables = "showTables";
 	public static final String viewPreprocessedQuery = "preview";
 	public static final String authorize = "authorize";
 	public static final String nextCommand = "nextCommand";
@@ -18,7 +18,7 @@ public class Const {
 	public static final String focusEditor = "focusEditor";
 	
 	public static final String tooltipExecSql = "Execute query";
-	public static final String tooltipListTables = "List tables";
+	public static final String tooltipListTables = "Show tables";
 	public static final String tooltipViewPreprocessedQuery = "View preprocessed query";
 	public static final String tooltipPreviousCommand = "Previous query";
 	public static final String tooltipNextCommand = "Next query";

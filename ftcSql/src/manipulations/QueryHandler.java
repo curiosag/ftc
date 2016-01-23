@@ -270,7 +270,7 @@ public class QueryHandler extends Observable {
 	}
 
 	private QueryResult hdlQuery(StatementType statementType, String query, boolean preview) {
-		RefactoredSql r = createManipulator(query).refactorQuery();
+		RefactoredSql r = createManipulator(addSemicolon(query)).refactorQuery();
 
 		String prepared = r.refactored;
 		if (statementType == StatementType.SELECT)
@@ -289,6 +289,13 @@ public class QueryHandler extends Observable {
 				onStructureChanged();
 		}
 		return result;
+	}
+
+	private String addSemicolon(String query) {
+		if (query.trim().endsWith(";"))
+			return query;
+		else
+			return query + ";";
 	}
 
 	private String addLimit(String refactored) {
