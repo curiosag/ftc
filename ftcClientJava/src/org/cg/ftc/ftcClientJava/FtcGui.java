@@ -24,7 +24,7 @@ import java.util.Observer;
 public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	private static final long serialVersionUID = 1L;
 	private static final Dimension dimensionButtons = new Dimension(45, 22);
-	
+
 	private QueryEditor queryEditor;
 
 	private JEditorPane opResult;
@@ -74,6 +74,10 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 
 	@Override // ActionListener
 	public void actionPerformed(ActionEvent e) {
+		hdlButtonActions(e);
+	}
+
+	private void hdlButtonActions(ActionEvent e) {
 		getPassOnactionListener().actionPerformed(e);
 	}
 
@@ -101,7 +105,11 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getPassOnactionListener().actionPerformed(new ActionEvent(e.getSource(), e.getID(), actionId));
+				System.out.println(e.getActionCommand());
+				if (e.getActionCommand().equals(Const.tooltipFocusEditor))
+					queryEditor.requestFocus();
+				else
+					getPassOnactionListener().actionPerformed(new ActionEvent(e.getSource(), e.getID(), actionId));
 			}
 		};
 	}
@@ -135,12 +143,12 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	public void addResultTextChangedListener(DocumentListener listener) {
 		opResult.getDocument().addDocumentListener(listener);
 	}
-	
+
 	@Override
 	public void addQueryTextChangedListener(DocumentListener listener) {
 		queryEditor.getDocument().addDocumentListener(listener);
 	}
-	
+
 	@Override
 	public Observer createOpResultObserver() {
 		return Observism.createObserver(opResult);
@@ -240,20 +248,26 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 
 		JMenu runMenu = new JMenu("Run");
 		runMenu.setMnemonic(KeyEvent.VK_R);
-		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_M, alt,
-				getAction(Const.tooltipMemorizeQuery, Const.memorizeQuery)));
-		runMenu.add(createMenuItem(KeyEvent.VK_F4, KeyEvent.VK_V, none,
-				getAction(Const.tooltipViewPreprocessedQuery, Const.viewPreprocessedQuery)));
 		runMenu.add(
 				createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_E, none, getAction(Const.tooltipExecSql, Const.execSql)));
 		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_C, ctrl,
 				getAction(Const.tooltipCancelExecSql, Const.cancelExecSql)));
-		runMenu.add(createMenuItem(KeyEvent.VK_F3, KeyEvent.VK_L, none,
-				getAction(Const.tooltipListTables, Const.listTables)));
+		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_V, alt,
+				getAction(Const.tooltipViewPreprocessedQuery, Const.viewPreprocessedQuery)));
+
 		runMenu.add(createMenuItem(KeyEvent.VK_LEFT, KeyEvent.VK_P, alt,
 				getAction(Const.tooltipPreviousCommand, Const.previousCommand)));
 		runMenu.add(createMenuItem(KeyEvent.VK_RIGHT, KeyEvent.VK_N, alt,
 				getAction(Const.tooltipNextCommand, Const.nextCommand)));
+		runMenu.add(createMenuItem(KeyEvent.VK_M, KeyEvent.VK_M, alt,
+				getAction(Const.tooltipMemorizeQuery, Const.memorizeQuery)));
+
+		runMenu.add(createMenuItem(KeyEvent.VK_L, KeyEvent.VK_T, ctrl,
+				getAction(Const.tooltipListTables, Const.listTables)));
+
+		runMenu.add(createMenuItem(KeyEvent.VK_F, KeyEvent.VK_F, ctrl,
+				getAction(Const.tooltipFocusEditor, Const.focusEditor)));
+
 		menuBar.add(runMenu);
 
 		setJMenuBar(menuBar);
@@ -307,7 +321,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		buttonPane.add(buttonExecSql);
 		buttonPane.add(buttonCancel);
 		buttonPane.add(createSpacer(spacerWidht));
-		
+
 		buttonPane.add(buttonListTables);
 
 		buttonPane.add(createSpacer(spacerWidht));
@@ -332,9 +346,8 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		return b;
 	}
 
-	
 	private ImageIcon createIcon(String iconUrl) {
-		URL url = getClass().getResource(Const.resourcePath +  iconUrl);
+		URL url = getClass().getResource(Const.resourcePath + iconUrl);
 		return new ImageIcon(url);
 	}
 
@@ -344,7 +357,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		textFieldClientId = new JTextField(26);
 		textFieldClientSecret = new JPasswordField(26);
 		textFieldClientSecret.setEchoChar('*');
-		buttonAuthenticate = createButton(Const.authorize, "key.png", Const.tooltipAuthorize); 
+		buttonAuthenticate = createButton(Const.authorize, "key.png", Const.tooltipAuthorize);
 		buttonAuthenticate.setMaximumSize(dimensionButtons);
 		SpinnerNumberModel defaultLimitNumberModel = createNumberModel(clientSettings.defaultQueryLimit,
 				createDefaultLimitChangeListener());
@@ -436,7 +449,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 
 	static FrontEnd createAndShowGUI(SyntaxElementSource s, CompletionsSource c, ClientSettings clientSettings) {
 		UIManager.put("swing.boldMetal", Boolean.FALSE);
-		
+
 		FtcGui result = new FtcGui(s, c, clientSettings);
 		result.setPreferredSize(new Dimension(clientSettings.width, clientSettings.height));
 		result.setLocation(clientSettings.x, clientSettings.y);

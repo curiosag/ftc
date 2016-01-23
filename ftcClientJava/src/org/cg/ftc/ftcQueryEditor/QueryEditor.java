@@ -314,4 +314,8 @@ public class QueryEditor extends JRootPane implements SyntaxConstants {
 		return queryText.getDocument();
 	}
 
+	public void requestFocus()
+	{
+		queryText.requestFocus();
+	}
 }

@@ -24,7 +24,7 @@ public class QueryPatching {
 	private final String query;
 	private final TableInfoResolver tableInfoResolver;
 
-	private boolean bareSelect(String q) {
+	private boolean isBareSelect(String q) {
 		return q.toLowerCase().replace("select", "").replace(" ", "").length() == 0;
 	}
 
@@ -43,7 +43,7 @@ public class QueryPatching {
 
 	public String patch(AbstractCompletion completion) {
 		String result = query;
-		boolean bareSelect = bareSelect(query);
+		boolean bareSelect = isBareSelect(query);
 
 		String patch = completion.getPatch();
 		Optional<OrderedIntTuple> boundaries = cursorContext.boundaries;
