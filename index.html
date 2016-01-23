@@ -31,8 +31,6 @@
       Get a quick start with Google <a href="https://developers.google.com/fusiontables/docs/v2/sql-reference">fusion tables sql</a>. You need <a href="https://support.google.com/fusiontables">some fusion tables you own</a> (and/or some <a href="https://research.google.com/tables?hl=en&ei=xYqhVpuCJsHipQOqzLiIDw&corpus=fusion&q=dog">external table IDs</a>), a <a href="https://console.developers.google.com">google developers project</a>, an <a href="https://console.developers.google.com/apis"> activated fusion tables api</a> and an <a href="https://console.developers.google.com/apis/credentials"><a href="https://console.developers.google.com/apis/credentials">OAuth2 client ID</a></a> for the project. <small>(the OAuth2 client ID must be for application type "other")</small>
       Download the jar (zipped/gzipped), extract, start ftc.bat or ftc.sh (make executable first)  
       <p></p>
-      <b>Covers: </b> SELECT, CREATE VIEW, UPDATE, DELETE, DESCRIBE and SHOW TABLES
-      <br><b>Adds:</b>	ALTER TABLE - RENAME TO and DROP TABLE
       </section>
       <p></p>
      
@@ -41,24 +39,64 @@
 
 <p> <img src="ftc.gif" width="825" height="548" alt=""> </p>
         <p></p>
+<h3>Coverage</h3>
+        <p></p>
+      SELECT, CREATE VIEW, INSERT, UPDATE, DELETE, DESCRIBE and SHOW TABLES, well ... everything.
+<p></p>
+For tables owned by yourself you can use table names instead of table IDs. Make sure, there are no naming collissions. This also was the motivation to start the project in the first place. I have a limited capacity to memorize random sequences of 40 characters, but I'm also working on this issue with Derren Brown. The app was the quick fix, though.
+<p></p>
+      <h3>Extended commands</h3>
+<table>
+<tr><td>Command</td><td>Syntax</td></tr>
+<tr><td>Rename table</td><td>ALTER TABLE [table name or ID] RENAME TO [new name]</td></tr>
+<tr><td>Delete table</td><td>DROP TABLE  [table name or ID]</td></tr>
+<tr><td>Copy table</td><td>CREATE TABLE [table name] AS SELECT * FROM [source table name or ID] </td></tr>
+
+</table>
+
 <h3>Shortcuts</h3>
 <table>
+
 <tr><td>F5</td><td>Execute query</td></tr>
 <tr><td>Ctrl+F5</td><td>Cancel query execution</td></tr>
 <tr><td>Alt+F5</td><td>View preprocessed query</td></tr>
 
-<tr><td>Ctrl+E</td><td>Focus editor window</td></tr>
+<tr><td>Ctrl+F</td><td>Focus editor text field</td></tr>
+<tr><td>Ctrl+space</td><td>Trigger code completion. Switch between proposed sql snippets and table or column names</td></tr>
 <tr><td>Alt+left</td><td>Browse command history backwards</td></tr>
 <tr><td>Alt+right</td><td>Browse command history forward</td></tr>
-<tr><td>Alt+M</td><td>Memorize editor text ... means, append it to the command history without executing a command</td></tr>
+<tr><td>Alt+M</td><td>Memorize editor text ... means, append it to the command history without executing the query</td></tr>
 <tr><td>Ctrl+T</td><td>Show tables</td></tr>
-
+<tr><td>Ctrl+E</td><td>Export to csv file</td></tr>
+<tr><td>Ctrl+S</td><td>Save editor text ... a bit of an overkill, as you can only use a single statement per execution anyway. On the other hand: who knows, maybe somebody uses it to write a novel or whatever</td></tr>
+<tr><td>Ctrl+O</td><td>Open file</td></tr>
 </table>
-<h3>Known Limitations</h3>
+<h3>Limitations</h3>
         <ul>
-        	 <li>Column ids can be used in queries, but they are not covered by syntax highlighting</li>
+        	 <li>Column ids can be used in queries, but they are not covered by semantic highlighting, so you get a blue wiggle line for them</li>
         	 <li>If a table has an alias, the alias must always be preceded by the keyword "AS"</li>
         	 <li>Handling of huge amounts of data isn't the goal of the implementation. On the other hand, it may take you as far as the computer's memory allows it to.</li>
+        </ul>
+
+<h3>Things to come, maybe</h3>
+        <ul>
+			 <li>A command line interface. Every application should have one</li>
+			 <li>A repository of external table IDs with associated names readable by humans</li>
+        	 <li>Support multiple queries in the editor, with sequential execution and multiple files/tabsheets</li>
+        	 <li>Full SELECT clause in CREATE TABLE statement</li>
+        	 <li>Allow WHERE clause in CREATE VIEW statement with JOIN clause</li>
+			 <li>And all the rest like import, export and stuff</li>
+			 <li>Extend functionality by procedural and functional constructs and connectors to every data store known to man with a query language</li>
+			 <li>A GUI that actually looks cool</li>
+			 <li>Market the thing</li>
+			 <li>Hire Andrew Ng and pack in deep machine learning until the thing knows what you want to do before you know it yourself and then does it for you (meaning outpace Google). Hire Derren Brown and make the thing capable of convincing you within the blink of an eye, that what it did is actually what you wanted, no matter, what it did or what you wanted in the first place (outpace everybody and everything everywhere)</li>
+			 <li>The IPO</li>
+			 <li>Add every functionality possible</li>
+			 <li>Buy Oracle</li>
+			 <li>Fire Larry Ellison</li>
+			 <li>Mount a towing hitch to my Ferrari and test its performance when pulling trailers. Maybe hire Larry Ellison again and delegate this to him</li>
+			 <li>Buy Google</li>
+			 <li>Buy everything, gift it to the worst team in the soccer league and retire as a hermit</li>
         </ul>
 
       </wide_section>
