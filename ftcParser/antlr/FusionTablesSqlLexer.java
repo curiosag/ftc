@@ -52,7 +52,7 @@ public class FusionTablesSqlLexer extends Lexer {
 	};
 
 	private static final String[] _LITERAL_NAMES = {
-		null, "';'", "','", "'*'", "'.'", null, null, null, null, null, null, 
+		null, "';'", "'*'", "','", "'.'", null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, null, 
@@ -223,8 +223,8 @@ public class FusionTablesSqlLexer extends Lexer {
 		"\u02c5\3\2\2\2\u00c3\u02c7\3\2\2\2\u00c5\u02c9\3\2\2\2\u00c7\u02cb\3\2"+
 		"\2\2\u00c9\u02cd\3\2\2\2\u00cb\u02cf\3\2\2\2\u00cd\u02d1\3\2\2\2\u00cf"+
 		"\u02d3\3\2\2\2\u00d1\u02d5\3\2\2\2\u00d3\u02d7\3\2\2\2\u00d5\u00d6\7="+
-		"\2\2\u00d6\4\3\2\2\2\u00d7\u00d8\7.\2\2\u00d8\6\3\2\2\2\u00d9\u00da\7"+
-		",\2\2\u00da\b\3\2\2\2\u00db\u00dc\7\60\2\2\u00dc\n\3\2\2\2\u00dd\u00de"+
+		"\2\2\u00d6\4\3\2\2\2\u00d7\u00d8\7,\2\2\u00d8\6\3\2\2\2\u00d9\u00da\7"+
+		".\2\2\u00da\b\3\2\2\2\u00db\u00dc\7\60\2\2\u00dc\n\3\2\2\2\u00dd\u00de"+
 		"\5\u00a1Q\2\u00de\u00df\5\u00b7\\\2\u00df\u00e0\5\u00c7d\2\u00e0\u00e1"+
 		"\5\u00a9U\2\u00e1\u00e2\5\u00c3b\2\u00e2\f\3\2\2\2\u00e3\u00e4\5\u00a1"+
 		"Q\2\u00e4\u00e5\5\u00bb^\2\u00e5\u00e6\5\u00a7T\2\u00e6\16\3\2\2\2\u00e7"+

@@ -28,6 +28,6 @@ public interface Connector {
 
   String renameTable(String tableId, String newName);
   
-  QueryResult copyTable(String tableId);
+  QueryResult copyTable(String tableId, String newName);
 
 }

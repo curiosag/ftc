@@ -76,6 +76,7 @@ sql_stmt
  : ( alter_table_stmt
     | select_stmt
     | create_view_stmt
+    | create_table_as_select_stmt
     | delete_stmt
     | drop_table_stmt
     | insert_stmt
@@ -92,6 +93,10 @@ table_name_in_ddl
 table_name_in_dml
  : table_name
  ;
+
+create_table_as_select_stmt
+ : K_CREATE K_TABLE identifier K_AS K_SELECT '*' K_FROM table_name_in_ddl
+ ; 
 
 describe_stmt
  : K_DESCRIBE table_name_in_ddl

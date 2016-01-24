@@ -377,9 +377,30 @@ public class QueryHandler extends Observable {
 		}
 	}
 
-	private QueryResult hdlCtas(StatementType statementType, String query, boolean execute2) {
-		// TODO Auto-generated method stub
-		return null;
+	private final static int idxNameFrom = 7;
+	private final static int idxNameTo = 2;
+	private final static int numTokens = 8;
+
+	private QueryResult hdlCtas(StatementType statementType, String query, boolean execute) {
+		String norm = StringUtil.coalesce(query.trim().replace("\n", " ").replace(";", ""), " ");
+		String[] parts = norm.split(" ");
+
+		if (parts.length != numTokens)
+			return packQueryResult("Invalid statement: " + query);
+
+		String nameFrom = parts[idxNameFrom].trim();
+		TableInfo from = resolveTableInfo(nameFrom);
+
+		if (from == null)
+			return packQueryResult("Can't resolve table " + nameFrom);
+
+		if (execute) {
+			QueryResult result = connector.copyTable(from.id, parts[idxNameTo].trim());
+			onStructureChanged();
+			return result;
+		} else
+			return packQueryResult(query.replace(nameFrom, from.id));
+
 	}
 
 	private static QueryResult packQueryResult(String msg) {
@@ -419,7 +440,7 @@ public class QueryHandler extends Observable {
 			return hdlQuery(ftr.statementType, query, preview).message.or("");
 
 		case CTAS:
-			return hdlCtas(ftr.statementType, query, execute).message.or("");
+			return hdlCtas(ftr.statementType, query, preview).message.or("");
 
 		default:
 			return "Statement not covered: " + query;

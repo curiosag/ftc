@@ -34,7 +34,7 @@ public class QueryManipulator {
 	static {
 		statementTypes.put("ALTER", StatementType.ALTER);
 		statementTypes.put("CREATE VIEW", StatementType.CREATE_VIEW);
-		statementTypes.put("CREATE TABLE AS", StatementType.CTAS);
+		statementTypes.put("CREATE TABLE", StatementType.CTAS);
 		statementTypes.put("DELETE", StatementType.DELETE);
 		statementTypes.put("INSERT", StatementType.INSERT);
 		statementTypes.put("SELECT", StatementType.SELECT);

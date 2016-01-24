@@ -95,7 +95,7 @@ public class MockConnector implements Connector {
 	}
 
 	@Override
-	public QueryResult copyTable(String tableId) {
+	public QueryResult copyTable(String tableId, String newName) {
 		return null;
 	}
 

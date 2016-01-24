@@ -66,6 +66,7 @@ public class Observism {
 				String value = TextModel.getTextModel(o).getValueAppended();
 				try {
 					doc.insertString(doc.getLength(), value, null);
+					f.setCaretPosition(doc.getLength());
 				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}

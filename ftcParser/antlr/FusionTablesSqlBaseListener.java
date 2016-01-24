@@ -65,6 +65,18 @@ public class FusionTablesSqlBaseListener implements FusionTablesSqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCreate_table_as_select_stmt(FusionTablesSqlParser.Create_table_as_select_stmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_table_as_select_stmt(FusionTablesSqlParser.Create_table_as_select_stmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDescribe_stmt(FusionTablesSqlParser.Describe_stmtContext ctx) { }
 	/**
 	 * {@inheritDoc}

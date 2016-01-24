@@ -46,6 +46,13 @@ public class FusionTablesSqlBaseVisitor<T> extends AbstractParseTreeVisitor<T> i
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitCreate_table_as_select_stmt(FusionTablesSqlParser.Create_table_as_select_stmtContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitDescribe_stmt(FusionTablesSqlParser.Describe_stmtContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

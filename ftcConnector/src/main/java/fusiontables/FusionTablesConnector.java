@@ -11,8 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import org.cg.common.check.Check;
 import org.cg.common.core.Logging;
@@ -34,6 +36,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.fusiontables.Fusiontables;
 import com.google.api.services.fusiontables.Fusiontables.Query.Sql;
+import com.google.api.services.fusiontables.Fusiontables.Table.Copy;
 import com.google.api.services.fusiontables.Fusiontables.Table.Delete;
 import com.google.api.services.fusiontables.FusiontablesScopes;
 import com.google.api.services.fusiontables.model.Column;
@@ -58,6 +61,7 @@ public class FusionTablesConnector implements Connector {
 
 	private final Logging logger;
 
+	private Optional<AuthInfo> authInfo = Optional.absent();
 	private Optional<String> accessToken = Optional.absent();
 	
 	public FusionTablesConnector(Logging logger, Optional<AuthInfo> authInfo, Class<?> dataStoreCarrierNode) {
@@ -65,6 +69,7 @@ public class FusionTablesConnector implements Connector {
 		Check.notNull(logger);
 		this.logger = logger;
 		this.dataStoreCarrierNode = dataStoreCarrierNode;
+		this.authInfo = authInfo;
 		try {
 
 			httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -83,6 +88,7 @@ public class FusionTablesConnector implements Connector {
 	}
 
 	public ConnectionStatus reset(Optional<AuthInfo> authInfo) {
+		this.authInfo = authInfo;
 		String authInfoJSon = "{\"installed\":{\"client_id\":\"%s\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://accounts.google.com/o/oauth2/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_secret\":\"%s\",\"redirect_uris\":[\"urn:ietf:wg:oauth:2.0:oob\",\"http://localhost\"]}}";
 
 		if (dataStoreFactory == null)
@@ -328,8 +334,6 @@ public class FusionTablesConnector implements Connector {
 		if (status != HttpStatus.SC_OK)
 			return createErrorResult(status, json);
 
-		System.out.println(json);
-		
 		ObjectMapper jsonmapper = new ObjectMapper();
 		try {
 			GftResponseJson data = jsonmapper.readValue(json, GftResponseJson.class);
@@ -352,12 +356,36 @@ public class FusionTablesConnector implements Connector {
 	}
 
 	@Override
-	public QueryResult copyTable(String tableId) {
+	public QueryResult copyTable(String tableId, String newName) {
+		try {
+			Copy copy = fusiontables.get().table().copy(tableId);
+			Table result = copy.execute();
+			String renameResult = renameTable(result.getTableId(), newName);
+			return new QueryResult(HttpStatus.SC_OK, getSingularTableModel("table ID", result.getTableId()), "table created. Rename operation says: " + renameResult);
+		} catch (IOException e) {
+			return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "Execution failed: " + e.getMessage());
+		}
+	}
+		
+	private TableModel getSingularTableModel(String colName, String tableId) {
+		Vector<String> col = new Vector<String>();
+		Vector<String> row = new Vector<String>();
+		Vector<Vector<String>> rows = new Vector<Vector<String>>();
+		col.add(colName);
+		row.add(tableId);
+		rows.add(row);
+		return new DefaultTableModel(rows, col);
+	}
+
+	@SuppressWarnings("unused")
+	// this probably works, but needs separate authentication it seems
+	private QueryResult _copyTable(String tableId, String newName) {
 		Check.isTrue(accessToken.isPresent());
-		String url = String.format("https://www.googleapis.com/fusiontables/v1/tables/%s/copy?key=%s", tableId, accessToken.get());
+	
+		String url = String.format("https://www.googleapis.com/fusiontables/v2/tables/%s/copy?key=%s", tableId, accessToken.get());
 		HttpResult res = new Request(url, "").post();
 		
-		return new QueryResult(res.responseCode, null, res.toString());
+		return new QueryResult(res.responseCode, null, res.resultData);
 	}
 
 }
