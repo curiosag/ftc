@@ -9,18 +9,13 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.cg.common.check.Check;
 import org.cg.common.structures.OrderedIntTuple;
-import org.cg.common.structures.Tuple;
 import org.cg.common.util.CollectionUtil;
-import org.cg.common.util.Op;
 import org.cg.ftc.parser.Ctx;
 import org.cg.ftc.shared.interfaces.SqlCompletionType;
 import org.cg.ftc.shared.interfaces.SyntaxElement;
-import org.cg.ftc.shared.uglySmallThings.Const;
-
 import com.google.common.base.Optional;
 
 public class CursorContext {
-	private final boolean debug = Const.debugCursorContext;
 	private final CursorContextListener cursorContextListener;
 
 	public final int cursorIndex;
@@ -30,11 +25,12 @@ public class CursorContext {
 	public Optional<String> otherName;
 	public Optional<OrderedIntTuple> otherBoundaries;
 	public Optional<OrderedIntTuple> totalNameBoundaries; // all of "X.y"
-	
+
 	public Optional<String> underlyingTableName = Optional.absent();
 
 	private final String[] tokensLeftColumnExpr = new String[] { "WHERE", "AND", "OR" };
-	private static final String[] tokensRightColumExpr = new String[] { "AND", "OR", "ORDER", "GROUP", "OFFSET", "LIMIT", ";" };
+	private static final String[] tokensRightColumExpr = new String[] { "AND", "OR", "ORDER", "GROUP", "OFFSET",
+			"LIMIT", ";" };
 	private final String[] emptyTokenSet = new String[] {};
 	private final String[] tokensEndOfStmt = new String[] { ";" };
 
@@ -43,7 +39,7 @@ public class CursorContext {
 		cursorContextListener = c;
 		this.cursorIndex = c.cursorIndex;
 		if (c.tableList.size() == 1)
-			underlyingTableName = CollectionUtil.last(c.tableList).TableName(); 
+			underlyingTableName = CollectionUtil.last(c.tableList).TableName();
 
 		if (c.nameAtCursor.isPresent())
 			this.totalNameBoundaries = c.nameAtCursor.get().getTotalBoundaries();
@@ -67,17 +63,14 @@ public class CursorContext {
 		otherBoundaries = atCursor.BoundariesTableName();
 
 		// don't try to change this. a valid result column value may have been
-		// retrieved
-		// despite an absent result column context.
+		// retrieved despite an absent result column context.
 		addCompletionOption(SqlCompletionType.column);
 		// On the other hand a column context may exist despite an absent result
-		// column value
-		// and further snippets could be valid completions
+		// column value and further snippets could be valid completions
 		addCompletionOptions(probeSqlElementType(c));
 	}
 
 	private void initTable(CursorContextListener c) {
-
 		addCompletionOption(SqlCompletionType.table);
 		NameRecognitionTable atCursor = (NameRecognitionTable) c.nameAtCursor.get();
 
@@ -102,13 +95,6 @@ public class CursorContext {
 			return SqlCompletionType.table;
 		else
 			return SqlCompletionType.unknown;
-		// TODO Op.in accepts a list where SqlElementType should be??
-		// if (Op.in(completionOptions, SqlElementType.column))
-		// return SqlElementType.column;
-		// else if (Op.in(completionOptions, SqlElementType.table))
-		// return SqlElementType.table;
-		// else
-		// return SqlElementType.unknown;
 	}
 
 	public boolean completionOptionsContain(SqlCompletionType t) {
@@ -155,9 +141,9 @@ public class CursorContext {
 			boolean order = findSyntaxElement("ORDER");
 			boolean where = findSyntaxElement("WHERE");
 
-			if (!group && !order && ! where) 
+			if (!group && !order && !where)
 				result.add(SqlCompletionType.keywordWhere);
-			
+
 			if (!group && !order) {
 				result.add(SqlCompletionType.groupBy);
 				result.add(SqlCompletionType.orderBy);
@@ -168,7 +154,7 @@ public class CursorContext {
 	}
 
 	private boolean endOfStatement(CursorContextListener c) {
-		return checkContext(c, cursorIndex, emptyTokenSet, tokensEndOfStmt);
+		return c.checkContext(cursorIndex, emptyTokenSet, tokensEndOfStmt);
 	}
 
 	private boolean probeColumnConditionExpr(CursorContextListener c, List<SqlCompletionType> result) {
@@ -180,39 +166,14 @@ public class CursorContext {
 				Check.isTrue(totalNameBoundaries.isPresent());
 				OrderedIntTuple b = totalNameBoundaries.get();
 
-				if (checkContext(c, b.lo() - 1, tokensLeftColumnExpr, emptyTokenSet)
-						&& checkContext(c, b.hi() + 1, emptyTokenSet, tokensRightColumExpr))
+				if (c.checkContext(b.lo() - 1, tokensLeftColumnExpr, emptyTokenSet)
+						&& c.checkContext(b.hi() + 1, emptyTokenSet, tokensRightColumExpr))
 					result.add(SqlCompletionType.columnConditionExprAfterColumn);
 
 			} else
 				result.add(SqlCompletionType.columnConditionExpr);
 		}
 		return result.size() > resultSizeBefore;
-	}
-
-	private boolean checkContext(CursorContextListener l, int checkFromIndex, String[] validTokensLeft,
-			String[] validTokensRight) {
-
-		Tuple<List<SyntaxElement>> c = l.partitionSyntaxElements(checkFromIndex);
-		List<SyntaxElement> ctxLeft = c.e1;
-		List<SyntaxElement> ctxRight = c.e2;
-
-		if (debug) {
-			test.Util.debugTokens(String.format("Tokens left of %d:", checkFromIndex), checkFromIndex, ctxLeft);
-			test.Util.debugTokens(String.format("Tokens right of %d:", checkFromIndex), checkFromIndex, ctxRight);
-		}
-
-		return leftContextOk(validTokensLeft, ctxLeft) && rightContextOk(validTokensRight, ctxRight);
-	}
-
-	private boolean rightContextOk(String[] validTokensRight, List<SyntaxElement> ctxRight) {
-		return validTokensRight.length == 0 || ctxRight.isEmpty()
-				|| Op.inCaseInsensitive(ctxRight.get(0).value, validTokensRight);
-	}
-
-	private boolean leftContextOk(String[] validTokensLeft, List<SyntaxElement> ctxLeft) {
-		return validTokensLeft.length == 0 || ctxLeft.isEmpty()
-				|| Op.inCaseInsensitive(ctxLeft.get(ctxLeft.size() - 1).value, validTokensLeft);
 	}
 
 	private void add(List<SqlCompletionType> result, SqlCompletionType... elements) {
@@ -302,15 +263,5 @@ public class CursorContext {
 		return cursorContextListener.syntaxElements;
 	}
 
-	@SuppressWarnings("unused")
-	private boolean checkContext(CursorContextListener l, ParserRuleContext c, String[] validTokensLeft,
-			String[] validTokensRight) {
-		Optional<ParserRuleContext> prc = Ctx.findInScope(c, l.parserRuleStack);
-
-		if (prc.isPresent())
-			return checkContext(l, prc.get().stop.getStopIndex(), validTokensLeft, validTokensRight);
-
-		return false;
-	}
 
 }

@@ -67,7 +67,7 @@ public class FtcAutoComplete {
 			}
 
 			private boolean isSchemaParameter(String name) {
-				return name.equals(Const.paramNameTable) || name.startsWith(Const.paramNameColumn);
+				return name.startsWith(Const.paramNameTable) || name.startsWith(Const.paramNameColumn);
 			}
 		};
 

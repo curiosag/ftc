@@ -447,15 +447,15 @@ public class QueryHandler extends Observable {
 	}
 
 	private List<SyntaxElement> getSyntaxElements(CursorContextListener l) {
-		Optional<TableReference> tableReference;
-		if (l.tableList.size() >= 1)
-			tableReference = resolveTableReferenceInQuery(l.tableList.get(l.tableList.size() - 1));
-		else
-			tableReference = Optional.absent();
-
-		Semantics semantics = new Semantics(tableReference, l.allNames);
+		Semantics semantics = new Semantics();
+		for (NameRecognitionTable r : l.tableList) {
+			Optional<TableReference> ref = resolveTableReferenceInQuery(r);
+			if (ref.isPresent())
+			semantics.addReference(ref.get());
+		}
+		
 		semantics.setSemanticAttributes(l.syntaxElements);
-
+		 
 		List<SyntaxElement> complete = addNonSyntaxTokens(l.syntaxElements, l.tokens);
 
 		if (debug)

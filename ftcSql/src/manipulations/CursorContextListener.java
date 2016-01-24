@@ -12,9 +12,11 @@ import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.cg.common.structures.OrderedIntTuple;
+import org.cg.common.structures.Tuple;
 import org.cg.common.util.Op;
 import org.cg.common.util.StringUtil;
 import org.cg.ftc.parser.FusionTablesSqlParser;
+import org.cg.ftc.shared.interfaces.SyntaxElement;
 import org.cg.ftc.shared.uglySmallThings.Const;
 
 import com.google.common.base.Optional;
@@ -79,7 +81,32 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 		if (debug)
 			System.out.println(String.format("\ngetting context at position %d", cursorIndex));
 	}
+	
+	public boolean checkContext(int checkFromIndex, String[] validTokensLeft,
+			String[] validTokensRight) {
 
+		Tuple<List<SyntaxElement>> c = partitionSyntaxElements(checkFromIndex);
+		List<SyntaxElement> ctxLeft = c.e1;
+		List<SyntaxElement> ctxRight = c.e2;
+
+		if (Const.debugCursorContext) {
+			test.Util.debugTokens(String.format("Tokens left of %d:", checkFromIndex), checkFromIndex, ctxLeft);
+			test.Util.debugTokens(String.format("Tokens right of %d:", checkFromIndex), checkFromIndex, ctxRight);
+		}
+
+		return leftContextOk(validTokensLeft, ctxLeft) && rightContextOk(validTokensRight, ctxRight);
+	}
+
+	private boolean rightContextOk(String[] validTokensRight, List<SyntaxElement> ctxRight) {
+		return validTokensRight.length == 0 || ctxRight.isEmpty()
+				|| Op.inCaseInsensitive(ctxRight.get(0).value, validTokensRight);
+	}
+
+	private boolean leftContextOk(String[] validTokensLeft, List<SyntaxElement> ctxLeft) {
+		return validTokensLeft.length == 0 || ctxLeft.isEmpty()
+				|| Op.inCaseInsensitive(ctxLeft.get(ctxLeft.size() - 1).value, validTokensLeft);
+	}
+	
 	@Override
 	public void notifyOnError(Token offendingToken, Token missingToken, IntervalSet tokensExpected) {
 		super.notifyOnError(offendingToken, missingToken, tokensExpected);
@@ -345,7 +372,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 		if (current.getClass() == NameRecognitionTable.class)
 			tableList.add((NameRecognitionTable) current);
 
-		debugStartRecognition(range);
+		debugStartNameRecognition(range);
 
 	}
 
@@ -379,7 +406,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 			return ctx.start.getStartIndex();
 	}
 
-	private void debugStartRecognition(OrderedIntTuple range) {
+	private void debugStartNameRecognition(OrderedIntTuple range) {
 		if (debug) {
 			String within = cursorWithinBoundaries(range) ? " match" : " no match";
 			System.out.println(String.format("Recognition boundaries lo:%d hi:%d cursor at: %d -> %s", range.lo(),

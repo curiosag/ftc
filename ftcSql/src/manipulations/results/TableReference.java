@@ -18,4 +18,12 @@ public class TableReference {
 		this.columnNames = columnNames;
 	}
 
+	@Override
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append(String.format("%s - %s - %s\n", tableName, tableAlias, tableId));
+		for (String s : columnNames) 
+			sb.append("   " + s + "\n");
+		return sb.toString();
+	}
 }

@@ -84,7 +84,8 @@ public class QueryManipulator {
 		return StatementType.UNKNOWN;
 	}
 
-	// Xpath will use an error listener internally that prints stuff to stdout/stderr
+	// Xpath will use an error listener internally that prints stuff to
+	// stdout/stderr
 	@SuppressWarnings("unused")
 	private StatementType getStatementType(FusionTablesSqlParser parser) {
 		String xpath = "//" + Const.rulename_sql_stmt;
@@ -245,12 +246,38 @@ public class QueryManipulator {
 		if (StringUtil.emptyOrNull(query))
 			return cursorPos;
 
+		int idxBeforeAlias = probeBeforeAlias(query, cursorPos);
+		if (idxBeforeAlias >= 0)
+			return idxBeforeAlias;
+		
 		cursorPos = moveToLastButOneBlank(query, cursorPos);
 
 		if (cursorInValidRange(query, cursorPos) && !symBoundary(query.charAt(cursorPos - 1)))
 			cursorPos--;
 
 		return cursorPos;
+	}
+
+	private int probeBeforeAlias(String query, int cursorPos) {
+		int idx = moveToChar(query, cursorPos, 1);
+
+		System.out.println(query.substring(idx).toUpperCase());
+		
+		if (idx > 0 && query.substring(idx).toUpperCase().startsWith("AS "))
+			return idx;
+		else
+			return -1;
+	}
+
+	private int moveToChar(String query, int cursorPos, int step) {
+		if (StringUtil.emptyOrNull(query) || !cursorInValidRange(query, cursorPos))
+			return -1;
+
+		for (int i = cursorPos; i < query.length(); i++)
+			if (query.charAt(i) != ' ')
+				return i;
+
+		return -1;
 	}
 
 	public CursorContext getCursorContext(int cursorPosition) {

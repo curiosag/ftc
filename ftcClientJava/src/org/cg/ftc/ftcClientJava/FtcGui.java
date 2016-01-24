@@ -105,7 +105,6 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println(e.getActionCommand());
 				if (e.getActionCommand().equals(Const.tooltipFocusEditor))
 					queryEditor.requestFocus();
 				else
@@ -457,7 +456,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		result.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		result.pack();
 		result.setVisible(true);
-		result.queryEditor.queryText.grabFocus();
+		result.queryEditor.requestFocus();
 
 		return result;
 	}

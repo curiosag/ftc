@@ -62,7 +62,7 @@ public class SyntaxElementListener extends BaseFtListener implements OnError {
 		return startIdx;
 	}
 
-	public Tuple<List<SyntaxElement>> partitionSyntaxElements(int partitionAtCharIndex) {
+	protected Tuple<List<SyntaxElement>> partitionSyntaxElements(int partitionAtCharIndex) {
 		int partAt = getElementIndex(partitionAtCharIndex);
 		return CollectionUtil.partition(partAt, syntaxElements);
 	}

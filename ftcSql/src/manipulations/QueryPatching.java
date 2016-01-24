@@ -16,7 +16,7 @@ import com.google.common.base.Optional;
 import manipulations.results.TableInfoResolver;
 
 public class QueryPatching {
-	
+
 	public final CursorContext cursorContext;
 	public final Optional<ParserRuleContext> parserRuleContext;
 	public final int cursorPosition;
@@ -53,7 +53,7 @@ public class QueryPatching {
 		else {
 			if (boundaries.isPresent()) {
 				result = StringUtil.replace(query, boundaries.get(), patch);
-				
+
 				int offsetNewCursor = patch.length() - 1 - (boundaries.get().hi() - boundaries.get().lo());
 				setNewCursorPosition(cursorPosition + offsetNewCursor);
 			} else
@@ -76,10 +76,8 @@ public class QueryPatching {
 	private final static boolean addColumnDetails = true;
 
 	public Completions getCompletions() {
-		Completions result = new Completions(cursorContext.boundaries);	
-		
-		final boolean isExprContext = cursorContext.completionOptions.indexOf(SqlCompletionType.columnConditionExpr) >= 0;
-		
+		Completions result = new Completions(cursorContext.boundaries);
+
 		for (SqlCompletionType c : cursorContext.completionOptions)
 			switch (c) {
 			case table:
@@ -87,11 +85,8 @@ public class QueryPatching {
 				break;
 
 			case column:
-				if (! isExprContext && cursorContext.underlyingTableName.isPresent()) {
-					Optional<TableInfo> i = tableInfoResolver.getTableInfo(cursorContext.underlyingTableName.get());
-					if (i.isPresent()) 
-						result.addAll(columnsToCompletions(i.get()));
-				}
+				if (completionsWantedForColumnContext())
+					addColumnsForRelatedTables(result);
 				break;
 
 			case unknown:
@@ -100,6 +95,42 @@ public class QueryPatching {
 			default:
 				result.addAll(Snippets.instance().get(c));
 			}
+
+		return debug(result);
+	}
+
+	private void addColumnsForRelatedTables(Completions result) {
+		String relatedTable = cursorContext.underlyingTableName.or(maybeResolvedByAliasPrefix());
+	
+		if (relatedTable.length() > 0) {
+			resoveTableAndAdd(result, relatedTable);
+		} else 
+			for (NameRecognitionTable t : cursorContext.getTableList()) 
+				resoveTableAndAdd(result, t.TableName().or(""));
+	}
+
+	private String maybeResolvedByAliasPrefix() {
+		return cursorContext.otherName.or("");
+	}
+
+	private void resoveTableAndAdd(Completions result, String relatedTable) {
+		Optional<TableInfo> i = tableInfoResolver.getTableInfo(relatedTable);
+		if (i.isPresent())
+			result.addAll(columnsToCompletions(i.get()));
+	}
+
+	private boolean completionsWantedForColumnContext() {
+		final boolean isExprContext = cursorContext.completionOptions
+				.indexOf(SqlCompletionType.columnConditionExpr) >= 0;
+
+		return !isExprContext;
+	}
+
+	private Completions debug(Completions result) {
+		System.out.println("COMPLETIONS");
+
+		for (AbstractCompletion e : result.getAll())
+			System.out.println(e.displayName);
 
 		return result;
 	}
