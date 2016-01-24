@@ -12,9 +12,14 @@ import org.cg.common.check.Check;
 public class TextModel extends Observable {
 
 	private String value = "";
+	private String valueAppended = "";
 
 	String getValue() {
 		return value;
+	}
+	
+	String getValueAppended() {
+		return valueAppended;
 	}
 	
 	private void notifyOnChange()
@@ -26,9 +31,16 @@ public class TextModel extends Observable {
 	
 	void setValue(String value) {
 		this.value = value;
+		valueAppended = value;
 		notifyOnChange();
 	}
 
+	void append(String valueToAppend) {
+		value = value + valueToAppend;
+		valueAppended = valueToAppend;
+		notifyOnChange();
+	}
+	
 	public DocumentListener getListener() {
 		return new DocumentListener() {
 			@Override
@@ -61,9 +73,9 @@ public class TextModel extends Observable {
 			value = "";
 	}
 	
-	public static String fromObservable(Observable o) {
+	public static TextModel getTextModel(Observable o) {
 		Check.isTrue(o instanceof TextModel);
-		return ((TextModel) o).value;
+		return (TextModel) o;
 	}
 	
 }

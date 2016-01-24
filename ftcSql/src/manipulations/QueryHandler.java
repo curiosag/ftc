@@ -40,7 +40,6 @@ import manipulations.results.TableInfoResolver;
 import manipulations.results.TableReference;
 
 public class QueryHandler extends Observable {
-	private boolean debug = Const.debugQueryHandler;
 
 	private boolean reload = true;
 	private final Logging logger;
@@ -451,15 +450,14 @@ public class QueryHandler extends Observable {
 		for (NameRecognitionTable r : l.tableList) {
 			Optional<TableReference> ref = resolveTableReferenceInQuery(r);
 			if (ref.isPresent())
-			semantics.addReference(ref.get());
+				semantics.addReference(ref.get());
 		}
-		
+
 		semantics.setSemanticAttributes(l.syntaxElements);
-		 
+
 		List<SyntaxElement> complete = addNonSyntaxTokens(l.syntaxElements, l.tokens);
 
-		if (debug)
-			debug(complete);
+		debug(complete);
 
 		return complete;
 	}
@@ -498,6 +496,8 @@ public class QueryHandler extends Observable {
 	}
 
 	private void debug(List<SyntaxElement> syntaxElements) {
+		if (!Const.debugQueryHandler)
+			return;
 		System.out.println("--- syntax elements ---");
 		for (SyntaxElement s : syntaxElements)
 			System.out.println(String.format("%s %s %d-%d %s", s.value.replace("\n", "NL"), s.type.name(), s.from, s.to,

@@ -260,8 +260,6 @@ public class QueryManipulator {
 
 	private int probeBeforeAlias(String query, int cursorPos) {
 		int idx = moveToChar(query, cursorPos, 1);
-
-		System.out.println(query.substring(idx).toUpperCase());
 		
 		if (idx > 0 && query.substring(idx).toUpperCase().startsWith("AS "))
 			return idx;

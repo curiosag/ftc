@@ -5,13 +5,10 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.cg.common.check.Check;
 import org.cg.common.util.Op;
 import org.cg.common.util.StringUtil;
 import org.cg.ftc.shared.interfaces.SyntaxElement;
 import org.cg.ftc.shared.interfaces.SyntaxElementType;
-import com.google.common.base.Optional;
-
 import manipulations.results.TableReference;
 
 public class Semantics {
@@ -42,13 +39,14 @@ public class Semantics {
 	 */
 	public List<SyntaxElement> setSemanticAttributes(List<SyntaxElement> tokens) {
 
-		for (SyntaxElement e : tokens)
-			e.setSemanticError(hasSemanticError(e));
+		for (int i = 0; i < tokens.size(); i++)
+			tokens.get(i).setSemanticError(hasSemanticError(tokens, i));
 
 		return tokens;
 	}
 
-	private boolean hasSemanticError(SyntaxElement e) {
+	private boolean hasSemanticError(List<SyntaxElement> tokens, int current) {
+		SyntaxElement e = tokens.get(current);
 		if (!Op.in(e.type, SyntaxElementType.columnName, SyntaxElementType.tableName))
 			return false;
 
@@ -56,10 +54,16 @@ public class Semantics {
 			return true;
 
 		String strippedValue = StringUtil.stripQuotes(e.value);
-		
-		return ((e.type == SyntaxElementType.columnName) && columns.get(strippedValue) == null)
+
+		return ((e.type == SyntaxElementType.columnName)
+				&& (columns.get(strippedValue) == null || columnFollowsInvalidAlias(tokens, current)))
 				|| ((e.type == SyntaxElementType.tableName) && tables.get(strippedValue) == null);
 
+	}
+
+	private boolean columnFollowsInvalidAlias(List<SyntaxElement> tokens, int current) {
+		// seems we don't see the "." thing here
+		return current >= 1 && tokens.get(current - 1).hasSemanticError();
 	}
 
 }

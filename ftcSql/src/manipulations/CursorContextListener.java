@@ -23,8 +23,6 @@ import com.google.common.base.Optional;
 
 public class CursorContextListener extends SyntaxElementListener implements OnError {
 
-	private final static boolean debug = Const.debugCursorContextListener;
-
 	final int cursorIndex;
 
 	public String[] expectedSymbols = new String[0];
@@ -78,12 +76,10 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 		this.cursorIndex = cursorIndex;
 		this.parser = parser;
 
-		if (debug)
-			System.out.println(String.format("\ngetting context at position %d", cursorIndex));
+		printDebug(String.format("\ngetting context at position %d", cursorIndex));
 	}
-	
-	public boolean checkContext(int checkFromIndex, String[] validTokensLeft,
-			String[] validTokensRight) {
+
+	public boolean checkContext(int checkFromIndex, String[] validTokensLeft, String[] validTokensRight) {
 
 		Tuple<List<SyntaxElement>> c = partitionSyntaxElements(checkFromIndex);
 		List<SyntaxElement> ctxLeft = c.e1;
@@ -106,7 +102,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 		return validTokensLeft.length == 0 || ctxLeft.isEmpty()
 				|| Op.inCaseInsensitive(ctxLeft.get(ctxLeft.size() - 1).value, validTokensLeft);
 	}
-	
+
 	@Override
 	public void notifyOnError(Token offendingToken, Token missingToken, IntervalSet tokensExpected) {
 		super.notifyOnError(offendingToken, missingToken, tokensExpected);
@@ -119,13 +115,11 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	}
 
 	private void debugOnError() {
-		if (debug) {
-			if (offendingSymbol != null)
-				System.out.println("Offended by: " + offendingSymbol.getText());
+		if (offendingSymbol != null)
+			printDebug("Offended by: " + offendingSymbol.getText());
 
-			System.out.println("expected: " + StringUtil.ToCsv(expectedSymbols, ","));
+		printDebug("expected: " + StringUtil.ToCsv(expectedSymbols, ","));
 
-		}
 	}
 
 	private String[] getTokenNames(IntervalSet s) {
@@ -135,8 +129,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@SuppressWarnings("static-access")
 	private String[] criminalExtraction(IntervalSet s) {
 		String cont = s.toString(parser.VOCABULARY);
-		if (debug)
-			System.out.println(cont);
+		printDebug(cont);
 		return cont.split(",");
 	}
 
@@ -339,8 +332,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 				&& StringUtil.equalsAny(lastTerminalRead.getText().toUpperCase(), "WHERE", "AND", "OR")
 				&& errorTokensRead.size() == 1 && cursorWithinBoundaries(getLastErrorBoundaries(stretchBy))) {
 			parserRuleContext = ctx;
-			if (debug)
-				System.out.println("-> matched in hindsight");
+			printDebug("-> matched in hindsight");
 		}
 
 	}
@@ -350,8 +342,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 
 		if (cursorWithinBoundaries(ctx)) {
 			pushContext(ctx);
-			if (debug)
-				System.out.println("set context at cursor to : " + ctx.getClass().getName());
+			printDebug("set context at cursor to : " + ctx.getClass().getName());
 			parserRuleContext = ctx;
 		}
 	}
@@ -407,11 +398,9 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	}
 
 	private void debugStartNameRecognition(OrderedIntTuple range) {
-		if (debug) {
-			String within = cursorWithinBoundaries(range) ? " match" : " no match";
-			System.out.println(String.format("Recognition boundaries lo:%d hi:%d cursor at: %d -> %s", range.lo(),
-					range.hi(), cursorIndex, within));
-		}
+		String within = cursorWithinBoundaries(range) ? " match" : " no match";
+		printDebug(String.format("Recognition boundaries lo:%d hi:%d cursor at: %d -> %s", range.lo(), range.hi(),
+				cursorIndex, within));
 	}
 
 	private boolean cursorWithinBoundaries(ParserRuleContext c) {
@@ -430,8 +419,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	}
 
 	private void debugRecognize(Token token) {
-		if (debug)
-			System.out.println("recognizing " + token.getText());
+		printDebug("recognizing " + token.getText());
 
 	}
 
@@ -456,12 +444,9 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	}
 
 	private void debugToken(String what, OrderedIntTuple o) {
-		if (debug) {
-			String swapped = o.swap ? " (indices swapped)" : "";
-			String withinBoundaries = cursorWithinBoundaries(o) ? "+" : "-";
-			System.out
-					.println(String.format("%s %s from %d to %d %s", withinBoundaries, what, o.lo(), o.hi(), swapped));
-		}
+		String swapped = o.swap ? " (indices swapped)" : "";
+		String withinBoundaries = cursorWithinBoundaries(o) ? "+" : "-";
+		printDebug(String.format("%s %s from %d to %d %s", withinBoundaries, what, o.lo(), o.hi(), swapped));
 	}
 
 	private void debugContext(ParserRuleContext ctx, String inOrOut) {
@@ -485,40 +470,32 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	}
 
 	private void debugColumn(NameRecognitionColumn t) {
-		if (debug)
-			System.out.println("Column: " + t.ColumnName().or("") + " of table: " + t.TableName().or(""));
+		printDebug("Column: " + t.ColumnName().or("") + " of table: " + t.TableName().or(""));
 	}
 
 	private void debugTable(NameRecognitionTable t) {
-		if (debug)
-			System.out.println("Table: " + t.TableName().or("") + " alias: " + t.TableAlias().or(""));
+		printDebug("Table: " + t.TableName().or("") + " alias: " + t.TableAlias().or(""));
 	}
 
 	private void debug(NameRecognition r) {
-		if (debug) {
-			if (r instanceof NameRecognitionColumn)
-				debugColumn((NameRecognitionColumn) r);
-			if (r instanceof NameRecognitionTable)
-				debugTable((NameRecognitionTable) r);
-			System.out.println("recognition state: " + r.state.name());
-		}
+		if (r instanceof NameRecognitionColumn)
+			debugColumn((NameRecognitionColumn) r);
+		if (r instanceof NameRecognitionTable)
+			debugTable((NameRecognitionTable) r);
+		printDebug("recognition state: " + r.state.name());
 	}
 
 	private void debug() {
-		if (debug) {
-			if (nameAtCursor.isPresent())
-				debug(nameAtCursor.get());
-			for (NameRecognitionTable t : tableList)
-				debugTable(t);
-		}
+		if (nameAtCursor.isPresent())
+			debug(nameAtCursor.get());
+		for (NameRecognitionTable t : tableList)
+			debugTable(t);
 	}
 
 	public void debug(String query, int cursorPos) {
-		if (debug) {
-			debug();
-			System.out.println(String.format("'%s' cursor after pos: %d", query, cursorPos));
-			System.out.println(markPos(cursorPos));
-		}
+		debug();
+		printDebug(String.format("'%s' cursor after pos: %d", query, cursorPos));
+		printDebug(markPos(cursorPos));
 	}
 
 	private void pushContext(ParserRuleContext c) {
@@ -534,4 +511,8 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 		return Optional.fromNullable(parserRuleContext);
 	}
 
+	private void printDebug(String s) {
+		if (Const.debugCursorContextListener)
+			printDebug(s);
+	}
 }

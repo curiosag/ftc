@@ -85,7 +85,7 @@ public class Client {
 			@Override
 			public void notify(String value) {
 				// there's a java 7 issue where the TextModel itself can not be passed to addLogLines
-				model.setValue(LogUtil.addLogLine(model.getValue(), value));
+				model.append(LogUtil.getLogLine(value));
 			}
 		};
 

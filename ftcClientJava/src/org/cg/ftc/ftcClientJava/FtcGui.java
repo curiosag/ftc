@@ -64,7 +64,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 				writeClientSettings();
 			}
 		});
-
+		
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 
 	@Override
 	public Observer createOpResultObserver() {
-		return Observism.createObserver(opResult);
+		return Observism.createAppendingObserver(opResult);
 	}
 
 	@Override

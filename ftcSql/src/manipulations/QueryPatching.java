@@ -96,7 +96,7 @@ public class QueryPatching {
 				result.addAll(Snippets.instance().get(c));
 			}
 
-		return debug(result);
+		return result;
 	}
 
 	private void addColumnsForRelatedTables(Completions result) {
@@ -124,15 +124,6 @@ public class QueryPatching {
 				.indexOf(SqlCompletionType.columnConditionExpr) >= 0;
 
 		return !isExprContext;
-	}
-
-	private Completions debug(Completions result) {
-		System.out.println("COMPLETIONS");
-
-		for (AbstractCompletion e : result.getAll())
-			System.out.println(e.displayName);
-
-		return result;
 	}
 
 	private Completions toCompletions(List<TableInfo> tableInfo, boolean addDetails) {
