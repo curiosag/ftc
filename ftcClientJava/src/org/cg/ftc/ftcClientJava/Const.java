@@ -16,7 +16,8 @@ public class Const {
 	public static final String cancelExecSql = "cancelExecution";
 	public static final String memorizeQuery = "memorizeQuery";
 	public static final String focusEditor = "focusEditor";
-	
+	public static final String refreshTables = "refreshTables";
+
 	public static final String tooltipExecSql = "Execute query";
 	public static final String tooltipListTables = "Show tables";
 	public static final String tooltipViewPreprocessedQuery = "View preprocessed query";
@@ -27,9 +28,13 @@ public class Const {
 	public static final String tooltipCancelExecSql = "Cancel execution";
 	public static final String tooltipMemorizeQuery = "Memorize query";
 	public static final String tooltipFocusEditor = "Focus editor";
+	public static final String tooltipRefreshTables = "Refresh table cache";
 	
 	public static final String languageId = "text/ftSql";
 	public static final String tokenizerClassId = "org.cg.ftc.ftcQueryEditor.FtSQLTokenMaker";
+
+	
+
 	
 	
 }

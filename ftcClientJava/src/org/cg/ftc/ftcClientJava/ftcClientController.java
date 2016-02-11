@@ -139,9 +139,16 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 				hdlAuthenticate();
 			break;
 
+		case Const.refreshTables:
+			hdlRefreshTables();
+			
 		default:
 			break;
 		}
+	}
+
+	private void hdlRefreshTables() {
+		queryHandler.reloadTableList();
 	}
 
 	private void hdlRememberCommand() {

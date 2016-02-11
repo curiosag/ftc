@@ -91,7 +91,7 @@ public class QueryHandler extends Observable {
 		return new QueryManipulator(tableInfoResolver, tableNameToIdMapper, logger, query);
 	}
 
-	private void reloadTableList() {
+	public void reloadTableList() {
 		loadTableCaches(reload);
 	}
 
@@ -381,7 +381,7 @@ public class QueryHandler extends Observable {
 	private final static int idxNameTo = 2;
 	private final static int numTokens = 8;
 
-	private QueryResult hdlCtas(StatementType statementType, String query, boolean execute) {
+	private QueryResult hdlCtas(StatementType statementType, String query, boolean preview) {
 		String norm = StringUtil.coalesce(query.trim().replace("\n", " ").replace(";", ""), " ");
 		String[] parts = norm.split(" ");
 
@@ -394,7 +394,7 @@ public class QueryHandler extends Observable {
 		if (from == null)
 			return packQueryResult("Can't resolve table " + nameFrom);
 
-		if (execute) {
+		if (! preview) {
 			QueryResult result = connector.copyTable(from.id, parts[idxNameTo].trim());
 			onStructureChanged();
 			return result;

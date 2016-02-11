@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# run TestRig
+
+echo "usage: runTest <grammar> <entrypoint> <input file> [view]"
+
+GRAMMAR=$1
+ENTRYPOINT=$2
+INPUT=$3
+VIEW=$4
+
+if [ ! "$VIEW" ]; then
+  VIEW_OPTION="gui" # a=x assigns a = x compares!
+else
+  VIEW_OPTION=$4
+fi
+
+echo "running testRig with grammar " $1 " entrypoint " $2 " input file " $3 " view option " $VIEW_OPTION
+
+java -cp ".:/usr/local/lib/antlr-4.5-complete.jar" org.antlr.v4.runtime.misc.TestRig $GRAMMAR $ENTRYPOINT -$VIEW_OPTION $INPUT -diagnostics
+
+
+
+
+
+

@@ -60,11 +60,16 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		this.addWindowListener(new WindowClosingListener() {
 
 			@Override
+			public void windowActivated(WindowEvent e) {
+				actionPerformed(new ActionEvent(this, 0, Const.refreshTables));
+			}
+
+			@Override
 			public void windowClosing(WindowEvent e) {
 				writeClientSettings();
 			}
 		});
-		
+
 	}
 
 	@Override
@@ -267,6 +272,9 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		runMenu.add(createMenuItem(KeyEvent.VK_F, KeyEvent.VK_F, ctrl,
 				getAction(Const.tooltipFocusEditor, Const.focusEditor)));
 
+		runMenu.add(createMenuItem(KeyEvent.VK_R, KeyEvent.VK_R, ctrl,
+				getAction(Const.tooltipRefreshTables, Const.refreshTables)));
+
 		menuBar.add(runMenu);
 
 		setJMenuBar(menuBar);
@@ -305,6 +313,8 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		JButton buttonNextCmd = createButton(Const.nextCommand, "arrow_right.png", Const.tooltipNextCommand);
 		JButton buttonRememberCmd = createButton(Const.memorizeQuery, "page_white_edit.png",
 				Const.tooltipMemorizeQuery);
+		JButton buttonRefreshTablesCmd = createButton(Const.refreshTables, "arrow_refresh_small.png",
+				Const.tooltipRefreshTables);
 		JButton buttonExportCsvCmd = createButton(Const.exportCsv, "page_save.png", Const.tooltipExportCsv);
 
 		JPanel buttonPane = new JPanel(new MigLayout());
@@ -322,7 +332,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		buttonPane.add(createSpacer(spacerWidht));
 
 		buttonPane.add(buttonListTables);
-
+		buttonPane.add(buttonRefreshTablesCmd);
 		buttonPane.add(createSpacer(spacerWidht));
 		buttonPane.add(buttonExportCsvCmd);
 
