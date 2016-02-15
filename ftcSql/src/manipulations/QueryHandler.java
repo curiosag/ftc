@@ -48,12 +48,13 @@ public class QueryHandler extends Observable {
 	private final boolean execute = !preview;
 	private final List<TableInfo> tableInfo = new LinkedList<TableInfo>();
 	private final Map<String, TableInfo> tableNameToTableInfo = new HashMap<String, TableInfo>();
+	private Map<String, TableInfo> tableIdToTableInfo  = new HashMap<String, TableInfo>();
 	private final Map<String, TableInfo> exteranlTableIdToTableInfo = new HashMap<String, TableInfo>();
 	private final List<String> inexistingExternalTableIds = new ArrayList<String>();
 
 	private TableNameToIdMapper tableNameToIdMapper = new TableNameToIdMapper();
-	private final ClientSettings settings;
 
+	private final ClientSettings settings;
 	private final TableInfoResolver tableInfoResolver = new TableInfoResolver() {
 
 		@Override
@@ -114,8 +115,11 @@ public class QueryHandler extends Observable {
 
 	private TableInfo resolveTableInfo(String tableName) {
 		loadTableCaches(false);
-		TableInfo result = tableNameToTableInfo.get(StringUtil.stripQuotes(tableName));
-
+		
+		String tableRef = StringUtil.stripQuotes(tableName);
+		TableInfo result = tableNameToTableInfo.get(tableRef);
+		if (result == null)
+			result = tableIdToTableInfo.get(tableRef);	
 		if (result == null)
 			result = resolveExternalTable(tableName).orNull();
 
@@ -200,8 +204,12 @@ public class QueryHandler extends Observable {
 
 	private void populateTableMaps(List<TableInfo> tableInfo) {
 		tableNameToTableInfo.clear();
+		tableIdToTableInfo.clear();
 		for (TableInfo t : tableInfo)
+		{
 			tableNameToTableInfo.put(t.name, t);
+			tableIdToTableInfo.put(t.id, t);
+		}
 		tableNameToIdMapper = new TableNameToIdMapper(tableInfo);
 	}
 
