@@ -8,7 +8,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 
 import org.cg.common.check.Check;
-import org.cg.common.util.FileUtil;
+import org.cg.common.io.FileUtil;
 import org.cg.ftc.shared.interfaces.OnFileAction;
 
 public class FileAction extends AbstractAction {

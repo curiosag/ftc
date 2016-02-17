@@ -10,6 +10,16 @@ import java.io.PrintWriter;
 
 public class FileUtil {
 
+	public static String getPathOnly(File f) {
+		if (f.isDirectory())
+			return f.getPath();
+
+		else {
+			String fullPath = f.getPath();
+			return fullPath.substring(0, fullPath.lastIndexOf(File.separator));
+		}
+	}
+	
 	public static String pwd() {
 		return System.getProperty("user.dir");
 	}
@@ -26,40 +36,41 @@ public class FileUtil {
 		}
 	}
 
-	private static void throwRuntimeException(String msg){
+	private static void throwRuntimeException(String msg) {
 		throw new RuntimeException(msg);
 	}
-	
+
 	/**
 	 * 
 	 * @param path
 	 * @return
 	 * 
-	 * Since it is used in GWT context Java.nio can not be used and guava comes in the wrong flavor
+	 * 		Since it is used in GWT context Java.nio can not be used and
+	 *         guava comes in the wrong flavor
 	 * 
 	 */
 	public static String readFromFile(String path) {
 		File file = new File(path);
-		
-		if(! file.exists())
+
+		if (!file.exists())
 			return "";
-		
+
 		if (file.isDirectory())
 			throwRuntimeException("file expected, this is a directory: " + path);
-				
+
 		try {
 			FileInputStream fin = new FileInputStream(file);
 			return readFromStream(fin);
 		} catch (IOException e) {
 			throwRuntimeException(e.getMessage());
 		}
-		
+
 		return "";
 	}
 
-	public static String readFromStream(InputStream input){
+	public static String readFromStream(InputStream input) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		BufferedInputStream bin = null;
 		try {
 			bin = new BufferedInputStream(input);
@@ -84,7 +95,19 @@ public class FileUtil {
 			}
 		}
 		return sb.toString();
-		
+
 	}
-	
+
+	public static byte[] readToByteArray(File file) {
+		byte[] bFile = new byte[(int) file.length()];
+		try {
+			FileInputStream fileInputStream = new FileInputStream(file);
+			fileInputStream.read(bFile);
+			fileInputStream.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return bFile;
+	}
+
 }

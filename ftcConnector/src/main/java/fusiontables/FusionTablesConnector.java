@@ -5,7 +5,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
@@ -23,22 +22,14 @@ import org.cg.common.http.HttpStatus;
 import org.cg.common.http.Request;
 import org.cg.ftc.shared.interfaces.*;
 import org.cg.ftc.shared.structures.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.fusiontables.Fusiontables;
 import com.google.api.services.fusiontables.Fusiontables.Query.Sql;
 import com.google.api.services.fusiontables.Fusiontables.Table.Copy;
 import com.google.api.services.fusiontables.Fusiontables.Table.Delete;
-import com.google.api.services.fusiontables.FusiontablesScopes;
 import com.google.api.services.fusiontables.model.Column;
 import com.google.api.services.fusiontables.model.Sqlresponse;
 import com.google.api.services.fusiontables.model.Table;
@@ -53,17 +44,17 @@ public class FusionTablesConnector implements Connector {
 	private final String APPLICATION_NAME = "fusion tables console";
 	private final String NOT_CONNECTED = "not connected";
 
-	private PreferencesDataStoreFactory dataStoreFactory = null;
 	private final Class<?> dataStoreCarrierNode;
-	private HttpTransport httpTransport;
-	private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+	private final static JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 	private Optional<Fusiontables> fusiontables;
 
 	private final Logging logger;
 
 	private Optional<AuthInfo> authInfo = Optional.absent();
 	private Optional<String> accessToken = Optional.absent();
-	
+
+	private Credential credential = null;
+
 	public FusionTablesConnector(Logging logger, Optional<AuthInfo> authInfo, Class<?> dataStoreCarrierNode) {
 		Check.notNull(authInfo);
 		Check.notNull(logger);
@@ -71,17 +62,13 @@ public class FusionTablesConnector implements Connector {
 		this.dataStoreCarrierNode = dataStoreCarrierNode;
 		this.authInfo = authInfo;
 		try {
-
-			httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 			reset(authInfo);
-
 		} catch (Exception e) {
 			log(e.getMessage());
 			throw new RuntimeException(e.getMessage());
 		}
-
 	}
-
+	
 	public ConnectionStatus reset(Dictionary<String, String> connectionInfo) {
 		return reset(Optional.of(new AuthInfo(connectionInfo.get(ClientSettings.keyClientId),
 				connectionInfo.get(ClientSettings.keyClientSecret))));
@@ -89,25 +76,16 @@ public class FusionTablesConnector implements Connector {
 
 	public ConnectionStatus reset(Optional<AuthInfo> authInfo) {
 		this.authInfo = authInfo;
-		String authInfoJSon = "{\"installed\":{\"client_id\":\"%s\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://accounts.google.com/o/oauth2/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_secret\":\"%s\",\"redirect_uris\":[\"urn:ietf:wg:oauth:2.0:oob\",\"http://localhost\"]}}";
-
-		if (dataStoreFactory == null)
-			dataStoreFactory = new PreferencesDataStoreFactory(dataStoreCarrierNode);
 
 		if (!authInfo.isPresent() || authInfo.isPresent() && !authInfo.get().credentialsPlausible()) {
 			fusiontables = Optional.absent();
 			return new ConnectionStatus(HttpStatus.SC_BAD_REQUEST, "incomplete credentials");
 		}
 
-		Reader authStream;
-
-		authStream = new StringReader(
-				String.format(authInfoJSon, authInfo.get().clientId, authInfo.get().clientSecret));
-
-		Credential credential = null;
 		ConnectionStatus result;
 		try {
-			credential = authorize(authStream);
+			credential = authorize(authInfo, dataStoreCarrierNode);
+
 			result = new ConnectionStatus(HttpStatus.SC_OK);
 			accessToken = Optional.of(credential.getAccessToken());
 		} catch (Exception e) {
@@ -115,34 +93,29 @@ public class FusionTablesConnector implements Connector {
 			fusiontables = Optional.absent();
 			result = new ConnectionStatus(e);
 		}
-
-		fusiontables = Optional.of(new Fusiontables.Builder(httpTransport, JSON_FACTORY, credential)
+		
+		fusiontables = Optional.of(new Fusiontables.Builder(Auth.getHttpTransport(), JSON_FACTORY, credential)
 				.setApplicationName(APPLICATION_NAME).build());
 
+		return result;
+	}
+
+	public static Credential authorize(Optional<AuthInfo> authInfo, Class<?> dataStoreCarrierNode) throws Exception {
+		String authInfoJSon = "{\"installed\":{\"client_id\":\"%s\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://accounts.google.com/o/oauth2/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_secret\":\"%s\",\"redirect_uris\":[\"urn:ietf:wg:oauth:2.0:oob\",\"http://localhost\"]}}";
+
+		Reader authStream;
+
+		authStream = new StringReader(
+				String.format(authInfoJSon, authInfo.get().clientId, authInfo.get().clientSecret));
+		
+		Credential result = Auth.authorize(authStream, dataStoreCarrierNode);
+		result.refreshToken();
 		return result;
 	}
 
 	private void log(String msg) {
 		if (logger != null)
 			logger.Info(msg);
-	}
-
-	private Credential authorize(Reader r) throws Exception {
-
-		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, r);
-
-		if (clientSecrets.getDetails().getClientId().startsWith("Enter")
-				|| clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-			throw new RuntimeException(
-					"Enter Client ID and Secret from https://code.google.com/apis/console/?api=fusiontables "
-							+ "into fusiontables-cmdline-sample/src/main/resources/client_secrets.json");
-		}
-
-		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY,
-				clientSecrets, Collections.singleton(FusiontablesScopes.FUSIONTABLES))
-						.setDataStoreFactory(dataStoreFactory).build();
-
-		return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
 	}
 
 	@Override
@@ -348,25 +321,25 @@ public class FusionTablesConnector implements Connector {
 		try {
 			// that's a hack. As a matter of fact the google machinerey will use
 			// "StoredCredential" as key
-			dataStoreFactory.createDataStore("StoredCredential").clear();
-			dataStoreFactory = null;
+			Auth.getPreferencesStore(dataStoreCarrierNode).createDataStore("StoredCredential").clear();
 		} catch (IOException e) {
 			logger.Error(e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public QueryResult copyTable(String tableId, String newName) {
 		try {
 			Copy copy = fusiontables.get().table().copy(tableId);
 			Table result = copy.execute();
 			String renameResult = renameTable(result.getTableId(), newName);
-			return new QueryResult(HttpStatus.SC_OK, getSingularTableModel("table ID", result.getTableId()), "table created. Rename operation says: " + renameResult);
+			return new QueryResult(HttpStatus.SC_OK, getSingularTableModel("table ID", result.getTableId()),
+					"table created. Rename operation says: " + renameResult);
 		} catch (IOException e) {
 			return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "Execution failed: " + e.getMessage());
 		}
 	}
-		
+
 	private TableModel getSingularTableModel(String colName, String tableId) {
 		Vector<String> col = new Vector<String>();
 		Vector<String> row = new Vector<String>();
@@ -377,14 +350,17 @@ public class FusionTablesConnector implements Connector {
 		return new DefaultTableModel(rows, col);
 	}
 
-	@SuppressWarnings("unused")
-	// this probably works, but needs separate authentication it seems
-	private QueryResult _copyTable(String tableId, String newName) {
+	//TODO use rest api class
+	public QueryResult _copyTable(String tableId, String newName) {
 		Check.isTrue(accessToken.isPresent());
-	
-		String url = String.format("https://www.googleapis.com/fusiontables/v2/tables/%s/copy?key=%s", tableId, accessToken.get());
-		HttpResult res = new Request(url, "").post();
-		
+
+		String url = String.format("https://www.googleapis.com/fusiontables/v2/tables/%s/copy?key=%s", tableId,
+				authInfo.get().clientSecret);
+		Request r = new Request(url, "");
+
+		r.setRequestProperty("Authorization", accessToken.get());
+		HttpResult res = r.post();
+
 		return new QueryResult(res.responseCode, null, res.resultData);
 	}
 

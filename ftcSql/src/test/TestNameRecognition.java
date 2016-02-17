@@ -2,7 +2,6 @@ package test;
 
 import static org.junit.Assert.*;
 
-import org.cg.common.util.StringUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

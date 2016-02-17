@@ -3,7 +3,6 @@ package org.cg.ftc.ftcClientJava;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.cg.common.io.StringStorage;
 import org.cg.common.misc.CmdDestination;
 import org.cg.common.misc.CmdHistory;
 import org.cg.common.threading.Function;
-import org.cg.common.util.StringUtil;
 import org.cg.ftc.shared.interfaces.CompletionsSource;
 import org.cg.ftc.shared.interfaces.Connector;
 import org.cg.ftc.shared.interfaces.OnFileAction;
@@ -254,7 +252,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			@Override
 			public void onFileAction(ActionEvent e, File file) {
 				model.queryText.setValue(FileUtil.readFromFile(file.getPath()));
-				clientSettings.pathScriptFile = org.cg.common.util.FileUtil.getPathOnly(file);
+				clientSettings.pathScriptFile = FileUtil.getPathOnly(file);
 			}
 		}).actionPerformed(null);
 	}
@@ -266,7 +264,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			@Override
 			public void onFileAction(ActionEvent e, File file) {
 				FileUtil.writeToFile(model.queryText.getValue(), file.getPath());
-				clientSettings.pathScriptFile = org.cg.common.util.FileUtil.getPathOnly(file);
+				clientSettings.pathScriptFile = FileUtil.getPathOnly(file);
 			}
 		}).actionPerformed(null);
 	}
@@ -277,7 +275,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 				@Override
 				public void onFileAction(ActionEvent e, File file) {
-					clientSettings.pathCsvFile = org.cg.common.util.FileUtil.getPathOnly(file);
+					clientSettings.pathCsvFile = FileUtil.getPathOnly(file);
 					logging.Info(CSV.write(model.resultData.getValue(), file.getPath()));
 				}
 			}).actionPerformed(e);

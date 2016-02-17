@@ -5,7 +5,7 @@ import java.util.List;
 import org.antlr.v4.runtime.Token;
 import org.cg.common.check.Check;
 
-public class SyntaxElement implements Comparable {
+public class SyntaxElement implements Comparable<Object> {
 
 	public final int from;
 	public final int to;

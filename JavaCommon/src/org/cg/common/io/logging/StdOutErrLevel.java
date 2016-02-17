@@ -15,6 +15,8 @@ import org.cg.common.io.logging.StdOutErrLevel;
  */
 public class StdOutErrLevel extends Level {
 
+	private static final long serialVersionUID = 1L;
+
 	private StdOutErrLevel(String name, int value) {
 		super(name, value);
 	}

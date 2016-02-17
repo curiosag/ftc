@@ -34,6 +34,7 @@ public class SyntaxElementListener extends BaseFtListener implements OnError {
 
 	public final List<SyntaxElement> syntaxElements = new LinkedList<SyntaxElement>();
 
+	@SuppressWarnings("unused")
 	private final FusionTablesSqlParser parser;
 	public final BufferedTokenStream tokens;
 

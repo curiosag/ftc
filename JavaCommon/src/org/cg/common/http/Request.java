@@ -5,11 +5,16 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class Request {
 
 	private final String url, params;
 
+	private final Map<String, String> props = new HashMap<String, String>(); 
+	
 	public Request(String url, String params) {
 		this.url = url;
 		this.params = params;
@@ -24,6 +29,11 @@ public class Request {
 		}
 	}
 	
+	public void setRequestProperty(String key, String value)
+	{
+		props.put(key, value);
+	}
+	
 	private HttpResult internalPost() throws Exception {
 		String USER_AGENT = "Mozilla/5.0";
 		URL obj = new URL(url);
@@ -34,6 +44,9 @@ public class Request {
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
+		for (Entry<String, String> e : props.entrySet()) 
+			con.setRequestProperty(e.getKey(), e.getValue());
+		
 		String urlParameters = params;
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());

@@ -41,14 +41,14 @@ import manipulations.results.TableReference;
 
 public class QueryHandler extends Observable {
 
-	private boolean reload = true;
+	private final boolean reload = true;
 	private final Logging logger;
 	private final Connector connector;
 	private final boolean preview = true;
 	private final boolean execute = !preview;
 	private final List<TableInfo> tableInfo = new LinkedList<TableInfo>();
 	private final Map<String, TableInfo> tableNameToTableInfo = new HashMap<String, TableInfo>();
-	private Map<String, TableInfo> tableIdToTableInfo  = new HashMap<String, TableInfo>();
+	private final Map<String, TableInfo> tableIdToTableInfo  = new HashMap<String, TableInfo>();
 	private final Map<String, TableInfo> exteranlTableIdToTableInfo = new HashMap<String, TableInfo>();
 	private final List<String> inexistingExternalTableIds = new ArrayList<String>();
 

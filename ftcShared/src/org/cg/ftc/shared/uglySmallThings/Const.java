@@ -28,5 +28,7 @@ public class Const {
 
 	public static final int LEN_TABLEID = 39;
 
+	public static final String UTF8_ENCODE = "UTF-8";
+
 	
 }
