@@ -30,5 +30,7 @@ public class Const {
 
 	public static final String UTF8_ENCODE = "UTF-8";
 
+	public static final int PROGRESS_SCALE = 1000;
+
 	
 }

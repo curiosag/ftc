@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -59,6 +60,7 @@ public class RestApi {
 		HttpRequestFactory rf = httpTransport.createRequestFactory(credential);
 
 		HttpResponse response = rf.buildRequest(method, url, urlEntity).execute();
+		
 		String result = readGoogleResponse(response);
 
 		if (response.getStatusCode() != HttpServletResponse.SC_OK)

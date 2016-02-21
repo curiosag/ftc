@@ -7,6 +7,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import org.cg.common.check.Check;
 import org.cg.common.interfaces.OnValueChangedEvent;
+import org.cg.common.interfaces.Progress;
 import org.cg.common.misc.SimpleObservable;
 import org.cg.common.swing.WindowClosingListener;
 import org.cg.ftc.ftcQueryEditor.QueryEditor;
@@ -22,6 +23,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class FtcGui extends JFrame implements ActionListener, FrontEnd {
+
 	private static final long serialVersionUID = 1L;
 	private static final Dimension dimensionButtons = new Dimension(45, 22);
 
@@ -47,6 +49,35 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	private final CompletionsSource completionsSource;
 	private final ClientSettings clientSettings;
 	private ActionListener passOnactionListener = null;
+
+	private final static int progressScale = org.cg.ftc.shared.uglySmallThings.Const.PROGRESS_SCALE;
+	private int maxProgress = 0;
+	private JProgressBar progressBar = new JProgressBar(0, progressScale);
+
+	private final Progress progressMonitor = new Progress() {
+
+		@Override
+		public void init(int max) {
+			maxProgress = max;
+			setProgress(0);
+		}
+
+		@Override
+		public void announce(final int progress) {
+			setProgress(progress);
+		}
+
+		private void setProgress(final int progress) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					int val = progress == maxProgress ? progressScale : progressScale / maxProgress * progress;
+					progressBar.setValue(val);
+				}
+			});
+		}
+
+	};
 
 	public FtcGui(SyntaxElementSource syntaxElements, CompletionsSource completionsSource,
 			ClientSettings clientSettings) {
@@ -184,16 +215,29 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		JPanel buttonArea = createButtonArea();
 		queryEditor = new QueryEditor(syntaxElements, completionsSource, clientSettings);
 		JPanel resultextArea = createResultDisplay();
-		JPanel textControlsPane = createSettingsArea();
+		JPanel textControlsPanel = createSettingsArea();
+		JPanel statusPanel = createStatusPanel();
 
-		createSplitLayout(resultDataArea, buttonArea, resultextArea, textControlsPane);
+		createSplitLayout(resultDataArea, buttonArea, resultextArea, textControlsPanel, statusPanel);
 
 		setMenu();
 
 	}
 
+	private JPanel createStatusPanel() {
+		JPanel result = new JPanel();
+		BoxLayout layout = new BoxLayout(result, BoxLayout.LINE_AXIS);
+		result.setLayout(layout);
+		result.add(progressBar);
+		return result;
+	}
+
 	private void createSplitLayout(JScrollPane resultDataArea, JPanel buttonArea, JPanel resultextArea,
-			JPanel textControlsPane) {
+			JPanel textControlsPanel, JPanel statusPanel) {
+
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
 		splitPaneV = createSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPaneV.setDividerLocation(clientSettings.dividerLocationV);
 
@@ -215,15 +259,17 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		splitPaneV.add(frame0L, JSplitPane.LEFT);
 		splitPaneV.add(frame0R, JSplitPane.RIGHT);
 
-		frame0L.add(textControlsPane);
+		frame0L.add(textControlsPanel);
 		frame0L.add(resultextArea);
-		textControlsPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+		textControlsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		resultextArea.setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		splitPaneH.setTopComponent(queryEditor);
 		splitPaneH.setBottomComponent(resultDataArea);
 
-		add(splitPaneV);
+		mainPanel.add(splitPaneV);
+		mainPanel.add(statusPanel);
+		add(mainPanel);
 	}
 
 	private JSplitPane createSplitPane(int orientation) {
@@ -255,7 +301,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		runMenu.add(
 				createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_E, none, getAction(Const.tooltipExecSql, Const.execSql)));
 		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_C, ctrl,
-				getAction(Const.tooltipCancelExecSql, Const.cancelExecSql)));
+				getAction(Const.tooltipCancelExecSql, Const.cancelExecution)));
 		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_V, alt,
 				getAction(Const.tooltipViewPreprocessedQuery, Const.viewPreprocessedQuery)));
 
@@ -305,7 +351,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	private JPanel createButtonArea() {
 
 		buttonExecSql = createButton(Const.execSql, "control_play_blue.png", Const.tooltipExecSql);
-		buttonCancel = createButton(Const.cancelExecSql, "cancel.png", Const.tooltipCancelExecSql);
+		buttonCancel = createButton(Const.cancelExecution, "cancel.png", Const.tooltipCancelExecSql);
 		JButton buttonListTables = createButton(Const.listTables, "table.png", Const.tooltipListTables);
 		JButton buttonPreview = createButton(Const.viewPreprocessedQuery, "control_play.png",
 				Const.tooltipViewPreprocessedQuery);
@@ -469,5 +515,10 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		result.queryEditor.requestFocus();
 
 		return result;
+	}
+
+	@Override
+	public Progress getProgressMonitor() {
+		return progressMonitor;
 	}
 }

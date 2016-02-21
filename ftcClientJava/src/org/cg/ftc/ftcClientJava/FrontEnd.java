@@ -6,9 +6,12 @@ import java.util.Observer;
 import javax.swing.event.DocumentListener;
 
 import org.cg.common.interfaces.OnValueChangedEvent;
+import org.cg.common.interfaces.Progress;
 
 public interface FrontEnd {
 
+	Progress getProgressMonitor();
+	
 	void setActionListener(ActionListener l);
 
 	void addClientIdChangedListener(OnValueChangedEvent e);

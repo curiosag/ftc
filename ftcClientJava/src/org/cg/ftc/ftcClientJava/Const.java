@@ -13,7 +13,7 @@ public class Const {
 	public static final String authorize = "authorize";
 	public static final String nextCommand = "nextCommand";
 	public static final String previousCommand = "previousCommand";
-	public static final String cancelExecSql = "cancelExecution";
+	public static final String cancelExecution = "cancelExecution";
 	public static final String memorizeQuery = "memorizeQuery";
 	public static final String focusEditor = "focusEditor";
 	public static final String refreshTables = "refreshTables";

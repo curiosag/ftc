@@ -112,8 +112,8 @@ public class QueryManipulator {
 
 		walker.walk(substi, stuff.parser.fusionTablesSql());
 
-		return new RefactoredSql(query, substi.tuted(),
-				StringUtil.concat(tableAliasToName.problemsEncountered.orNull(), errorListener.getErrors()));
+		return new RefactoredSql(substi.tableIds, query, substi.tuted(), substi.kWhereStartIdx,
+				StringUtil.concat(tableAliasToName.problemsEncountered.orNull(),  errorListener.getErrors()));
 	}
 
 	private String getNextTerminal(Iterator<ParseTree> iter, FusionTablesSqlParser parser) {

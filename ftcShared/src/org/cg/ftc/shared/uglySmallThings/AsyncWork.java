@@ -5,44 +5,65 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.swing.SwingWorker;
-
 import org.cg.common.interfaces.Continuation;
+import org.cg.common.interfaces.Progress;
 import org.cg.common.threading.Function;
+import org.cg.ftc.shared.structures.ConnectionStatus;
+import org.cg.common.core.*;
 
 public class AsyncWork {
 
+	private final static Logging log = new SystemLogger();
 	private final static ExecutorService pool = Executors.newFixedThreadPool(10);
-	
-	public static <T> Future<T> submit(Callable<T> c){
+
+	public static <T> Future<T> submit(Callable<T> c) {
 		return pool.submit(c);
 	}
-	
-	public static <T, U> SwingWorker<T, U> goUnderground(final Function<T> f, final Continuation<T> onDone) {
-		return new SwingWorker<T, U>() {
 
-			private T result;
+	public static <T, U> SwingWorkerExt<T, U> goUnderground(final Function<T> f, final Continuation<T> onDone,
+			final Progress progress) {
+		return new SwingWorkerExt<T, U>() {
 
 			@Override
 			protected T doInBackground() throws Exception {
-				result = f.invoke();
-				return result;
+				return f.invoke(progress);
 			}
 
 			@Override
 			public void done() {
-				if (!isCancelled())
-					onDone.invoke(result);
+				try {
+					onDone.invoke(get());
+				} catch (InterruptedException ignore) {
+				} catch (java.util.concurrent.ExecutionException e) {
+					Throwable cause = e.getCause();
+					log.Info(cause != null ? cause.getMessage() : e.getMessage());
+				}
+
 			};
 
 		};
 	}
 
-	public static <T> SwingWorker<T, Object> createEmptyWorker() {
+	public static SwingWorkerExt<ConnectionStatus, Object> goUnderground(Function<ConnectionStatus> authFunction,
+			Continuation<ConnectionStatus> authContinuation) {
+		return goUnderground(authFunction, authContinuation, noProgress);
+	}
+	
+	public final static Progress noProgress = new Progress() {
+			@Override
+			public void announce(int progress) {
+			}
+
+			@Override
+			public void init(int max) {
+			}
+		};
+
+	public static <T> SwingWorkerExt<T, Object> createEmptyWorker() {
 		return AsyncWork.goUnderground(new Function<T>() {
 
 			@Override
-			public T invoke() {
+			public T invoke(Progress p) {
 				return null;
 			}
 		}, new Continuation<T>() {
@@ -50,7 +71,7 @@ public class AsyncWork {
 			@Override
 			public void invoke(T value) {
 			}
-		});
+		}, noProgress);
 
 	}
 

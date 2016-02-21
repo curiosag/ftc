@@ -34,7 +34,6 @@ public class Auth {
 				key = ks.getKey(keyName, "notasecret".toCharArray());
 			}
 
-			System.out.println(String.format("Algo %s Format %s", key.getAlgorithm(), key.getFormat()));
 			PrivateKey serviceAccountPrivateKey = (PrivateKey) key;
 
 			credential = new GoogleCredential.Builder().setTransport(getHttpTransport()).setJsonFactory(JSON_FACTORY)

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.cg.common.check.Check;
 import org.cg.common.util.StringUtil;
 import org.cg.ftc.parser.FusionTablesSqlBaseListener;
@@ -18,6 +19,9 @@ public class NameToIDSubstitution extends FusionTablesSqlBaseListener {
 	private final TokenStreamRewriter rewriter;
 	private final TableNameToIdMapper mapper;
 	public List<String> problems = new LinkedList<String>();
+	public List<String> tableIds = new LinkedList<String>();
+
+	public int kWhereStartIdx = -1;
 
 	public NameToIDSubstitution(FusionTablesSqlParser parser, BufferedTokenStream tokens,
 			TableNameToIdMapper namesToIds, Map<String, String> tableAliasToName) {
@@ -34,15 +38,22 @@ public class NameToIDSubstitution extends FusionTablesSqlBaseListener {
 	}
 
 	@Override
+	public void visitTerminal(TerminalNode node) {		
+		if (node.getSymbol().getType() == FusionTablesSqlParser.K_WHERE)
+			kWhereStartIdx = node.getSymbol().getStartIndex();
+	}
+
+	@Override
 	public void enterString_literal(FusionTablesSqlParser.String_literalContext ctx) {
 
-		if (Util.isTableName(ctx)) {			
-			String tableName = StringUtil.stripQuotes(ctx.getText());	
+		if (Util.isTableName(ctx)) {
+			String tableName = StringUtil.stripQuotes(ctx.getText());
 			Optional<String> tableId = mapper.resolveTableId(tableName);
 
 			if (tableId.isPresent()) {
 				rewriter.delete(ctx.start, ctx.stop);
 				rewriter.insertAfter(ctx.start, tableId.get());
+				tableIds.add(tableId.get());
 			} else
 				problems.add("unknown table name: " + tableName);
 		}

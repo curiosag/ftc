@@ -16,6 +16,7 @@ import org.cg.common.check.Check;
 import org.cg.common.core.AbstractLogger;
 import org.cg.common.http.HttpStatus;
 import org.cg.common.interfaces.Continuation;
+import org.cg.common.interfaces.Progress;
 import org.cg.common.io.FileUtil;
 import org.cg.common.io.StringStorage;
 import org.cg.common.misc.CmdDestination;
@@ -33,6 +34,7 @@ import org.cg.ftc.shared.structures.QueryResult;
 import org.cg.ftc.shared.uglySmallThings.AsyncWork;
 import org.cg.ftc.shared.uglySmallThings.CSV;
 import org.cg.ftc.shared.uglySmallThings.Events;
+import org.cg.ftc.shared.uglySmallThings.SwingWorkerExt;
 
 import com.google.common.base.Stopwatch;
 
@@ -45,8 +47,9 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	private final AbstractLogger logging;
 	private final ClientSettings clientSettings;
 	private final Connector connector;
+	private final Progress progress;
 
-	private SwingWorker<QueryResult, Object> executionWorker = AsyncWork.createEmptyWorker();
+	private SwingWorkerExt<QueryResult, Object> executionWorker = AsyncWork.createEmptyWorker();
 	private final CmdHistory history;
 	private final CmdDestination historyScrollDestination = new CmdDestination() {
 		@Override
@@ -57,29 +60,30 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 	private Stopwatch executionStopwatch = Stopwatch.createUnstarted();
 	private boolean isExecuting = false;
+	private boolean refreshTablesOngoing;
 
 	public ftcClientController(ftcClientModel model, AbstractLogger logging, Connector connector,
-			ClientSettings clientSettings, StringStorage cmdHistoryStorage) {
+			ClientSettings clientSettings, StringStorage cmdHistoryStorage, Progress progress) {
 		this.model = model;
 		this.queryHandler = new QueryHandler(logging, connector, clientSettings);
 		this.logging = logging;
 		this.clientSettings = clientSettings;
 		this.connector = connector;
-
 		history = new CmdHistory(cmdHistoryStorage);
+		this.progress = progress;
 	}
 
-	private void setStateIsExecuting(boolean value) {
+	private synchronized void setStateIsExecuting(boolean value) {
 		Check.isFalse(isExecuting && value);
-		isExecuting = value;
-		if (isExecuting) {
+		if (value) {
 			Events.ui.post(Thread.State.RUNNABLE);
 			executionStopwatch.reset();
 			executionStopwatch.start();
-		} else {
+		} else if (isExecuting) {
 			executionStopwatch.stop();
 			Events.ui.post(Thread.State.TERMINATED);
 		}
+		isExecuting = value;
 	}
 
 	private boolean getStateIsExecuting() {
@@ -95,9 +99,8 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 				hdlExecSql();
 			break;
 
-		case Const.cancelExecSql:
-			if (getStateIsExecuting())
-				hdlCancelExecSql();
+		case Const.cancelExecution:
+			hdlCancelExecution();
 			break;
 
 		case Const.listTables:
@@ -115,7 +118,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		case Const.previousCommand:
 			history.prev(historyScrollDestination);
 			break;
-			
+
 		case Const.nextCommand:
 			history.next(historyScrollDestination);
 			break;
@@ -139,14 +142,39 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 		case Const.refreshTables:
 			hdlRefreshTables();
-			
+
 		default:
 			break;
 		}
 	}
 
 	private void hdlRefreshTables() {
-		queryHandler.reloadTableList();
+		if (!getRefreshTablesOngoing())
+			AsyncWork.goUnderground(new Function<Void>() {
+				@Override
+				public synchronized Void invoke(Progress progress) {
+					try {
+						setRefreshTablesOngoing(true);
+						queryHandler.reloadTableList();
+						return null;
+					} catch (Exception e) {
+						return null;
+					}
+				}
+			}, new Continuation<Void>() {
+				@Override
+				public void invoke(Void value) {
+					setRefreshTablesOngoing(false);
+				}
+			}, AsyncWork.noProgress).execute();
+	}
+
+	private synchronized void setRefreshTablesOngoing(boolean b) {
+		refreshTablesOngoing = b;
+	}
+
+	private synchronized boolean getRefreshTablesOngoing() {
+		return refreshTablesOngoing;
 	}
 
 	private void hdlRememberCommand() {
@@ -155,14 +183,15 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	}
 
 	private void hdlExecSql() {
-		executionWorker = AsyncWork.goUnderground(new Function<QueryResult>() {
+		AsyncWork.goUnderground(new Function<QueryResult>() {
 			@Override
-			public QueryResult invoke() {
+			public QueryResult invoke(Progress progress) {
 				setStateIsExecuting(true);
 				try {
-					return getQueryResult();
+					return getQueryResult(progress);
 				} catch (Exception e) {
-					return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "Exception occured: " + e.getClass().getSimpleName() + " " +  e.getMessage());
+					return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null,
+							"Exception occured: " + e.getClass().getSimpleName() + " " + e.getMessage());
 				}
 			}
 		}, new Continuation<QueryResult>() {
@@ -171,14 +200,13 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 				onQueryResult(value);
 				setStateIsExecuting(false);
 			}
-		});
-		executionWorker.execute();
+		}, progress).execute();
 	}
 
-	private QueryResult getQueryResult() {
+	private QueryResult getQueryResult(Progress progress) {
 		String sql = model.queryText.getValue();
 		history.add(sql);
-		return queryHandler.getQueryResult(sql);
+		return queryHandler.getQueryResult(sql, progress);
 	}
 
 	private void onQueryResult(QueryResult result) {
@@ -193,24 +221,38 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 		float elapsed = (float) executionStopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000;
 		msg = msg + String.format("in %.3f seconds \n", elapsed);
-		logging.Info(msg + result.message.or(""));
-
+		logging.Info(msg);
+		if (result.message.isPresent())
+			logging.Info(result.message.get());
 	}
 
-	private void hdlCancelExecSql() {
-		if (executionWorker.isDone())
-			return;
-
-		if (!executionWorker.isCancelled()) {
-			executionWorker.cancel(true);
-			onQueryResult(new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "execution cancelled"));
-		}
+	private void hdlCancelExecution() {
+		cancelSynchronousQueryProcessing();
+		cancelAsynchronousQueryProcessing();
+		logging.Info("execution cancelled");	
 		setStateIsExecuting(false);
+	}
+
+	private void cancelSynchronousQueryProcessing() {
+		if (getStateIsExecuting())
+			if (!(executionWorker.isDone() || executionWorker.isCancelled()))
+			{
+				executionWorker.saveCancel(true);
+				setStateIsExecuting(false);
+			}
+	}
+
+	private void cancelAsynchronousQueryProcessing() {
+		// if it seems odd to call this asynchronous: it is meant for the
+		// composite query cases
+		// where the execution worker terminates immediately and queryHandler
+		// goes on processing the composites multi-threaded
+		queryHandler.cancelRequest();
 	}
 
 	private final Function<ConnectionStatus> authFunction = new Function<ConnectionStatus>() {
 		@Override
-		public ConnectionStatus invoke() {
+		public ConnectionStatus invoke(Progress progress) {
 			return resetConnector();
 		}
 	};

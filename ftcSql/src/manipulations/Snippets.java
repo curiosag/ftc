@@ -65,7 +65,7 @@ public class Snippets {
 
 		result.addSnippet(SqlCompletionType.ftSql, "describe table", "DESCRIBE ${t}${cursor};");
 
-		result.addSnippet(SqlCompletionType.ftSql, "create view, single base table", "CREATE VIEW ${identifier} AS (SELECT ${c} FROM ${t}) WHERE ;");
+		result.addSnippet(SqlCompletionType.ftSql, "create view, single base table", "CREATE VIEW ${identifier} AS (SELECT ${c} FROM ${t} )  ;");
 		result.addSnippet(SqlCompletionType.ftSql, "create view, multiple base tables", "CREATE VIEW ${identifier} AS (SELECT t1.${c1}, t2.${c2} \nFROM ${t} AS t1 \nLEFT OUTER JOIN ${tt} as t2 \nON t1.${c3}=t2.${c4});");
 
 		result.addSnippet(SqlCompletionType.ftSql, "copy table (CTAS)", "CREATE TABLE ${identifier} AS SELECT * FROM ${t};");

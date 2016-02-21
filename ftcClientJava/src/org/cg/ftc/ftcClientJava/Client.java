@@ -42,12 +42,12 @@ public class Client {
 	}
 
 	private static Runnable startup() {
-		
+		final DelegatingProgress progress = new DelegatingProgress();
 		final ClientSettings clientSettings = ClientSettings.instance(Client.class);
 		final ftcClientModel model = new ftcClientModel(clientSettings);
 		final Connector connector = getConnector();
 		final ftcClientController controller = new ftcClientController(model, logging, connector, clientSettings,
-				new PreferencesStringStorage(org.cg.ftc.shared.uglySmallThings.Const.PREF_ID_CMDHISTORY, Client.class));
+				new PreferencesStringStorage(org.cg.ftc.shared.uglySmallThings.Const.PREF_ID_CMDHISTORY, Client.class), progress);
 
 		logging.setDelegate(createModelLogger(model.resultText));
 		final TextModel systemIoRedirectTarget = model.resultText;
@@ -75,6 +75,7 @@ public class Client {
 				model.clientId.setValue(clientSettings.clientId);
 				model.clientSecret.setValue(clientSettings.clientSecret);
 
+				progress.setDelegate(ui.getProgressMonitor());
 				controller.authenticate();
 			}
 		};

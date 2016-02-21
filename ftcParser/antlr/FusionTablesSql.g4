@@ -161,14 +161,14 @@ insert_stmt
 update_stmt
  : K_UPDATE table_name_in_dml
    K_SET column_assignment ( ',' column_assignment )* 
-   K_WHERE eq_comparison
+   K_WHERE expr
  ;
 
 column_assignment : column_name_in_dml '=' literal ;
 
 delete_stmt
  : K_DELETE K_FROM table_name_in_dml 
-   ( K_WHERE column_name_in_dml '=' literal)?
+   ( K_WHERE expr)?
  ;
 
 eq_comparison : identifier EQ string_literal ;
