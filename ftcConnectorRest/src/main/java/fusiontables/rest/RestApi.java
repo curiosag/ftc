@@ -64,7 +64,7 @@ public class RestApi {
 		String result = readGoogleResponse(response);
 
 		if (response.getStatusCode() != HttpServletResponse.SC_OK)
-			throw new RuntimeException(result.toString() + statement);
+			throw new IOException(result.toString() + statement);
 
 		return result;
 	}
