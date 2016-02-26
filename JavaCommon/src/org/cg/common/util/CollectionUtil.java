@@ -5,8 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.cg.common.check.Check;
 import org.cg.common.structures.Tuple;
@@ -27,6 +29,12 @@ public class CollectionUtil {
 	public static <T extends Comparable<? super T>> List<T> sort(List<T> c) {
 		Collections.sort(c);
 		return c;
+	}
+	
+	public static <T extends Comparable<? super T>> List<T> uniqueElements(List<T> c) {
+		Set<T> set = new LinkedHashSet<T>();
+		set.addAll(c);
+		return new ArrayList<T>(set);
 	}
 
 	public static <T> List<T> toList(T[] c) {

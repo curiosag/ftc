@@ -145,7 +145,7 @@ public class StringUtil {
 		return Joiner.on(separator).join(items);
 	}
 
-	public static Object ToCsv(List<String> items, String separator) {
+	public static String ToCsv(List<String> items, String separator) {
 		return Joiner.on(separator).join(items);
 	}
 

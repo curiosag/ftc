@@ -8,8 +8,18 @@ import java.util.List;
 import org.cg.common.structures.Tuple;
 import org.junit.Test;
 
-public class TestCollectionUtil {
+public class CollectionUtilTest {
 
+	@Test
+	public void testUniqueElements()
+	{
+		List<String> s = new ArrayList<String>();
+		s.add("a");
+		s.add("a");
+		s.add("b");
+		assertEquals(2, CollectionUtil.uniqueElements(s).size());
+	}
+	
 	@Test
 	public void testPartition() {
 		List<Integer> l = new ArrayList<Integer>();

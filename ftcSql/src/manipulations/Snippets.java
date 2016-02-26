@@ -55,7 +55,7 @@ public class Snippets {
 				"INSERT INTO ${t} (${c1}, ${c2}) \nVALUES (${value1}, ${value2}${cursor});");
 
 		result.addSnippet(SqlCompletionType.ftSql, "delete single row", "DELETE FROM ${t} WHERE ROWID='${value}'${cursor}; ");
-		result.addSnippet(SqlCompletionType.ftSql, "delete all", "DELETE FROM ${t}${cursor}; ");
+		result.addSnippet(SqlCompletionType.ftSql, "delete", "DELETE FROM ${t}${cursor}; ");
 		// ${ } is a bit of a ruse to avoid to have to cover the - no parameter at all - case (causes exception now)
 		result.addSnippet(SqlCompletionType.ftSql, "show tables", "SHOW TABLES ${ }${cursor}; ");
 		
