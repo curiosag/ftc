@@ -40,8 +40,6 @@ import javax.swing.text.Position;
 import javax.swing.text.Highlighter.Highlight;
 import javax.swing.text.Highlighter.HighlightPainter;
 
-import org.cg.common.swing.UnderlineHighlightPainter;
-import org.cg.ftc.shared.uglySmallThings.Const;
 import org.fife.ui.autocomplete.ParameterizedCompletion.Parameter;
 import org.fife.ui.autocomplete.ParameterizedCompletionInsertionInfo.ReplacementCopy;
 import org.fife.ui.rsyntaxtextarea.DocumentRange;
@@ -163,7 +161,6 @@ class ParameterizedCompletionContext {
 	private static final String IM_KEY_ENTER = "ParamCompKey.Enter";
 	private static final String IM_KEY_CLOSING = "ParamCompKey.Closing";
 
-	
 	/**
 	 * Constructor.
 	 */
@@ -221,17 +218,10 @@ class ParameterizedCompletionContext {
 		if (paramChoicesWindow == null) {
 			paramChoicesWindow = createParamChoicesWindow();
 		}
-
-		setCaretTo(getPreferredInitialHighlight());
-
 		lastSelectedParam = getCurrentParameterIndex();
 		prepareParamChoicesWindow();
 		paramChoicesWindow.setVisible(true);
 
-	}
-
-	private void setCaretTo(Highlight h) {
-		ac.getTextComponent().setCaretPosition(h.getStartOffset() + 1);
 	}
 
 	/**
@@ -241,7 +231,7 @@ class ParameterizedCompletionContext {
 	 */
 	private ParameterizedCompletionChoicesWindow createParamChoicesWindow() {
 		ParameterizedCompletionChoicesWindow pcw = new ParameterizedCompletionChoicesWindow(parentWindow, ac, this);
-		pcw.initialize(0, pc);
+		pcw.initialize(pc);
 		return pcw;
 	}
 
@@ -307,38 +297,37 @@ class ParameterizedCompletionContext {
 	private Highlight getCurrentParameterHighlight() {
 
 		JTextComponent tc = ac.getTextComponent();
-		int dot = getDotByWorkingAroundJavaHighlightIssues(tc);
+		int dot = tc.getCaretPosition();
+		if (dot > 0) {
+			dot--; // Workaround for Java Highlight issues
+		}
 
-		for (Highlight h : getParameterHighlights())
-			if (withinHighlightArea(dot, h))
+		List<Highlight> paramHighlights = getParameterHighlights();
+		for (Highlight h : paramHighlights) {
+			if (dot >= h.getStartOffset() && dot < h.getEndOffset()) {
 				return h;
+			}
+		}
 
 		return null;
 
 	}
 
-	private boolean withinHighlightArea(int dot, Highlight h) {
-		return dot >= h.getStartOffset() && dot < h.getEndOffset();
-	}
-
-	private int getDotByWorkingAroundJavaHighlightIssues(JTextComponent tc) {
-		int dot = tc.getCaretPosition();
-
-		if (dot > 0)
-			dot--;
-
-		return dot;
-	}
-
 	private int getCurrentParameterIndex() {
 
 		JTextComponent tc = ac.getTextComponent();
-		int dot = getDotByWorkingAroundJavaHighlightIssues(tc);
+		int dot = tc.getCaretPosition();
+		if (dot > 0) {
+			dot--; // Workaround for Java Highlight issues
+		}
 
 		List<Highlight> paramHighlights = getParameterHighlights();
-		for (int i = 0; i < paramHighlights.size(); i++)
-			if (withinHighlightArea(dot, paramHighlights.get(i)))
+		for (int i = 0; i < paramHighlights.size(); i++) {
+			Highlight h = paramHighlights.get(i);
+			if (dot >= h.getStartOffset() && dot < h.getEndOffset()) {
 				return i;
+			}
+		}
 
 		return -1;
 
@@ -381,44 +370,6 @@ class ParameterizedCompletionContext {
 	}
 
 	/**
-	 * We prefer parameter standing for table names better than column names
-	 * since the choice of the table determines the choice of the column
-	 * 
-	 * there are completions containing only columns but no tables
-	 * 
-	 * @return highlight chosen. not null.
-	 */
-	private Highlight getPreferredInitialHighlight() {
-		Highlight result = null;
-		int idxTableParam = -1;
-		int idxColumnParam = -1;
-		List<Highlight> highlights = getParameterHighlights();
-
-		for (int i = 0; i < pc.getParamCount(); i++) {
-			if (pc.getParam(i).getName().equals(Const.paramNameTable))
-				idxTableParam = i;
-			if (pc.getParam(i).getName().equals(Const.paramNameColumn))
-				idxColumnParam = i;
-		}
-
-		if (idxTableParam >= 0)
-			result = highlights.get(idxTableParam);
-		else if (idxColumnParam >= 0)
-			result = highlights.get(idxColumnParam);
-
-		if (result == null && pc.getParamCount() > 0)
-			result = highlights.get(0);
-
-		return result;
-	}
-
-	@SuppressWarnings("unused")
-	private Highlight getLastHighlight() {
-		List<Highlight> h = getParameterHighlights();
-		return h.get(getLastHighlight(h));
-	}
-
-	/**
 	 * Returns the highlight from a list that comes "last" in that list. Even
 	 * though most parameter highlights are ordered, sometimes they aren't (e.g.
 	 * the "cursor" parameter in a template completion is always last, even
@@ -448,16 +399,11 @@ class ParameterizedCompletionContext {
 		Highlight[] highlights = tc.getHighlighter().getHighlights();
 		for (int i = 0; i < highlights.length; i++) {
 			HighlightPainter painter = highlights[i].getPainter();
-			if (!isGftErrorHighlighting(painter) && (painter == p || painter == endingP))
+			if (painter == p || painter == endingP) {
 				paramHighlights.add(highlights[i]);
-
+			}
 		}
-
 		return paramHighlights;
-	}
-
-	private boolean isGftErrorHighlighting(HighlightPainter painter) {
-		return painter instanceof UnderlineHighlightPainter;
 	}
 
 	/**
@@ -470,35 +416,22 @@ class ParameterizedCompletionContext {
 		if (paramChoicesWindow != null && paramChoicesWindow.isVisible()) {
 			String choice = paramChoicesWindow.getSelectedChoice();
 			if (choice != null) {
-				insertChoice(choice);
+				JTextComponent tc = ac.getTextComponent();
+				Highlight h = getCurrentParameterHighlight();
+				if (h != null) {
+					// "+1" is a workaround for Java Highlight issues.
+					tc.setSelectionStart(h.getStartOffset() + 1);
+					tc.setSelectionEnd(h.getEndOffset());
+					tc.replaceSelection(choice);
+					moveToNextParam();
+				} else {
+					UIManager.getLookAndFeel().provideErrorFeedback(tc);
+				}
 				return true;
 			}
 		}
 		return false;
 	}
-
-	/**
-	 * gft adaption: quote
-	 * @param choice
-	 */
-	private void insertChoice(String choice) {
-		JTextComponent tc = ac.getTextComponent();
-		Highlight h = getCurrentParameterHighlight();
-
-		if (h != null) {
-			String text = tc.getText();
-			// "+1" is a workaround for Java Highlight issues.
-			tc.setSelectionStart(h.getStartOffset() + 1);
-			tc.setSelectionEnd(h.getEndOffset());
-			tc.replaceSelection(AutoCompletion.quoteChoice(choice));
-
-			moveToNextParam();
-		} else {
-			UIManager.getLookAndFeel().provideErrorFeedback(tc);
-		}
-	}
-
-
 
 	/**
 	 * Installs key bindings on the text component that facilitate the user
@@ -576,10 +509,8 @@ class ParameterizedCompletionContext {
 			deactivate();
 		}
 
-		
 		Highlight currentNext = null;
-		int posCurrentParameter = -1;
-		
+		int pos = -1;
 		List<Highlight> highlights = getParameterHighlights();
 		for (int i = 0; i < highlights.size(); i++) {
 			Highlight hl = highlights.get(i);
@@ -589,23 +520,22 @@ class ParameterizedCompletionContext {
 			if (currentNext == null || currentNext.getStartOffset() < /* = */dot
 					|| (hl.getStartOffset() > dot && hl.getStartOffset() <= currentNext.getStartOffset())) {
 				currentNext = hl;
-				posCurrentParameter = i;
+				pos = i;
 			}
 		}
 
-		if (currentNext != null) {
-			// No params after caret - go to first one
-			if (currentNext.getStartOffset() + 1 <= dot) {
-				int nextIndex = getFirstHighlight(highlights);
-				currentNext = highlights.get(nextIndex);
-				posCurrentParameter = 0;
-			}
-
-			// "+1" is a workaround for Java Highlight issues.
-			tc.setSelectionStart(currentNext.getStartOffset() + 1);
-			tc.setSelectionEnd(currentNext.getEndOffset());
-			updateToolTipText(posCurrentParameter);
+		// No params after caret - go to first one
+		if (currentNext.getStartOffset() + 1 <= dot) {
+			int nextIndex = getFirstHighlight(highlights);
+			currentNext = highlights.get(nextIndex);
+			pos = 0;
 		}
+
+		// "+1" is a workaround for Java Highlight issues.
+		tc.setSelectionStart(currentNext.getStartOffset() + 1);
+		tc.setSelectionEnd(currentNext.getEndOffset());
+		updateToolTipText(pos);
+
 	}
 
 	/**

@@ -18,7 +18,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -27,7 +26,6 @@ import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
-import org.fife.ui.autocomplete.ParameterizedCompletion.Parameter;
 import org.fife.ui.rsyntaxtextarea.PopupWindowDecorator;
 
 /**
@@ -67,8 +65,6 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 	 */
 	private JScrollPane sp;
 
-	private ParameterizedCompletion parameterizedCompletion;
-
 	/**
 	 * Comparator used to sort completions by their relevance before sorting
 	 * them lexicographically.
@@ -90,7 +86,6 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 
 		super(parent);
 		this.ac = ac;
-
 		ComponentOrientation o = ac.getTextComponentOrientation();
 
 		model = new DefaultListModel();
@@ -98,7 +93,6 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 		if (ac.getParamChoicesRenderer() != null) {
 			list.setCellRenderer(ac.getParamChoicesRenderer());
 		}
-
 		list.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -153,16 +147,13 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 	/**
 	 * Initializes this window to offer suggestions for the parameters of a
 	 * specific completion.
-	 * 
-	 * @param paramIdx ftc: only load completions for current parameter
 	 *
 	 * @param pc
 	 *            The completion whose parameters we should offer suggestions
 	 *            for.
 	 */
+	public void initialize(ParameterizedCompletion pc) {
 
-	public void initialize(int paramIdx, ParameterizedCompletion pc) {
-		parameterizedCompletion = pc;
 		CompletionProvider provider = pc.getProvider();
 		ParameterChoicesProvider pcp = provider.getParameterChoicesProvider();
 		if (pcp == null) {
@@ -172,16 +163,11 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 
 		int paramCount = pc.getParamCount();
 		choicesListList = new ArrayList<List<Completion>>(paramCount);
-
 		JTextComponent tc = ac.getTextComponent();
 
 		for (int i = 0; i < paramCount; i++) {
-			List<Completion> choices;
-			if (i == paramIdx) {
-				ParameterizedCompletion.Parameter param = pc.getParam(i);
-				choices = pcp.getParameterChoices(tc, param);
-			} else
-				choices = new LinkedList<Completion>();
+			ParameterizedCompletion.Parameter param = pc.getParam(i);
+			List<Completion> choices = pcp.getParameterChoices(tc, param);
 			choicesListList.add(choices);
 		}
 	}
@@ -224,8 +210,6 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 	 * Displays the choices for the specified parameter matching the given text.
 	 * This will display or hide this popup window as necessary.
 	 *
-	 * ftc: only consider table and column parameters. values need not choices reloaded
-	 *
 	 * @param param
 	 *            The index of the parameter the caret is currently in. This may
 	 *            be <code>-1</code> if not in a parameter (i.e., on the comma
@@ -235,14 +219,6 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 	 *            <code>null</code> to represent the empty string.
 	 */
 	public void setParameter(int param, String prefix) {
-		Parameter p = parameterizedCompletion.getParam(param);
-
-		if (!(p.getName().startsWith("t") || p.getName().startsWith("c"))) {
-			setVisible(false);
-			return;
-		}
-
-		initialize(param, parameterizedCompletion);
 
 		model.clear();
 		List<Completion> temp = new ArrayList<Completion>();
@@ -313,22 +289,11 @@ public class ParameterizedCompletionChoicesWindow extends JWindow {
 	public void setVisible(boolean visible) {
 		if (visible != isVisible()) {
 			// i.e. if no possibilities matched what's been typed
-			if (visible && model.size() == 0) {
+			if (visible && model.size() == 0) {// list.getVisibleRowCount()==0)
+												// {
 				return;
 			}
 			super.setVisible(visible);
-			workaroundOrphanedWindowFragments();
-		}
-	}
-
-	/**
-	 * wtf?
-	 */
-	private void workaroundOrphanedWindowFragments() {
-		try {
-			Thread.sleep(50);
-		} catch (InterruptedException e) {
-
 		}
 	}
 

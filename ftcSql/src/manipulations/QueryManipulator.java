@@ -288,7 +288,6 @@ public class QueryManipulator {
 	}
 
 	public QueryPatching getPatcher(int cursorPosition) {
-
 		return new QueryPatching(tableInfoResolver, getCursorContext(cursorPosition), cursorPosition, query);
 	}
 
