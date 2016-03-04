@@ -1,5 +1,5 @@
 package org.cg.common.threading;
 
-public interface OnAllProcessed {
-	void announce();
+public interface OnAllProcessed<T> {
+	void announce(T results);
 }

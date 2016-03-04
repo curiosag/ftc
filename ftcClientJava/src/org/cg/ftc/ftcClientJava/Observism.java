@@ -12,7 +12,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.cg.common.interfaces.OnValueChangedEvent;
+import org.cg.common.interfaces.OnTextFieldChangedEvent;
 
 public class Observism {
 
@@ -75,10 +75,10 @@ public class Observism {
 	}
 
 	private static FocusListener createValueChangedListener(final JTextField textField,
-			final OnValueChangedEvent delegate) {
+			final OnTextFieldChangedEvent delegate) {
 		FocusListener result = new FocusListener() {
 
-			OnValueChangedEvent onFocus = delegate;
+			OnTextFieldChangedEvent onFocus = delegate;
 			String value = textField.getText();
 
 			@Override
@@ -96,7 +96,7 @@ public class Observism {
 		return result;
 	}
 
-	public static void addValueChangedListener(JTextField f, OnValueChangedEvent delegate) {
+	public static void addValueChangedListener(JTextField f, OnTextFieldChangedEvent delegate) {
 		f.addFocusListener(createValueChangedListener(f, delegate));
 	}
 

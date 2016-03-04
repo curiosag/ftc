@@ -2,6 +2,6 @@ package org.cg.common.interfaces;
 
 import javax.swing.JTextField;
 
-public interface OnValueChangedEvent {
+public interface OnTextFieldChangedEvent {
 	void notify(JTextField field);
 }

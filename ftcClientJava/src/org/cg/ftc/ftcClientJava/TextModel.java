@@ -13,7 +13,7 @@ public class TextModel extends Observable {
 
 	private String value = "";
 	private String valueAppended = "";
-
+	
 	String getValue() {
 		return value;
 	}

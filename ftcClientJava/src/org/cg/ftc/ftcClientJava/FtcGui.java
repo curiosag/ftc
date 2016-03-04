@@ -6,7 +6,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import org.cg.common.check.Check;
-import org.cg.common.interfaces.OnValueChangedEvent;
+import org.cg.common.interfaces.OnTextFieldChangedEvent;
+import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
 import org.cg.common.misc.SimpleObservable;
 import org.cg.common.swing.WindowClosingListener;
@@ -14,6 +15,8 @@ import org.cg.ftc.ftcQueryEditor.QueryEditor;
 import org.cg.ftc.shared.interfaces.CompletionsSource;
 import org.cg.ftc.shared.interfaces.SyntaxElementSource;
 import org.cg.ftc.shared.structures.ClientSettings;
+import org.fife.ui.rtextarea.ConfigurableCaret;
+
 import net.miginfocom.swing.MigLayout;
 
 import java.awt.*;
@@ -102,7 +105,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		});
 
 	}
-
+	
 	@Override
 	public void setActionListener(ActionListener l) {
 		passOnactionListener = l;
@@ -165,12 +168,12 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	}
 
 	@Override
-	public void addClientIdChangedListener(OnValueChangedEvent e) {
+	public void addClientIdChangedListener(OnTextFieldChangedEvent e) {
 		Observism.addValueChangedListener(textFieldClientId, e);
 	}
 
 	@Override
-	public void addClientSecretChangedListener(OnValueChangedEvent e) {
+	public void addClientSecretChangedListener(OnTextFieldChangedEvent e) {
 		Observism.addValueChangedListener(textFieldClientSecret, e);
 	}
 
@@ -182,6 +185,22 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	@Override
 	public void addQueryTextChangedListener(DocumentListener listener) {
 		queryEditor.getDocument().addDocumentListener(listener);
+	}
+	
+	@Override
+	public void addQueryCaretChangedListener(OnValueChanged<Integer> onChange) {
+		queryEditor.queryText.getCaret().addChangeListener(createCaretChangedListener(onChange));
+	}
+
+	private ChangeListener createCaretChangedListener(final OnValueChanged<Integer> onChange) {
+		return new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Check.isTrue(e.getSource() instanceof ConfigurableCaret);
+				ConfigurableCaret caret = (ConfigurableCaret) e.getSource();
+				onChange.notify(caret.getDot());
+			}};
 	}
 
 	@Override
@@ -521,4 +540,5 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	public Progress getProgressMonitor() {
 		return progressMonitor;
 	}
+
 }

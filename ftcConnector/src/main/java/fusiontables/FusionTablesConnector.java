@@ -35,7 +35,7 @@ import com.google.api.services.fusiontables.model.Sqlresponse;
 import com.google.api.services.fusiontables.model.Table;
 import com.google.common.base.Optional;
 
-import main.java.fusiontables.deserialize.GftResponseJson;
+import main.java.fusiontables.deserialize.GftResponse;
 
 public class FusionTablesConnector implements Connector {
 
@@ -309,7 +309,7 @@ public class FusionTablesConnector implements Connector {
 
 		ObjectMapper jsonmapper = new ObjectMapper();
 		try {
-			GftResponseJson data = jsonmapper.readValue(json, GftResponseJson.class);
+			GftResponse data = jsonmapper.readValue(json, GftResponse.class);
 			return new QueryResult(HttpStatus.SC_OK, new DefaultTableModel(data.rows, data.columns), null);
 		} catch (IOException e) {
 			return createErrorResult(HttpStatus.SC_METHOD_FAILURE, e.getMessage());

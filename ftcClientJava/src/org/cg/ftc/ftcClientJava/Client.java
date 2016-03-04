@@ -8,7 +8,8 @@ import org.cg.common.check.Check;
 import org.cg.common.core.AbstractLogger;
 import org.cg.common.core.DelegatingLogger;
 import org.cg.common.core.SystemLogger;
-import org.cg.common.interfaces.OnValueChangedEvent;
+import org.cg.common.interfaces.OnTextFieldChangedEvent;
+import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.io.PreferencesStringStorage;
 import org.cg.common.io.logging.DelegatingOutputStream;
 import org.cg.common.io.logging.OnLineWritten;
@@ -67,16 +68,26 @@ public class Client {
 				model.queryText.addObserver(ui.createQueryObserver());
 				
 				ui.setActionListener(controller);
-				ui.addClientIdChangedListener(createOnValueChangedEvent(model.clientId));
-				ui.addClientSecretChangedListener(createOnValueChangedEvent(model.clientSecret));
+				ui.addClientIdChangedListener(createOnTextFieldChangedEvent(model.clientId));
+				ui.addClientSecretChangedListener(createOnTextFieldChangedEvent(model.clientSecret));
 				ui.addResultTextChangedListener(model.resultText.getListener());
 				ui.addQueryTextChangedListener(model.queryText.getListener());
+				ui.addQueryCaretChangedListener(createQueryCaretChangedListener(model));
 				
 				model.clientId.setValue(clientSettings.clientId);
 				model.clientSecret.setValue(clientSettings.clientSecret);
 
 				progress.setDelegate(ui.getProgressMonitor());
 				controller.authenticate();
+			}
+
+			private OnValueChanged<Integer> createQueryCaretChangedListener(final ftcClientModel model) {
+				return new OnValueChanged<Integer>(){
+
+					@Override
+					public void notify(Integer value) {
+						model.caretPositionQueryText = value;
+					}};
 			}
 		};
 	}
@@ -85,7 +96,6 @@ public class Client {
 		OnLineWritten redirect = new OnLineWritten() {
 			@Override
 			public void notify(String value) {
-				// there's a java 7 issue where the TextModel itself can not be passed to addLogLines
 				model.append(LogUtil.getLogLine(value));
 			}
 		};
@@ -95,8 +105,8 @@ public class Client {
 
 	}
 
-	private static OnValueChangedEvent createOnValueChangedEvent(final TextModel target) {
-		return new OnValueChangedEvent() {
+	private static OnTextFieldChangedEvent createOnTextFieldChangedEvent(final TextModel target) {
+		return new OnTextFieldChangedEvent() {
 
 			@Override
 			public void notify(JTextField field) {

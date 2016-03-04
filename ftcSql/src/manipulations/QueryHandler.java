@@ -436,11 +436,12 @@ public class QueryHandler extends Observable {
 
 	private synchronized QueryResult hdlRowIdCompositeQuery(StatementType statementType, String query,
 			final Progress progress) {
-		
+
 		if (compositeQueryExecutor != null)
 			return packQueryResult("New query not processed. Composite queries being executed");
 
 		RefactoredSql r = createManipulator(addSemicolon(query)).refactorQuery();
+
 		Check.isTrue(Op.in(statementType, StatementType.DELETE, StatementType.UPDATE));
 
 		if (r.problemsEncountered.isPresent())
@@ -449,36 +450,41 @@ public class QueryHandler extends Observable {
 		if (r.keywordWhereStartIndex < 0)
 			return hdlQuery(statementType, r.refactored, execute);
 
-		Check.isTrue(r.tableIds.size() == 1);
+		if (r.tableIds.size() != 1)
+			return packQueryResult(String.format("%d tableids found for requested query", r.tableIds.size()));
 
 		final List<String> compositeQueries = new LinkedList<String>();
 		String tableId = r.tableIds.get(0);
-		String dmlQuery = query.substring(0, r.keywordWhereStartIndex);
-		String queryCondition = query.substring(r.keywordWhereStartIndex);
+		String dmlQuery = r.refactored.substring(0, r.keywordWhereStartIndex);
+		String queryCondition = r.refactored.substring(r.keywordWhereStartIndex);
 		String rowidQuery = String.format("SELECT ROWID FROM %s %s", tableId, queryCondition);
-		String queryTemplate = dmlQuery + " WHERE ROWID = %s";
+		String queryTemplate = dmlQuery + " WHERE ROWID = '%s'";
 
 		QueryResult result = connector.fetch(rowidQuery);
-		Check.isTrue(result.data.isPresent());
-		TableModel data = result.data.get();
+		if (!result.data.isPresent())
+			logger.Info("Query did not affect any rows:" + rowidQuery);
+		else {
+			TableModel data = result.data.get();
 
-		int i = 0;
-		while (i < data.getRowCount()) {
-			compositeQueries.add(String.format(queryTemplate, data.getValueAt(i, 0).toString()));
-			i++;
+			int i = 0;
+			while (i < data.getRowCount()) {
+				compositeQueries.add(String.format(queryTemplate, data.getValueAt(i, 0).toString()));
+				i++;
+			}
+
+			compositeQueryExecutor = new CompositeQueryExecutor(compositeQueries, connector, progress,
+					new OnAllProcessed<List<QueryResult>>() {
+
+						@Override
+						public void announce(List<QueryResult> results) {
+							logger.Info(String.format("%d composite queries processed", compositeQueries.size()));
+							compositeQueryExecutor = null;
+						}
+					}, logger).executeAsync();
+
+			logger.Info(String.format("Queued %s %d times", statementType.name(), i));
 		}
-
-		compositeQueryExecutor = new CompositeQueryExecutor(compositeQueries, connector, progress,
-				new OnAllProcessed() {
-					@Override
-					public void announce() {
-						logger.Info(String.format("%d composite queries processed", compositeQueries.size()));
-						compositeQueryExecutor = null;
-					}
-				}).executeAsync();
-
-		logger.Info(String.format("Queued %s %d times", statementType.name(), i));
-		return new QueryResult(HttpStatus.SC_OK, null, null); 
+		return new QueryResult(HttpStatus.SC_OK, null, null);
 	}
 
 	private final static int idxNameFrom = 7;
@@ -650,9 +656,11 @@ public class QueryHandler extends Observable {
 
 	public synchronized void cancelRequest() {
 		CompositeQueryExecutor executor = compositeQueryExecutor;
-		if (executor != null)
+		if (executor != null){
 			executor.cancel();
-		
+			executor = null;
+		}
+
 		cancelRequested = true;
 	}
 

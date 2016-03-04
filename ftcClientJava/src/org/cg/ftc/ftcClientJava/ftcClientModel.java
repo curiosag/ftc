@@ -12,6 +12,7 @@ public class ftcClientModel {
 	public final TextModel clientSecret = new TextModel();
 	
 	public final TextModel queryText = new TextModel();
+	public int caretPositionQueryText;
 	public final TextModel resultText = new TextModel();
 
 	public final SimpleObservable<TableModel> resultData = new SimpleObservable<TableModel>(null);
