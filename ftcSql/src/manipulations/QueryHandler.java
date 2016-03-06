@@ -1,6 +1,8 @@
 package manipulations;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -401,19 +403,40 @@ public class QueryHandler extends Observable {
 
 		String selectRowidQuery = getSelectRowIdQuery(r);
 		final QueryResult rowids = connector.fetch(selectRowidQuery);
-		
+
 		if (!rowids.data.isPresent() || rowids.data.get().getRowCount() == 0)
 			return new QueryResult(HttpStatus.SC_NO_CONTENT, null, "No rows affected: " + selectRowidQuery);
-		
+
 		final List<String> compositeQueries = createCompositeQueries(rowids.data.get(), getQueryTemplate(r));
 		compositeQueryExecutor = new CompositeQueryExecutor(compositeQueries, connector, progress,
 				new Continuation<QueryResult>() {
 
 					@Override
 					public void invoke(QueryResult result) {
-						String feedback = String.format("%d of %d composite queries processed", compositeQueries.size(), rowids.data.get().getRowCount());
-						onExecutionFinished.invoke(new QueryResult(result.status, result.data.get(), result.message.or("") + feedback));
-						compositeQueryExecutor = null;
+						try {
+							String feedback = String.format("%s of %d composite queries processed", getCount(result),
+									compositeQueries.size());
+							onExecutionFinished.invoke(new QueryResult(result.status, result.data.get(),
+									result.message.or("") + feedback));
+							compositeQueryExecutor = null;
+						} catch (Exception e) {
+							compositeQueryExecutor = null;
+							onExecutionFinished.invoke(new QueryResult(HttpStatus.SC_METHOD_FAILURE, null,
+									"Catastrophic unexpected exception: \n" + fmtStackTrace(e)));
+						}
+					}
+
+					private String fmtStackTrace(Throwable e) {
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						e.printStackTrace(pw);
+						return sw.toString();
+					}
+
+					private String getCount(QueryResult result) {
+						Check.isTrue(result.data.isPresent() && result.data.get().getColumnCount() == 1
+								&& result.data.get().getRowCount() == 1);
+						return result.data.get().getValueAt(0, 0).toString();
 					}
 
 				}, logger).executeAsync();
@@ -443,7 +466,7 @@ public class QueryHandler extends Observable {
 		if (r.tableIds.size() != 1)
 			return Optional
 					.of(packQueryResult(String.format("%d tableids found for requested query", r.tableIds.size())));
-		
+
 		if (r.keywordWhereStartIndex < 0)
 			return Optional.of(hdlQuery(statementType, r.refactored, execute));
 
@@ -636,13 +659,13 @@ public class QueryHandler extends Observable {
 
 	public Optional<QueryAtHand> getQueryAtCaretPosition(String text, int pos) {
 		List<Split> splits = createManipulator(text).splitStatements().splits;
-		
+
 		if (splits.size() == 1)
 			return Optional.of(new QueryAtHand(text, pos));
 		else
-		for (Split s : splits)
-			if (Op.between(s.start, pos, s.stop))
-				return Optional.of(new QueryAtHand(s.text, pos - s.start));
+			for (Split s : splits)
+				if (Op.between(s.start, pos, s.stop))
+					return Optional.of(new QueryAtHand(s.text, pos - s.start));
 
 		return Optional.absent();
 	}

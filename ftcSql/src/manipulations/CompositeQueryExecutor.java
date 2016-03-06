@@ -16,6 +16,7 @@ import org.cg.common.threading.SynchronizedProgressDecorator;
 import org.cg.ftc.shared.interfaces.Connector;
 import org.cg.ftc.shared.structures.QueryResult;
 import org.cg.common.threading.Parallel.TaskHandler;
+import org.cg.common.util.Op;
 
 public class CompositeQueryExecutor {
 
@@ -30,7 +31,8 @@ public class CompositeQueryExecutor {
 	private boolean cancelled = false;
 	private boolean started = false;
 	private int maxThreads = 2;
-
+	private int threadsCancelled = 0;
+	
 	public CompositeQueryExecutor(List<String> queries, Connector connector, Progress p,
 			Continuation<QueryResult> onAllProcessed, Logging logger) {
 		this.progress = new SynchronizedProgressDecorator(p);
@@ -46,14 +48,21 @@ public class CompositeQueryExecutor {
 		Check.isFalse(cancelled);
 		Check.isFalse(started);
 		started = true;
+		threadsCancelled = 0;
+		
 		compositeQueryExecutions = new Parallel.ForEach<String, Void>(queries).withFixedThreads(maxThreads)
 				.apply(new Parallel.F<String, Void>() {
 					public Void apply(String s) {
 						// async queries tend to create sc_service_unavailable
 						QueryResult result = new QueryResult(HttpStatus.SC_SERVICE_UNAVAILABLE, null, null);
-						while (! cancelled && result.status == HttpStatus.SC_SERVICE_UNAVAILABLE)
+						while (!cancelled && result.status == HttpStatus.SC_SERVICE_UNAVAILABLE)
 							result = connector.fetch(s);
+
+						if (cancelled)
+							result = new QueryResult(HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE, null, "Execution cancelled");
+
 						incExecutions(s, result);
+
 						return null;
 					}
 				});
@@ -71,28 +80,40 @@ public class CompositeQueryExecutor {
 	}
 
 	private void incExecutions(String queryExecuted, QueryResult queryResult) {
-		if (queryResult.status != HttpStatus.SC_OK)
+		if (! Op.in(queryResult.status,  HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE, HttpStatus.SC_OK))
 			logger.Info(String.format("Not o.k.: status %s msg %s running composite query %s",
 					queryResult.status.name(), queryResult.message.or(""), queryExecuted));
 
 		queryResults.add(queryResult);
-		progress.announce(queryResults.size());
+		if (cancelled)
+			progress.announce(queries.size());
+		else
+			progress.announce(queryResults.size());
 
-		if (queryResults.size() == queries.size()) 
+		if (queryResult.status ==  HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE)
+			incThreadsCancelled();
+		
+		if (queryResults.size() == queries.size() || cancelCompleteInComplicatedMultithreadedSituation())
 			onCompositesDone.invoke(joinOkResults(queryResults));
 	}
 
+	private boolean cancelCompleteInComplicatedMultithreadedSituation() {
+		return cancelled && allThreadsCancelled();
+	}
+
 	private QueryResult joinOkResults(List<QueryResult> results) {
-		// in fact each result only has the count of affected rows, which is always 1, but not the rowid
-		// for an unconditional delete statement the result would be "all rows" instead of a number btw
+		// in fact each result only has the count of affected rows, which is
+		// always 1, but not the rowid
+		// for an unconditional delete statement the result would be "all rows"
+		// instead of a number btw
 		int count = 0;
-		for (QueryResult r : results) 
+		for (QueryResult r : results)
 			if (r.status == HttpStatus.SC_OK)
-				count ++;
+				count++;
 
 		Vector<Vector<String>> rows = new Vector<Vector<String>>();
 		rows.add(createPopulated(Integer.toString(count)));
-		
+
 		return new QueryResult(HttpStatus.SC_OK, new DefaultTableModel(rows, createPopulated("affected_rows")), "");
 	}
 
@@ -100,6 +121,14 @@ public class CompositeQueryExecutor {
 		Vector<String> result = new Vector<String>();
 		result.add(value);
 		return result;
+	}
+
+	private boolean allThreadsCancelled() {
+		return threadsCancelled == maxThreads;
+	}
+
+	private void incThreadsCancelled() {
+		this.threadsCancelled ++;
 	}
 
 }
