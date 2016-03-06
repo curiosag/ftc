@@ -50,7 +50,7 @@ You need  <a target="_blank" href="https://support.google.com/fusiontables">some
 <p></p>
 For tables owned by yourself you can use table names instead of table IDs. Make sure, there are no naming collisions. Alt+F5 outputs the query text with table name replaced by table Id, given there is any Id for that name.
 <p></p>
-The client accepts some usual Sql terms not covered by Fusion Tables Sql and translates them to api calls. UPDATE and DELETE are augmented, they accept the same &lt;filter_condition&gt; as SELECT ({ WHERE &lt;filter_condition&gt; | &lt;spatial_condition&gt; { AND &lt;filter_condition&gt; }* }), which eventually makes the tool suitable for hands-on data administration.
+The client accepts some usual Sql terms not covered by Fusion Tables Sql and translates them to api calls. UPDATE and DELETE are augmented, they accept the same &lt;filter_condition&gt; as SELECT ({ WHERE &lt;filter_condition&gt; | &lt;spatial_condition&gt; { AND &lt;filter_condition&gt; }* }).
  <p></p>
       <h3>Extended commands</h3>
       
@@ -85,7 +85,7 @@ The client accepts some usual Sql terms not covered by Fusion Tables Sql and tra
 <h3>Limitations</h3>
         <ul>
         	<li>Some augmented operations are composites and not  <a target="_blank" href="https://www.youtube.com/watch?v=1Tko1G6XRiQ" > atomic </a>. 
-        	E.g. "create table as select" in fact is "copy table" followed by "rename". Say copy succeed, still rename may fail for whatever reason, "401 - service not available" being a popular one. This leaves a copy with the default name: "Copy of [original name]". Issue another rename in this case. UPDATE and DELETE for multiple ROWIDs may fail anytime in between leaving the operation incomplete, but potentially repeatable.</li>
+        	E.g. "create table as select" in fact is "copy table" followed by "rename". Say copy succeed, still rename may fail for whatever reason. This leaves a copy with the default name: "Copy of [original name]". Issue another rename in this case. UPDATE and DELETE for multiple ROWIDs may fail anytime in between leaving the operation incomplete, but potentially repeatable. Another issue here is limited possibility for query parallelization. Only 2 threads do this now and give you occasional "503 - service not available" errors, which become more frequent with more threads. Covered by a retry mechanism, until success or manual cancellation. </li>
         	 <li>Column ids can be used in queries, but they are not covered by semantic highlighting, so you get a blue wiggle line for them.</li>
         	 <li>Keyword "AS" is mandatory in definitions of table aliases. </li>
         	 <li>Handling huge amounts of data isn't the focus of the implementation nor of the Sql interface. That said, it may take you as far as the network, the computer's memory and the fusion tables service allows it to.</li>
@@ -102,7 +102,7 @@ Find the  <a target="_blank" href="https://github.com/curiosag/ftc/issues">list 
         <ul>
 			 <li>A command line interface. Every application should have one</li>
 			 <li>Extend copy table command to external tables</li>
-        	 <li>Support multiple queries in the editor, with sequential execution and multiple files/tab sheets</li>
+        	 <li>Sequential execution of multiple queries in the editor. Multiple files/tab sheets</li>
         	 <li>Full SELECT clause in CREATE TABLE statement</li>
         	 <li>Allow WHERE clause in CREATE VIEW statement with JOIN clause</li>
 			 <li>And all the rest like import, export and stuff</li>
