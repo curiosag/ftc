@@ -184,42 +184,39 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		logging.Info("command memorized");
 	}
 
-
 	private Continuation<QueryResult> onExecutionFinished = new Continuation<QueryResult>() {
 		@Override
 		public void invoke(QueryResult result) {
 
-			if (result.data.isPresent())
-				model.resultData.setValue(result.data.get());
+			try {
+				if (result.data.isPresent())
+					model.resultData.setValue(result.data.get());
 
-			String msg;
-			if (result.data.isPresent())
-				msg = String.format("%d records returned", result.data.get().getRowCount());
-			else if (result.status == HttpStatus.SC_CONTINUE)
-				msg = "Composites being processed. ";
-			else {
-				msg = "Executed query ";
+				String msg;
+				if (result.status == HttpStatus.SC_CONTINUE)
+					msg = "Composite queries being processed.";
+				else {
+					float elapsed = (float) executionStopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000;
+					msg = String.format("Executed query in %.3f seconds. %d records returned", elapsed,
+							result.data.isPresent() ? result.data.get().getRowCount() : 0);
+				}
 
-				float elapsed = (float) executionStopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000;
-				msg = msg + String.format("in %.3f seconds", elapsed);
+				logging.Info(msg);
+				if (result.message.isPresent())
+					logging.Info(result.message.get());
+			} finally {
+				setStateIsExecuting(false);
 			}
 
-			logging.Info(msg);
-			if (result.message.isPresent())
-				logging.Info(result.message.get());
-
-			
-			setStateIsExecuting(false);
 		}
 	};
-	
-	
+
 	private Function<QueryResult> runSql = new Function<QueryResult>() {
 		@Override
 		public QueryResult invoke(Progress progress) {
 			setStateIsExecuting(true);
 			try {
-				Continuation<QueryResult> onCompositeExecutionFinished = onExecutionFinished;  
+				Continuation<QueryResult> onCompositeExecutionFinished = onExecutionFinished;
 				return getQueryResult(progress, onCompositeExecutionFinished);
 			} catch (Exception e) {
 				return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null,
@@ -227,15 +224,15 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			}
 		}
 	};
-	
+
 	private void hdlExecSql() {
-		Continuation<QueryResult> onSingularExecutionFinished = onExecutionFinished;  
+		Continuation<QueryResult> onSingularExecutionFinished = onExecutionFinished;
 		AsyncWork.goUnderground(runSql, onSingularExecutionFinished, progress).execute();
 	}
 
 	private QueryResult getQueryResult(Progress progress, Continuation<QueryResult> onExecutionFinished) {
 		String text = model.queryText.getValue();
-		history	.add(text);
+		history.add(text);
 
 		Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText);
 		if (query.isPresent())
@@ -285,20 +282,23 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		SwingWorker<ConnectionStatus, Object> connectionWorker = AsyncWork.goUnderground(authFunction,
 				authContinuation);
 		setStateIsExecuting(true);
-		connectionWorker.execute();
-		logging.Info("attempting to authorize");
-		String msgAuthFailed = "authorization failed: ";
 		try {
-			ConnectionStatus result = connectionWorker.get(clientSettings.authTimeout, TimeUnit.SECONDS);
-			if (result.status == HttpStatus.SC_OK)
-				logging.Info("authorization succeeded");
-			else
-				logging.Info(msgAuthFailed + result.message.or("unknown reason"));
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			connectionWorker.cancel(true);
-			logging.Info(String.format("%s %s %s", msgAuthFailed, e.getClass().getSimpleName(), e.getMessage()));
+			connectionWorker.execute();
+			logging.Info("attempting to authorize");
+			String msgAuthFailed = "authorization failed: ";
+			try {
+				ConnectionStatus result = connectionWorker.get(clientSettings.authTimeout, TimeUnit.SECONDS);
+				if (result.status == HttpStatus.SC_OK)
+					logging.Info("authorization succeeded");
+				else
+					logging.Info(msgAuthFailed + result.message.or("unknown reason"));
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				connectionWorker.cancel(true);
+				logging.Info(String.format("%s %s %s", msgAuthFailed, e.getClass().getSimpleName(), e.getMessage()));
+			}
+		} finally {
+			setStateIsExecuting(false);
 		}
-		setStateIsExecuting(false);
 	}
 
 	private void hdlFileOpen() {

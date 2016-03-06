@@ -105,7 +105,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		});
 
 	}
-	
+
 	@Override
 	public void setActionListener(ActionListener l) {
 		passOnactionListener = l;
@@ -186,21 +186,22 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	public void addQueryTextChangedListener(DocumentListener listener) {
 		queryEditor.getDocument().addDocumentListener(listener);
 	}
-	
+
 	@Override
 	public void addQueryCaretChangedListener(OnValueChanged<Integer> onChange) {
 		queryEditor.queryText.getCaret().addChangeListener(createCaretChangedListener(onChange));
 	}
 
 	private ChangeListener createCaretChangedListener(final OnValueChanged<Integer> onChange) {
-		return new ChangeListener(){
+		return new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				Check.isTrue(e.getSource() instanceof ConfigurableCaret);
 				ConfigurableCaret caret = (ConfigurableCaret) e.getSource();
 				onChange.notify(caret.getDot());
-			}};
+			}
+		};
 	}
 
 	@Override
@@ -218,11 +219,19 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		return new Observer() {
 
 			@Override
-			public void update(Observable o, Object arg) {
-				Object value = SimpleObservable.getValue(o);
-				Check.isTrue(value instanceof TableModel);
-				TableModel model = (TableModel) value;
-				dataTable.setModel(model);
+			public void update(final Observable o, Object arg) {
+
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						Object value = SimpleObservable.getValue(o);
+						Check.isTrue(value instanceof TableModel);
+						TableModel model = (TableModel) value;
+
+						dataTable.setModel(model);
+					}
+				});
+
 			}
 		};
 	}
