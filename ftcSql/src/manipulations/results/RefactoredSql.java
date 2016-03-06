@@ -20,6 +20,9 @@ public class RefactoredSql extends ParseResult {
 	}
 
 	private int considerShiftBroughtByTableId(String original, String refactored, int kWhereStartIndex) {
-		return kWhereStartIndex + (refactored.length() - original.length());
+		if (kWhereStartIndex >= 0)
+			return kWhereStartIndex + (refactored.length() - original.length());
+		else
+			return kWhereStartIndex;
 	}
 }

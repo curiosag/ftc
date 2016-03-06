@@ -2,10 +2,12 @@ package manipulations.results;
 
 import java.util.List;
 
-public class Splits extends ParseResult {
-	public final List<String> splits;
+import manipulations.Split;
 
-	public Splits(List<String> splits, String problemsEncountered) {
+public class Splits extends ParseResult {
+	public final List<Split> splits;
+
+	public Splits(List<Split> splits, String problemsEncountered) {
 		super(problemsEncountered);
 		this.splits = splits;
 	}

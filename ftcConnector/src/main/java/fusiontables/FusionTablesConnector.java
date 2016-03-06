@@ -68,7 +68,7 @@ public class FusionTablesConnector implements Connector {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-	
+
 	public ConnectionStatus reset(Dictionary<String, String> connectionInfo) {
 		return reset(Optional.of(new AuthInfo(connectionInfo.get(ClientSettings.keyClientId),
 				connectionInfo.get(ClientSettings.keyClientSecret))));
@@ -93,7 +93,7 @@ public class FusionTablesConnector implements Connector {
 			fusiontables = Optional.absent();
 			result = new ConnectionStatus(e);
 		}
-		
+
 		fusiontables = Optional.of(new Fusiontables.Builder(Auth.getHttpTransport(), JSON_FACTORY, credential)
 				.setApplicationName(APPLICATION_NAME).build());
 
@@ -107,7 +107,7 @@ public class FusionTablesConnector implements Connector {
 
 		authStream = new StringReader(
 				String.format(authInfoJSon, authInfo.get().clientId, authInfo.get().clientSecret));
-		
+
 		Credential result = Auth.authorize(authStream, dataStoreCarrierNode);
 		result.refreshToken();
 		return result;
@@ -258,7 +258,10 @@ public class FusionTablesConnector implements Connector {
 		try {
 			return deserializeGftJson(executeSql(query));
 		} catch (Exception e) {
-			return createErrorResult(HttpStatus.SC_METHOD_FAILURE, e.getMessage());
+			if (e.getMessage().indexOf("503 Service Unavailable") >= 0)
+				return createErrorResult(HttpStatus.SC_SERVICE_UNAVAILABLE, e.getMessage());
+			else
+				return createErrorResult(HttpStatus.SC_METHOD_FAILURE, e.getMessage());
 		}
 	}
 
@@ -301,9 +304,8 @@ public class FusionTablesConnector implements Connector {
 	}
 
 	public static QueryResult deserializeGftJson(String json) {
-
+		
 		HttpStatus status = getHttpStatus(json);
-
 		if (status != HttpStatus.SC_OK)
 			return createErrorResult(status, json);
 
@@ -326,7 +328,7 @@ public class FusionTablesConnector implements Connector {
 			logger.Error(e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public QueryResult copyTable(String tableId, String newName) {
 		try {
@@ -350,7 +352,7 @@ public class FusionTablesConnector implements Connector {
 		return new DefaultTableModel(rows, col);
 	}
 
-	//TODO use rest api class
+	// TODO use rest api class
 	public QueryResult _copyTable(String tableId, String newName) {
 		Check.isTrue(accessToken.isPresent());
 

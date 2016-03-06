@@ -19,7 +19,7 @@ public class Completions {
 	{
 		this.replacementBoundaries = replacementBoundaries;
 	}
-	
+
 	public static Completions create(Optional<OrderedIntTuple> replacementBoundaries, SqlCompletionType completionType, String name, String snippet)
 	{
 		Completions result = new Completions(replacementBoundaries);

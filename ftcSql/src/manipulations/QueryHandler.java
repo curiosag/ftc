@@ -17,9 +17,9 @@ import org.antlr.v4.runtime.Token;
 import org.cg.common.check.Check;
 import org.cg.common.core.Logging;
 import org.cg.common.http.HttpStatus;
+import org.cg.common.interfaces.Continuation;
 import org.cg.common.interfaces.Progress;
 import org.cg.common.structures.StackLight;
-import org.cg.common.threading.OnAllProcessed;
 import org.cg.common.util.Op;
 import org.cg.common.util.StringUtil;
 import org.cg.ftc.parser.FusionTablesSqlLexer;
@@ -29,6 +29,7 @@ import org.cg.ftc.shared.interfaces.SyntaxElementType;
 import org.cg.ftc.shared.structures.ClientSettings;
 import org.cg.ftc.shared.structures.ColumnInfo;
 import org.cg.ftc.shared.structures.ConnectionStatus;
+import org.cg.ftc.shared.structures.QueryAtHand;
 import org.cg.ftc.shared.structures.QueryResult;
 import org.cg.ftc.shared.structures.TableInfo;
 import org.cg.ftc.shared.uglySmallThings.Const;
@@ -43,7 +44,6 @@ import manipulations.results.TableReference;
 
 public class QueryHandler extends Observable {
 	private final boolean reload = true;
-	private boolean cancelRequested = false;
 	private final Logging logger;
 	private final Connector connector;
 	private final boolean preview = true;
@@ -339,18 +339,19 @@ public class QueryHandler extends Observable {
 		return packQueryResult(msg);
 	}
 
-	public QueryResult getQueryResult(String query, Progress progress) {
+	public QueryResult getQueryResult(String query, Progress progress, Continuation<QueryResult> onExecutionFinished) {
 		Check.notNull(progress);
 		logger.Info(String.format("running: '%s'", query));
 
 		try {
-			return innerGetQueryResult(query, progress);
+			return innerGetQueryResult(query, progress, onExecutionFinished);
 		} catch (Exception e) {
 			return packQueryResult(e.getMessage());
 		}
 	}
 
-	private QueryResult innerGetQueryResult(String query, Progress progress) {
+	private QueryResult innerGetQueryResult(String query, Progress progress,
+			Continuation<QueryResult> onExecutionFinished) {
 		QueryManipulator ftr = createManipulator(query);
 		switch (ftr.statementType) {
 		case ALTER:
@@ -363,10 +364,10 @@ public class QueryHandler extends Observable {
 			return hdlQuery(ftr.statementType, query, execute);
 
 		case UPDATE:
-			return hdlRowIdCompositeQuery(ftr.statementType, query, progress);
+			return hdlRowIdCompositeQuery(ftr.statementType, query, progress, onExecutionFinished);
 
 		case DELETE:
-			return hdlRowIdCompositeQuery(ftr.statementType, query, progress);
+			return hdlRowIdCompositeQuery(ftr.statementType, query, progress, onExecutionFinished);
 
 		case CREATE_VIEW:
 			return hdlQuery(ftr.statementType, query, execute);
@@ -388,103 +389,78 @@ public class QueryHandler extends Observable {
 		}
 	}
 
-	private QueryResult _hdlRowIdCompositeQuery(StatementType statementType, String query, Progress progress) {
-		RefactoredSql r = createManipulator(addSemicolon(query)).refactorQuery();
-		Check.isTrue(Op.in(statementType, StatementType.DELETE, StatementType.UPDATE));
-
-		if (r.problemsEncountered.isPresent())
-			return packQueryResult(r.problemsEncountered.get());
-
-		if (r.keywordWhereStartIndex < 0)
-			return hdlQuery(statementType, r.refactored, execute);
-
-		Check.isTrue(r.tableIds.size() == 1);
-		String tableId = r.tableIds.get(0);
-
-		String intro = query.substring(0, r.keywordWhereStartIndex);
-		String whereExpr = query.substring(r.keywordWhereStartIndex);
-
-		String rowidQuery = String.format("SELECT ROWID FROM %s %s", tableId, whereExpr);
-		QueryResult result = connector.fetch(rowidQuery);
-
-		Check.isTrue(result.data.isPresent());
-		TableModel data = result.data.get();
-		String queryTemplate = intro + " WHERE ROWID = %s";
-		announceExecution(data, queryTemplate);
-
-		progress.init(data.getRowCount() - 1);
-		int i = 0;
-		while (i < data.getRowCount() && !requestedCancelled()) {
-			connector.fetch(String.format(queryTemplate, data.getValueAt(i, 0).toString()));
-			i++;
-			progress.announce(i);
-		}
-
-		String processingFeedback = "Processed ";
-		if (requestedCancelled()) {
-			processingFeedback = "Cancelled execution, partially processed ";
-			resetCancelRequest();
-		}
-
-		return packQueryResult(processingFeedback + String.format("%s: %d times", statementType.name(), i));
-	}
-
-	private void announceExecution(TableModel data, String queryTemplate) {
-		logger.Info(String.format("running %s for %d rowids", String.format(queryTemplate, "<number>"),
-				data.getRowCount()));
-	}
-
 	private synchronized QueryResult hdlRowIdCompositeQuery(StatementType statementType, String query,
-			final Progress progress) {
-
-		if (compositeQueryExecutor != null)
-			return packQueryResult("New query not processed. Composite queries being executed");
-
-		RefactoredSql r = createManipulator(addSemicolon(query)).refactorQuery();
+			final Progress progress, final Continuation<QueryResult> onExecutionFinished) {
 
 		Check.isTrue(Op.in(statementType, StatementType.DELETE, StatementType.UPDATE));
+		RefactoredSql r = createManipulator(addSemicolon(query)).refactorQuery();
+
+		Optional<QueryResult> p = shouldPreemt(statementType, r, compositeQueryExecutor);
+		if (p.isPresent())
+			return p.get();
+
+		String selectRowidQuery = getSelectRowIdQuery(r);
+		final QueryResult rowids = connector.fetch(selectRowidQuery);
+		
+		if (!rowids.data.isPresent() || rowids.data.get().getRowCount() == 0)
+			return new QueryResult(HttpStatus.SC_NO_CONTENT, null, "No rows affected: " + selectRowidQuery);
+		
+		final List<String> compositeQueries = createCompositeQueries(rowids.data.get(), getQueryTemplate(r));
+		compositeQueryExecutor = new CompositeQueryExecutor(compositeQueries, connector, progress,
+				new Continuation<QueryResult>() {
+
+					@Override
+					public void invoke(QueryResult result) {
+						String feedback = String.format("%d of %d composite queries processed", compositeQueries.size(), rowids.data.get().getRowCount());
+						onExecutionFinished.invoke(new QueryResult(result.status, result.data.get(), result.message.or("") + feedback));
+						compositeQueryExecutor = null;
+					}
+
+				}, logger).executeAsync();
+
+		return new QueryResult(HttpStatus.SC_CONTINUE, null,
+				String.format("Queued %s %d times", statementType.name(), compositeQueries.size()));
+	}
+
+	private List<String> createCompositeQueries(TableModel data, String queryTemplate) {
+		final List<String> result = new LinkedList<String>();
+		int i = 0;
+		while (i < data.getRowCount()) {
+			result.add(String.format(queryTemplate, data.getValueAt(i, 0).toString()));
+			i++;
+		}
+		return result;
+	}
+
+	private Optional<QueryResult> shouldPreemt(StatementType statementType, RefactoredSql r,
+			CompositeQueryExecutor compositeQueryExecutor2) {
+		if (compositeQueryExecutor != null)
+			return Optional.of(packQueryResult("New query not processed. Composite queries being executed"));
 
 		if (r.problemsEncountered.isPresent())
-			return packQueryResult(r.problemsEncountered.get());
-
-		if (r.keywordWhereStartIndex < 0)
-			return hdlQuery(statementType, r.refactored, execute);
+			return Optional.of(packQueryResult(r.problemsEncountered.get()));
 
 		if (r.tableIds.size() != 1)
-			return packQueryResult(String.format("%d tableids found for requested query", r.tableIds.size()));
+			return Optional
+					.of(packQueryResult(String.format("%d tableids found for requested query", r.tableIds.size())));
+		
+		if (r.keywordWhereStartIndex < 0)
+			return Optional.of(hdlQuery(statementType, r.refactored, execute));
 
-		final List<String> compositeQueries = new LinkedList<String>();
-		String tableId = r.tableIds.get(0);
+		return Optional.absent();
+	}
+
+	private String getQueryTemplate(RefactoredSql r) {
 		String dmlQuery = r.refactored.substring(0, r.keywordWhereStartIndex);
+		String queryTemplate = dmlQuery + " WHERE ROWID = '%s'";
+		return queryTemplate;
+	}
+
+	private String getSelectRowIdQuery(RefactoredSql r) {
+		String tableId = r.tableIds.get(0);
 		String queryCondition = r.refactored.substring(r.keywordWhereStartIndex);
 		String rowidQuery = String.format("SELECT ROWID FROM %s %s", tableId, queryCondition);
-		String queryTemplate = dmlQuery + " WHERE ROWID = '%s'";
-
-		QueryResult result = connector.fetch(rowidQuery);
-		if (!result.data.isPresent())
-			logger.Info("Query did not affect any rows:" + rowidQuery);
-		else {
-			TableModel data = result.data.get();
-
-			int i = 0;
-			while (i < data.getRowCount()) {
-				compositeQueries.add(String.format(queryTemplate, data.getValueAt(i, 0).toString()));
-				i++;
-			}
-
-			compositeQueryExecutor = new CompositeQueryExecutor(compositeQueries, connector, progress,
-					new OnAllProcessed<List<QueryResult>>() {
-
-						@Override
-						public void announce(List<QueryResult> results) {
-							logger.Info(String.format("%d composite queries processed", compositeQueries.size()));
-							compositeQueryExecutor = null;
-						}
-					}, logger).executeAsync();
-
-			logger.Info(String.format("Queued %s %d times", statementType.name(), i));
-		}
-		return new QueryResult(HttpStatus.SC_OK, null, null);
+		return rowidQuery;
 	}
 
 	private final static int idxNameFrom = 7;
@@ -650,22 +626,24 @@ public class QueryHandler extends Observable {
 		notifyObservers();
 	}
 
-	public boolean requestedCancelled() {
-		return cancelRequested;
-	}
-
 	public synchronized void cancelRequest() {
-		CompositeQueryExecutor executor = compositeQueryExecutor;
-		if (executor != null){
-			executor.cancel();
-			executor = null;
+		if (compositeQueryExecutor != null) {
+			compositeQueryExecutor.cancel();
+			compositeQueryExecutor = null;
 		}
 
-		cancelRequested = true;
 	}
 
-	private void resetCancelRequest() {
-		cancelRequested = false;
-	}
+	public Optional<QueryAtHand> getQueryAtCaretPosition(String text, int pos) {
+		List<Split> splits = createManipulator(text).splitStatements().splits;
+		
+		if (splits.size() == 1)
+			return Optional.of(new QueryAtHand(text, pos));
+		else
+		for (Split s : splits)
+			if (Op.between(s.start, pos, s.stop))
+				return Optional.of(new QueryAtHand(s.text, pos - s.start));
 
+		return Optional.absent();
+	}
 }

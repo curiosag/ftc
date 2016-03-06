@@ -29,7 +29,7 @@ public class TestCursorContextTableName {
 	
 	@Test
 	public void testInsertStmt() {
-		String q = "insert into a (col1, col2) values (1, 2);";
+		String q = "insert into x (col1, col2) values (1, 2);";
 		CursorContext c = getCursorContext(q, q.indexOf("x"));
 		checkSqlElement(c);
 	}

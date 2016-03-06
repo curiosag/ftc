@@ -9,8 +9,8 @@ import javax.swing.table.DefaultTableModel;
 import org.cg.common.check.Check;
 import org.cg.common.core.Logging;
 import org.cg.common.http.HttpStatus;
+import org.cg.common.interfaces.Continuation;
 import org.cg.common.interfaces.Progress;
-import org.cg.common.threading.OnAllProcessed;
 import org.cg.common.threading.Parallel;
 import org.cg.common.threading.SynchronizedProgressDecorator;
 import org.cg.ftc.shared.interfaces.Connector;
@@ -23,23 +23,23 @@ public class CompositeQueryExecutor {
 	private final Progress progress;
 	private final List<String> queries;
 	private final Connector connector;
-	private final OnAllProcessed<List<QueryResult>> onAllProcessed;
+	private final Continuation<QueryResult> onCompositesDone;
 	private TaskHandler<Void> compositeQueryExecutions = null;
 	private List<QueryResult> queryResults = new LinkedList<QueryResult>();
 
 	private boolean cancelled = false;
 	private boolean started = false;
-	private int maxThreads = 10;
+	private int maxThreads = 2;
 
 	public CompositeQueryExecutor(List<String> queries, Connector connector, Progress p,
-			OnAllProcessed<List<QueryResult>> onAllProcessed, Logging logger) {
+			Continuation<QueryResult> onAllProcessed, Logging logger) {
 		this.progress = new SynchronizedProgressDecorator(p);
 		this.logger = logger;
 		progress.init(queries.size());
 
 		this.queries = queries;
 		this.connector = connector;
-		this.onAllProcessed = onAllProcessed;
+		this.onCompositesDone = onAllProcessed;
 	}
 
 	public CompositeQueryExecutor executeAsync() {
@@ -49,7 +49,11 @@ public class CompositeQueryExecutor {
 		compositeQueryExecutions = new Parallel.ForEach<String, Void>(queries).withFixedThreads(maxThreads)
 				.apply(new Parallel.F<String, Void>() {
 					public Void apply(String s) {
-						incExecutions(s, connector.fetch(s));
+						// async queries tend to create sc_service_unavailable
+						QueryResult result = new QueryResult(HttpStatus.SC_SERVICE_UNAVAILABLE, null, null);
+						while (! cancelled && result.status == HttpStatus.SC_SERVICE_UNAVAILABLE)
+							result = connector.fetch(s);
+						incExecutions(s, result);
 						return null;
 					}
 				});
@@ -66,33 +70,33 @@ public class CompositeQueryExecutor {
 		cancelled = true;
 	}
 
-	public int numberExecuted() {
-		return queryResults.size();
-	}
-
-	private synchronized void incExecutions(String queryExecuted, QueryResult queryResult) {
+	private void incExecutions(String queryExecuted, QueryResult queryResult) {
 		if (queryResult.status != HttpStatus.SC_OK)
-			logger.Info(String.format("status %s msg %s running composite query %s", queryExecuted,
-					queryResult.status.name(), queryResult.message.or("")));
+			logger.Info(String.format("Not o.k.: status %s msg %s running composite query %s",
+					queryResult.status.name(), queryResult.message.or(""), queryExecuted));
 
 		queryResults.add(queryResult);
-		progress.announce(numberExecuted());
-		if (numberExecuted() == queries.size())
-			onAllProcessed.announce(queryResults);
+		progress.announce(queryResults.size());
+
+		if (queryResults.size() == queries.size()) 
+			onCompositesDone.invoke(joinOkResults(queryResults));
 	}
 
-	public static QueryResult joinOkResults(List<QueryResult> results) {
-		Vector<String> columns = createPopulated("rowid");
+	private QueryResult joinOkResults(List<QueryResult> results) {
+		// in fact each result only has the count of affected rows, which is always 1, but not the rowid
+		// for an unconditional delete statement the result would be "all rows" instead of a number btw
+		int count = 0;
+		for (QueryResult r : results) 
+			if (r.status == HttpStatus.SC_OK)
+				count ++;
+
 		Vector<Vector<String>> rows = new Vector<Vector<String>>();
-
-		for (QueryResult r : results)
-			if (r.status == HttpStatus.SC_OK && r.data.get().getRowCount() > 0 && r.data.get().getColumnCount() > 0)
-				rows.add(createPopulated(r.data.get().getValueAt(0, 0).toString()));
-
-		return new QueryResult(HttpStatus.SC_OK, new DefaultTableModel(rows, columns), "");
+		rows.add(createPopulated(Integer.toString(count)));
+		
+		return new QueryResult(HttpStatus.SC_OK, new DefaultTableModel(rows, createPopulated("affected_rows")), "");
 	}
 
-	private static Vector<String> createPopulated(String value) {
+	private Vector<String> createPopulated(String value) {
 		Vector<String> result = new Vector<String>();
 		result.add(value);
 		return result;

@@ -38,7 +38,7 @@ public class Util {
 	private static void debug(String objectRequested, String query, int cursorPosition)
 	{
 		query = StringUtil.nonNull(query);
-		query = cursorPosition < query.length() ? StringUtil.insert(query, cursorPosition, "|") : query;		
+		query = Op.between(0, cursorPosition, query.length()) ? StringUtil.insert(query, cursorPosition, "|") : query;		
 		System.out.println(String.format("-- Requesting %s for index %d query {%s}", objectRequested, cursorPosition, query));
 	}
 	

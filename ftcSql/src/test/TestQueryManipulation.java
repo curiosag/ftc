@@ -162,8 +162,8 @@ public class TestQueryManipulation {
 		Splits s = m.splitStatements();
 		assertFalse(s.problemsEncountered.isPresent());
 		assertEquals(2, s.splits.size());
-		assertEquals("Select * from table1;", s.splits.get(0));
-		assertEquals("Select a,b from table2;", s.splits.get(1));
+		assertEquals("Select * from table1;", s.splits.get(0).text);
+		assertEquals("Select a,b from table2;", s.splits.get(1).text);
 
 		m = test.Util.getManipulator("Select * from table1; Sälect a,b fromm from table2;Select * from table3;");
 		s = m.splitStatements();

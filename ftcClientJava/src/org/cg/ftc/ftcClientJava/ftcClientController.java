@@ -30,12 +30,14 @@ import org.cg.ftc.shared.interfaces.SyntaxElementSource;
 import org.cg.ftc.shared.structures.ClientSettings;
 import org.cg.ftc.shared.structures.Completions;
 import org.cg.ftc.shared.structures.ConnectionStatus;
+import org.cg.ftc.shared.structures.QueryAtHand;
 import org.cg.ftc.shared.structures.QueryResult;
 import org.cg.ftc.shared.uglySmallThings.AsyncWork;
 import org.cg.ftc.shared.uglySmallThings.CSV;
 import org.cg.ftc.shared.uglySmallThings.Events;
 import org.cg.ftc.shared.uglySmallThings.SwingWorkerExt;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 
 import manipulations.QueryHandler;
@@ -182,71 +184,82 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		logging.Info("command memorized");
 	}
 
+
+	private Continuation<QueryResult> onExecutionFinished = new Continuation<QueryResult>() {
+		@Override
+		public void invoke(QueryResult result) {
+
+			if (result.data.isPresent())
+				model.resultData.setValue(result.data.get());
+
+			String msg;
+			if (result.data.isPresent())
+				msg = String.format("%d records returned", result.data.get().getRowCount());
+			else if (result.status == HttpStatus.SC_CONTINUE)
+				msg = "Composites being processed. ";
+			else {
+				msg = "Executed query ";
+
+				float elapsed = (float) executionStopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000;
+				msg = msg + String.format("in %.3f seconds", elapsed);
+			}
+
+			logging.Info(msg);
+			if (result.message.isPresent())
+				logging.Info(result.message.get());
+
+			
+			setStateIsExecuting(false);
+		}
+	};
+	
+	
+	private Function<QueryResult> runSql = new Function<QueryResult>() {
+		@Override
+		public QueryResult invoke(Progress progress) {
+			setStateIsExecuting(true);
+			try {
+				Continuation<QueryResult> onCompositeExecutionFinished = onExecutionFinished;  
+				return getQueryResult(progress, onCompositeExecutionFinished);
+			} catch (Exception e) {
+				return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null,
+						"Exception occured: " + e.getClass().getSimpleName() + " " + e.getMessage());
+			}
+		}
+	};
+	
 	private void hdlExecSql() {
-		AsyncWork.goUnderground(new Function<QueryResult>() {
-			@Override
-			public QueryResult invoke(Progress progress) {
-				setStateIsExecuting(true);
-				try {
-					return getQueryResult(progress);
-				} catch (Exception e) {
-					return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null,
-							"Exception occured: " + e.getClass().getSimpleName() + " " + e.getMessage());
-				}
-			}
-		}, new Continuation<QueryResult>() {
-			@Override
-			public void invoke(QueryResult value) {
-				onQueryResult(value);
-				setStateIsExecuting(false);
-			}
-		}, progress).execute();
+		Continuation<QueryResult> onSingularExecutionFinished = onExecutionFinished;  
+		AsyncWork.goUnderground(runSql, onSingularExecutionFinished, progress).execute();
 	}
 
-	private QueryResult getQueryResult(Progress progress) {
-		String sql = model.queryText.getValue();
-		history.add(sql);
-		return queryHandler.getQueryResult(sql, progress);
-	}
+	private QueryResult getQueryResult(Progress progress, Continuation<QueryResult> onExecutionFinished) {
+		String text = model.queryText.getValue();
+		history	.add(text);
 
-	private void onQueryResult(QueryResult result) {
-		if (result.data.isPresent())
-			model.resultData.setValue(result.data.get());
-
-		String msg;
-		if (result.data.isPresent())
-			msg = String.format("Read %d records ", result.data.get().getRowCount());
+		Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText);
+		if (query.isPresent())
+			return queryHandler.getQueryResult(query.get().query, progress, onExecutionFinished);
 		else
-			msg = "Executed query ";
-
-		float elapsed = (float) executionStopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000;
-		msg = msg + String.format("in %.3f seconds \n", elapsed);
-		logging.Info(msg);
-		if (result.message.isPresent())
-			logging.Info(result.message.get());
+			return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "no query at caret position");
 	}
 
 	private void hdlCancelExecution() {
-		cancelSynchronousQueryProcessing();
-		cancelAsynchronousQueryProcessing();
-		logging.Info("execution cancelled");	
+		cancelSingularQueryProcessing();
+		cancelCompositeQueryProcessing();
+		logging.Info("execution cancelled");
 		setStateIsExecuting(false);
 	}
 
-	private void cancelSynchronousQueryProcessing() {
+	private void cancelSingularQueryProcessing() {
 		if (getStateIsExecuting())
-			if (!(executionWorker.isDone() || executionWorker.isCancelled()))
-			{
+			if (!(executionWorker.isDone() || executionWorker.isCancelled())) {
 				executionWorker.saveCancel(true);
 				setStateIsExecuting(false);
 			}
 	}
 
-	private void cancelAsynchronousQueryProcessing() {
-		// if it seems odd to call this asynchronous: it is meant for the
-		// composite query cases
-		// where the execution worker terminates immediately and queryHandler
-		// goes on processing the composites multi-threaded
+	private void cancelCompositeQueryProcessing() {
 		queryHandler.cancelRequest();
 	}
 
@@ -335,8 +348,17 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	}
 
 	@Override
-	public Completions get(String query, int cursorPos) {
-		return queryHandler.getPatcher(query, cursorPos).getCompletions();
+	public Completions get(String text, int cursorPos) {
+		Optional<QueryAtHand> split = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText);
+
+		String query = "";
+		int caretPosition = 0;
+		if (split.isPresent()) {
+			query = split.get().query;
+			caretPosition = split.get().caretPositon;
+		}
+
+		return queryHandler.getPatcher(query, caretPosition).getCompletions();
 	}
 
 	private ConnectionStatus resetConnector() {
