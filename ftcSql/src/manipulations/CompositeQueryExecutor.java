@@ -32,7 +32,7 @@ public class CompositeQueryExecutor {
 	private boolean started = false;
 	private int maxThreads = 2;
 	private int threadsCancelled = 0;
-	
+
 	public CompositeQueryExecutor(List<String> queries, Connector connector, Progress p,
 			Continuation<QueryResult> onAllProcessed, Logging logger) {
 		this.progress = new SynchronizedProgressDecorator(p);
@@ -49,38 +49,41 @@ public class CompositeQueryExecutor {
 		Check.isFalse(started);
 		started = true;
 		threadsCancelled = 0;
-		
+
 		compositeQueryExecutions = new Parallel.ForEach<String, Void>(queries).withFixedThreads(maxThreads)
 				.apply(new Parallel.F<String, Void>() {
 					public Void apply(String s) {
-						// async queries tend to create sc_service_unavailable
+						// async queries tend to create
+						// sc_service_unavailable
 						QueryResult result = new QueryResult(HttpStatus.SC_SERVICE_UNAVAILABLE, null, null);
 						while (!cancelled && result.status == HttpStatus.SC_SERVICE_UNAVAILABLE)
 							result = connector.fetch(s);
 
 						if (cancelled)
-							result = new QueryResult(HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE, null, "Execution cancelled");
+							result = new QueryResult(HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE, null,
+									"Execution cancelled");
 
 						incExecutions(s, result);
-
 						return null;
 					}
+
 				});
 		return this;
+
 	}
 
 	public synchronized void cancel() {
 		if (!cancelled)
 			try {
+				cancelled = true;
 				compositeQueryExecutions.shutDownNow();
-				compositeQueryExecutions.awaitTermination(0, TimeUnit.NANOSECONDS);
+				compositeQueryExecutions.awaitTermination(10, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
 			}
-		cancelled = true;
 	}
 
 	private void incExecutions(String queryExecuted, QueryResult queryResult) {
-		if (! Op.in(queryResult.status,  HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE, HttpStatus.SC_OK))
+		if (!Op.in(queryResult.status, HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE, HttpStatus.SC_OK))
 			logger.Info(String.format("Not o.k.: status %s msg %s running composite query %s",
 					queryResult.status.name(), queryResult.message.or(""), queryExecuted));
 
@@ -90,9 +93,9 @@ public class CompositeQueryExecutor {
 		else
 			progress.announce(queryResults.size());
 
-		if (queryResult.status ==  HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE)
+		if (queryResult.status == HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE)
 			incThreadsCancelled();
-		
+
 		if (queryResults.size() == queries.size() || cancelCompleteInComplicatedMultithreadedSituation())
 			onCompositesDone.invoke(joinOkResults(queryResults));
 	}
@@ -128,7 +131,7 @@ public class CompositeQueryExecutor {
 	}
 
 	private void incThreadsCancelled() {
-		this.threadsCancelled ++;
+		this.threadsCancelled++;
 	}
 
 }
