@@ -425,24 +425,23 @@ public class QueryHandler extends Observable {
 									"Catastrophic unexpected exception: \n" + fmtStackTrace(e)));
 						}
 					}
-
-					private String fmtStackTrace(Throwable e) {
-						StringWriter sw = new StringWriter();
-						PrintWriter pw = new PrintWriter(sw);
-						e.printStackTrace(pw);
-						return sw.toString();
-					}
-
-					private String getCount(QueryResult result) {
-						Check.isTrue(result.data.isPresent() && result.data.get().getColumnCount() == 1
-								&& result.data.get().getRowCount() == 1);
-						return result.data.get().getValueAt(0, 0).toString();
-					}
-
 				}, logger).executeAsync();
 
 		return new QueryResult(HttpStatus.SC_CONTINUE, null,
 				String.format("Queued %s %d times", statementType.name(), compositeQueries.size()));
+	}
+
+	private String fmtStackTrace(Throwable e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		return sw.toString();
+	}
+
+	private String getCount(QueryResult result) {
+		Check.isTrue(result.data.isPresent() && result.data.get().getColumnCount() == 1
+				&& result.data.get().getRowCount() == 1);
+		return result.data.get().getValueAt(0, 0).toString();
 	}
 
 	private List<String> createCompositeQueries(TableModel data, String queryTemplate) {
@@ -657,10 +656,10 @@ public class QueryHandler extends Observable {
 
 	}
 
-	public Optional<QueryAtHand> getQueryAtCaretPosition(String text, int pos) {
-		List<Split> splits = createManipulator(text).splitStatements().splits;
+	public Optional<QueryAtHand> getQueryAtCaretPosition(String text, int pos, boolean returnSingleQueryAnyway) {
+		List<Split> splits = getQueries(text);
 
-		if (splits.size() == 1)
+		if (returnSingleQueryAnyway && splits.size() == 1)
 			return Optional.of(new QueryAtHand(text, pos));
 		else
 			for (Split s : splits)
@@ -668,5 +667,9 @@ public class QueryHandler extends Observable {
 					return Optional.of(new QueryAtHand(s.text, pos - s.start));
 
 		return Optional.absent();
+	}
+
+	public List<Split> getQueries(String text) {
+		return createManipulator(text).splitStatements().splits;
 	}
 }

@@ -1,5 +1,7 @@
 package org.cg.common.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -10,6 +12,12 @@ import com.google.common.base.Joiner;
 
 public class StringUtil {
 
+	public static String getStackTrace(Throwable t) {
+	    StringWriter sw = new StringWriter();
+	    t.printStackTrace(new PrintWriter(sw));
+	    return sw.toString();
+	}
+	
 	public static int getIndexBeforeChar(String text, char c, int startIndex, int increment) {
 		if (StringUtil.emptyOrNull(text))
 			return -1;

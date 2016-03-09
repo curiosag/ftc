@@ -5,7 +5,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -39,8 +41,10 @@ import org.cg.ftc.shared.uglySmallThings.SwingWorkerExt;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
+import com.google.common.eventbus.Subscribe;
 
 import manipulations.QueryHandler;
+import manipulations.Split;
 
 public class ftcClientController implements ActionListener, SyntaxElementSource, CompletionsSource {
 
@@ -50,6 +54,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	private final ClientSettings clientSettings;
 	private final Connector connector;
 	private final Progress progress;
+	private final Queue<String> sqlStatementQueue = new LinkedList<String>();
 
 	private SwingWorkerExt<QueryResult, Object> executionWorker = AsyncWork.createEmptyWorker();
 	private final CmdHistory history;
@@ -73,6 +78,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		this.connector = connector;
 		history = new CmdHistory(cmdHistoryStorage);
 		this.progress = progress;
+		registerForQueryFinishedEvent();
 	}
 
 	private synchronized void setStateIsExecuting(boolean value) {
@@ -92,13 +98,21 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		return isExecuting;
 	}
 
+	private final static boolean EXECUTE_ALL = true;
+	private static final boolean RETURN_SINGLE_QUERY_ANYWAY = true;
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
 		switch (e.getActionCommand()) {
 		case Const.execSql:
 			if (!getStateIsExecuting())
-				hdlExecSql();
+				hdlExecSql(!EXECUTE_ALL);
+			break;
+
+		case Const.execAllSql:
+			if (!getStateIsExecuting())
+				hdlExecSql(EXECUTE_ALL);
 			break;
 
 		case Const.cancelExecution:
@@ -184,7 +198,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		logging.Info("command memorized");
 	}
 
-	private Continuation<QueryResult> onExecutionFinished = new Continuation<QueryResult>() {
+	private Continuation<QueryResult> onQueryExecutionFinished = new Continuation<QueryResult>() {
 		@Override
 		public void invoke(QueryResult result) {
 
@@ -205,43 +219,96 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 				if (result.message.isPresent())
 					logging.Info(result.message.get());
 			} finally {
-				setStateIsExecuting(false);
+				if (result.status != HttpStatus.SC_CONTINUE)
+					setStateIsExecuting(false);
 			}
 
 		}
 	};
 
-	private Function<QueryResult> runSql = new Function<QueryResult>() {
-		@Override
-		public QueryResult invoke(Progress progress) {
-			setStateIsExecuting(true);
-			try {
-				Continuation<QueryResult> onCompositeExecutionFinished = onExecutionFinished;
-				return getQueryResult(progress, onCompositeExecutionFinished);
-			} catch (Exception e) {
-				return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null,
-						"Exception occured: " + e.getClass().getSimpleName() + " " + e.getMessage());
-			}
-		}
-	};
+	private Function<QueryResult> createExecuteSqlFunction(final String query) {
+		return new Function<QueryResult>() {
+			@Override
+			public QueryResult invoke(Progress progress) {
+				setStateIsExecuting(true);
+				try {
+					history.add(query);
+					return queryHandler.getQueryResult(query, progress, onQueryExecutionFinished);
 
-	private void hdlExecSql() {
-		Continuation<QueryResult> onSingularExecutionFinished = onExecutionFinished;
-		AsyncWork.goUnderground(runSql, onSingularExecutionFinished, progress).execute();
+				} catch (Exception e) {
+					return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null,
+							"Exception occured: " + e.getClass().getSimpleName() + " " + e.getMessage());
+				}
+			}
+		};
 	}
 
-	private QueryResult getQueryResult(Progress progress, Continuation<QueryResult> onExecutionFinished) {
-		String text = model.queryText.getValue();
-		history.add(text);
+	/**
+	 * Using event bus Events.ui for "Execute all Sql statements" Each single
+	 * query execution will trigger an event to be fired at its begin
+	 * (Thread.State.RUNNABLE) and at its end (Thread.State.TERMINATED), the
+	 * latter triggering the processing of the next query if there is any
+	 * 
+	 * 
+	 * the sequence is:
+	 * 
+	 * executeNextSql()
+	 * 
+	 * createExecuteSqlFunction()- setStateIsExecuting(true) // -> Events.ui
+	 * Thread.State.RUNNABLE
+	 * 
+	 * onQueryExecutionFinished - setStateIsExecuting(false) // -> Events.ui
+	 * Thread.State.TERMINATED
+	 * 
+	 * eventBusQueryFinishedListener(Thread.State opState)
+	 * 
+	 * executeNextSql() // if Thread.State.TERMINATED .
+	 * 
+	 * 
+	 * @param executeAll
+	 */
 
-		Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText);
-		if (query.isPresent())
-			return queryHandler.getQueryResult(query.get().query, progress, onExecutionFinished);
-		else
-			return new QueryResult(HttpStatus.SC_METHOD_FAILURE, null, "no query at caret position");
+	private void hdlExecSql(boolean executeAll) {
+		String text = model.queryText.getValue();
+
+		if (!executeAll) {
+			Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText,
+					RETURN_SINGLE_QUERY_ANYWAY);
+			if (query.isPresent())
+				sqlStatementQueue.add(query.get().query);
+		} else
+			for (Split split : queryHandler.getQueries(text))
+				sqlStatementQueue.add(split.text);
+
+		if (sqlStatementQueue.isEmpty())
+			logging.Info("no query at caret position");
+		if (sqlStatementQueue.size() > 1)
+			logging.Info(String.format("Queued %d queries for execution", sqlStatementQueue.size()));
+
+		if (!sqlStatementQueue.isEmpty())
+			executeNextSql();
+	}
+
+	private void registerForQueryFinishedEvent() {
+		Events.ui.register(this);
+	}
+
+	@Subscribe
+	public void eventBusQueryFinishedListener(Thread.State opState) {
+		// System.out.println("op state is " + opState.name() + "next sql is " +
+		// sqlStatementQueue.peek());
+		if (opState == Thread.State.TERMINATED && !sqlStatementQueue.isEmpty())
+			executeNextSql();
+	}
+
+	private void executeNextSql() {
+		Continuation<QueryResult> onSingularExecutionFinished = onQueryExecutionFinished;
+		AsyncWork.goUnderground(createExecuteSqlFunction(sqlStatementQueue.poll()), onSingularExecutionFinished,
+				progress).execute();
 	}
 
 	private void hdlCancelExecution() {
+		sqlStatementQueue.clear();
 		cancelSingularQueryProcessing();
 		cancelCompositeQueryProcessing();
 		logging.Info("execution cancelled");
@@ -349,7 +416,8 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 	@Override
 	public Completions get(String text, int cursorPos) {
-		Optional<QueryAtHand> split = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText);
+		Optional<QueryAtHand> split = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText,
+				!RETURN_SINGLE_QUERY_ANYWAY);
 
 		String query = "";
 		int caretPosition = 0;

@@ -328,6 +328,8 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		runMenu.setMnemonic(KeyEvent.VK_R);
 		runMenu.add(
 				createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_E, none, getAction(Const.tooltipExecSql, Const.execSql)));
+		runMenu.add(
+				createMenuItem(KeyEvent.VK_F7, KeyEvent.VK_A, none, getAction(Const.tooltipExecAllSql, Const.execAllSql)));
 		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_C, ctrl,
 				getAction(Const.tooltipCancelExecSql, Const.cancelExecution)));
 		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_V, alt,
@@ -379,6 +381,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	private JPanel createButtonArea() {
 
 		buttonExecSql = createButton(Const.execSql, "control_play_blue.png", Const.tooltipExecSql);
+		JButton buttonExecAllSql = createButton(Const.execAllSql, "control_fastforward_blue.png", Const.tooltipExecAllSql);
 		buttonCancel = createButton(Const.cancelExecution, "cancel.png", Const.tooltipCancelExecSql);
 		JButton buttonListTables = createButton(Const.listTables, "table.png", Const.tooltipListTables);
 		JButton buttonPreview = createButton(Const.viewPreprocessedQuery, "control_play.png",
@@ -402,6 +405,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 
 		buttonPane.add(buttonPreview);
 		buttonPane.add(buttonExecSql);
+		buttonPane.add(buttonExecAllSql);
 		buttonPane.add(buttonCancel);
 		buttonPane.add(createSpacer(spacerWidht));
 

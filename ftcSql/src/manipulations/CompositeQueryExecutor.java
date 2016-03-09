@@ -20,6 +20,8 @@ import org.cg.common.util.Op;
 
 public class CompositeQueryExecutor {
 
+	protected static final long MILLIS_DELAY_RETRIES = 100;
+	
 	private final Logging logger;
 	private final Progress progress;
 	private final List<String> queries;
@@ -56,7 +58,7 @@ public class CompositeQueryExecutor {
 						// async queries tend to create
 						// sc_service_unavailable
 						QueryResult result = new QueryResult(HttpStatus.SC_SERVICE_UNAVAILABLE, null, null);
-						while (!cancelled && result.status == HttpStatus.SC_SERVICE_UNAVAILABLE)
+						while (!cancelled && shouldRetry(result) && delay(MILLIS_DELAY_RETRIES))
 							result = connector.fetch(s);
 
 						if (cancelled)
@@ -70,6 +72,18 @@ public class CompositeQueryExecutor {
 				});
 		return this;
 
+	}
+
+	private boolean shouldRetry(QueryResult result) {
+		return Op.in(result.status, HttpStatus.SC_SERVICE_UNAVAILABLE, HttpStatus.SC_FORBIDDEN);
+	}
+
+	private boolean delay(long millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+		}
+		return true;
 	}
 
 	public synchronized void cancel() {

@@ -260,6 +260,8 @@ public class FusionTablesConnector implements Connector {
 		} catch (Exception e) {
 			if (e.getMessage().indexOf("503 Service Unavailable") >= 0)
 				return createErrorResult(HttpStatus.SC_SERVICE_UNAVAILABLE, e.getMessage());
+			if (e.getMessage().indexOf("403 Forbidden") >= 0)
+				return createErrorResult(HttpStatus.SC_FORBIDDEN, e.getMessage());
 			else
 				return createErrorResult(HttpStatus.SC_METHOD_FAILURE, e.getMessage());
 		}

@@ -8,6 +8,7 @@
     <artifactId>ftc</artifactId>
     <packaging>pom</packaging>
     <version>0.1</version>
+
     <name>Google Fusion Tables Console</name>
 
     <modules>
