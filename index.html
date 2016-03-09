@@ -66,10 +66,10 @@ The client accepts some usual Sql terms not covered by Fusion Tables Sql and tra
 <h3>Commands and Shortcuts</h3>
 <table>
 
-<tr><td>F5</td><td>Execute query</td></tr>
+<tr><td>F5</td><td>Execute query under cursor</td></tr>
 <tr><td>Ctrl+F5</td><td>Cancel query execution</td></tr>
 <tr><td>Alt+F5</td><td>View preprocessed query. Table name replaced by table Id and in case of SELECT added OFFSET and LIMIT clauses, if not defined anyway.</td></tr>
-
+<tr><td>F7</td><td>Execute all queries sequentially</td></tr>
 <tr><td>Ctrl+F</td><td>Focus editor text field</td></tr>
 <tr><td>Ctrl+space</td><td>Trigger code completion. Switch between proposed Sql snippets and table or column names</td></tr>
 <tr><td>Alt+left</td><td>Browse command history backwards</td></tr>
@@ -77,7 +77,7 @@ The client accepts some usual Sql terms not covered by Fusion Tables Sql and tra
 <tr><td>Alt+M</td><td>Memorize editor text ... means, append it to the command history without executing the query</td></tr>
 <tr><td>Ctrl+T</td><td>Show tables</td></tr>
 <tr><td>Ctrl+E</td><td>Export to csv file</td></tr>
-<tr><td>Ctrl+S</td><td>Save editor text ... a bit of an overkill, as you can only use a single statement per execution anyway. On the other hand: who knows, maybe somebody uses it to write a novel or whatever</td></tr>
+<tr><td>Ctrl+S</td><td>Save editor text</td></tr>
 <tr><td>Ctrl+O</td><td>Open file</td></tr>
 </table>
 
@@ -93,6 +93,25 @@ The client accepts some usual Sql terms not covered by Fusion Tables Sql and tra
 			 <li>I guess the snippet aproach to Sql ran into its limits with the create view statement involving joins.</li>
         </ul>
 
+<h3><a href="https://groups.google.com/forum/#!topic/fusion-tables-users-group/09XRxSJsOh8">Google throttling</a></h3>
+
+<p>	When you start to see thinkgs like	"403 Forbidden - Rate Limit Exceeded" that's access limitations imposed by Google.</p>
+<table>
+<tr><td>Table API</td><td>200 queries per day</td></tr>
+<tr><td>SQL API</td><td>5 queries per second for read requests per user account or per IP, whichever comes first</td></tr>
+<tr><td></td><td>30 queries per minute for more successful write requests</td></tr>
+</table>
+<p>
+Can look like this then:<br><br>
+<b>08:55:51</b> running: 'UPDATE classifiedAds SET statusPredicted = 0 WHERE statusPredicted = '';'<br>
+08:55:52 Composite queries being processed.<br>
+08:55:52 Queued UPDATE 310 times<br>
+09:06:21 Executed query in <b>629.443 seconds</b>. 1 records returned<br>
+<b>09:06:21</b> 310 of 310 composite queries processed<br>
+</p>
+</li>
+
+
 <h3>Open Issues</h3>
 Find the  <a target="_blank" href="https://github.com/curiosag/ftc/issues">list at GitHub</a>.        
  <p></p>
@@ -102,7 +121,7 @@ Find the  <a target="_blank" href="https://github.com/curiosag/ftc/issues">list 
         <ul>
 			 <li>A command line interface. Every application should have one</li>
 			 <li>Extend copy table command to external tables</li>
-        	 <li>Sequential execution of multiple queries in the editor. Multiple files/tab sheets</li>
+        	 <li>Multiple files/tab sheets</li>
         	 <li>Full SELECT clause in CREATE TABLE statement</li>
         	 <li>Allow WHERE clause in CREATE VIEW statement with JOIN clause</li>
 			 <li>And all the rest like import, export and stuff</li>
