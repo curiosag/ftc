@@ -224,11 +224,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						Object value = SimpleObservable.getValue(o);
-						Check.isTrue(value instanceof TableModel);
-						TableModel model = (TableModel) value;
-
-						dataTable.setModel(model);
+						dataTable.setModel(Observism.decodeTableModelObservable(o));
 					}
 				});
 

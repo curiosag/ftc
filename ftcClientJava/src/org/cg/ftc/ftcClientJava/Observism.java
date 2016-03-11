@@ -9,10 +9,13 @@ import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.cg.common.check.Check;
 import org.cg.common.interfaces.OnTextFieldChangedEvent;
+import org.cg.common.misc.SimpleObservable;
 
 public class Observism {
 
@@ -63,7 +66,7 @@ public class Observism {
 			@Override
 			public void update(final Observable o, Object arg) {
 				Document doc = f.getDocument();
-				String value = TextModel.getTextModel(o).getValueAppended();
+				String value = decodeTextModelObservable(o);
 				try {
 					doc.insertString(doc.getLength(), value, null);
 					f.setCaretPosition(doc.getLength());
@@ -73,7 +76,20 @@ public class Observism {
 			}
 		};
 	}
+	
+	public static String decodeTextModelObservable(Observable o)
+	{
+		return TextModel.getTextModel(o).getValueAppended();
+	}
 
+	public static TableModel decodeTableModelObservable(Observable o)
+	{
+		Object value = SimpleObservable.getValue(o);
+		Check.isTrue(value instanceof TableModel);
+		return (TableModel) value;
+	}
+	
+	
 	private static FocusListener createValueChangedListener(final JTextField textField,
 			final OnTextFieldChangedEvent delegate) {
 		FocusListener result = new FocusListener() {

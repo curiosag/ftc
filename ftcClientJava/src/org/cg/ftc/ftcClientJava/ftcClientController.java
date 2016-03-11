@@ -7,6 +7,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Observer;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +27,7 @@ import org.cg.common.misc.CmdHistory;
 import org.cg.common.threading.Function;
 import org.cg.ftc.shared.interfaces.CompletionsSource;
 import org.cg.ftc.shared.interfaces.Connector;
+import org.cg.ftc.shared.interfaces.Event;
 import org.cg.ftc.shared.interfaces.OnFileAction;
 import org.cg.ftc.shared.interfaces.SyntaxElement;
 import org.cg.ftc.shared.interfaces.SyntaxElementSource;
@@ -55,6 +57,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	private final Connector connector;
 	private final Progress progress;
 	private final Queue<String> sqlStatementQueue = new LinkedList<String>();
+	private Event allQueriesProcessed = null;
 
 	private SwingWorkerExt<QueryResult, Object> executionWorker = AsyncWork.createEmptyWorker();
 	private final CmdHistory history;
@@ -219,8 +222,10 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 				if (result.message.isPresent())
 					logging.Info(result.message.get());
 			} finally {
-				if (result.status != HttpStatus.SC_CONTINUE)
+				if (result.status != HttpStatus.SC_CONTINUE) {
 					setStateIsExecuting(false);
+					triggerAllQueriesProcessed();
+				}
 			}
 
 		}
@@ -284,9 +289,9 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			logging.Info("no query at caret position");
 		if (sqlStatementQueue.size() > 1)
 			logging.Info(String.format("Queued %d queries for execution", sqlStatementQueue.size()));
-
+		
 		if (!sqlStatementQueue.isEmpty())
-			executeNextSql();
+			executeNextQuery();
 	}
 
 	private void registerForQueryFinishedEvent() {
@@ -297,14 +302,21 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	public void eventBusQueryFinishedListener(Thread.State opState) {
 		// System.out.println("op state is " + opState.name() + "next sql is " +
 		// sqlStatementQueue.peek());
-		if (opState == Thread.State.TERMINATED && !sqlStatementQueue.isEmpty())
-			executeNextSql();
+		if (singleQueryFinished(opState) && !sqlStatementQueue.isEmpty())
+			executeNextQuery();
 	}
 
-	private void executeNextSql() {
+	private boolean singleQueryFinished(Thread.State opState) {
+		return opState == Thread.State.TERMINATED;
+	}
+
+	private void executeNextQuery() {
+		Check.isTrue(!sqlStatementQueue.isEmpty());
+
 		Continuation<QueryResult> onSingularExecutionFinished = onQueryExecutionFinished;
 		AsyncWork.goUnderground(createExecuteSqlFunction(sqlStatementQueue.poll()), onSingularExecutionFinished,
 				progress).execute();
+
 	}
 
 	private void hdlCancelExecution() {
@@ -434,6 +446,15 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		credentials.put(ClientSettings.keyClientSecret, model.clientSecret.getValue());
 		credentials.put(ClientSettings.keyClientId, model.clientId.getValue());
 		return queryHandler.reset(credentials);
+	}
+
+	private void triggerAllQueriesProcessed() {
+		if (allQueriesProcessed != null)
+			allQueriesProcessed.fire();
+	}
+
+	public void setOnAllQueriesProcessed(Event e) {
+		this.allQueriesProcessed = e;
 	}
 
 }
