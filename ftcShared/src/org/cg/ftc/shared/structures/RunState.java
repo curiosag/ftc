@@ -1,0 +1,5 @@
+package org.cg.ftc.shared.structures;
+
+public enum RunState {
+	AUTHENTICATION_STARTED, AUTHENTICATION_FINISHED, QUERYEXEC_STARTED, QUERYEXEC_FINISHED  
+}

@@ -11,11 +11,16 @@ import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
 import org.cg.common.misc.SimpleObservable;
 import org.cg.common.swing.WindowClosingListener;
+import org.cg.common.util.Op;
 import org.cg.ftc.ftcQueryEditor.QueryEditor;
 import org.cg.ftc.shared.interfaces.CompletionsSource;
 import org.cg.ftc.shared.interfaces.SyntaxElementSource;
 import org.cg.ftc.shared.structures.ClientSettings;
+import org.cg.ftc.shared.structures.RunState;
+import org.cg.ftc.shared.uglySmallThings.Events;
 import org.fife.ui.rtextarea.ConfigurableCaret;
+
+import com.google.common.eventbus.Subscribe;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -43,6 +48,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	private JSplitPane splitPaneV;
 	private JPanel authPanel;
 	private JButton buttonExecSql;
+	private JButton buttonExecAllSql;
 	private JButton buttonCancel;
 	private JButton buttonAuthenticate;
 
@@ -104,6 +110,7 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 			}
 		});
 
+		registerForLongOperationEvent();
 	}
 
 	@Override
@@ -324,8 +331,8 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		runMenu.setMnemonic(KeyEvent.VK_R);
 		runMenu.add(
 				createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_E, none, getAction(Const.tooltipExecSql, Const.execSql)));
-		runMenu.add(
-				createMenuItem(KeyEvent.VK_F7, KeyEvent.VK_A, none, getAction(Const.tooltipExecAllSql, Const.execAllSql)));
+		runMenu.add(createMenuItem(KeyEvent.VK_F7, KeyEvent.VK_A, none,
+				getAction(Const.tooltipExecAllSql, Const.execAllSql)));
 		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_C, ctrl,
 				getAction(Const.tooltipCancelExecSql, Const.cancelExecution)));
 		runMenu.add(createMenuItem(KeyEvent.VK_F5, KeyEvent.VK_V, alt,
@@ -338,10 +345,10 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		runMenu.add(createMenuItem(KeyEvent.VK_M, KeyEvent.VK_M, alt,
 				getAction(Const.tooltipMemorizeQuery, Const.memorizeQuery)));
 
-		runMenu.add(createMenuItem(KeyEvent.VK_L, KeyEvent.VK_T, ctrl,
+		runMenu.add(createMenuItem(KeyEvent.VK_T, KeyEvent.VK_T, ctrl,
 				getAction(Const.tooltipListTables, Const.listTables)));
 
-		runMenu.add(createMenuItem(KeyEvent.VK_F, KeyEvent.VK_F, ctrl,
+		runMenu.add(createMenuItem(KeyEvent.VK_F, KeyEvent.VK_F12, ctrl,
 				getAction(Const.tooltipFocusEditor, Const.focusEditor)));
 
 		runMenu.add(createMenuItem(KeyEvent.VK_R, KeyEvent.VK_R, ctrl,
@@ -377,7 +384,8 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	private JPanel createButtonArea() {
 
 		buttonExecSql = createButton(Const.execSql, "control_play_blue.png", Const.tooltipExecSql);
-		JButton buttonExecAllSql = createButton(Const.execAllSql, "control_fastforward_blue.png", Const.tooltipExecAllSql);
+		buttonExecAllSql = createButton(Const.execAllSql, "control_fastforward_blue.png",
+				Const.tooltipExecAllSql);
 		buttonCancel = createButton(Const.cancelExecution, "cancel.png", Const.tooltipCancelExecSql);
 		JButton buttonListTables = createButton(Const.listTables, "table.png", Const.tooltipListTables);
 		JButton buttonPreview = createButton(Const.viewPreprocessedQuery, "control_play.png",
@@ -548,6 +556,21 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	@Override
 	public Progress getProgressMonitor() {
 		return progressMonitor;
+	}
+
+	private void registerForLongOperationEvent() {
+		Events.ui.register(this);
+	}
+
+	@Subscribe
+	public void eventBusOnLongOperation(RunState state) {
+		enableStartElements(! Op.in(state, RunState.AUTHENTICATION_STARTED, RunState.QUERYEXEC_STARTED));
+	}
+
+	private void enableStartElements(boolean enable) {
+		buttonExecSql.setEnabled(enable);
+		buttonExecAllSql.setEnabled(enable);
+		buttonAuthenticate.setEnabled(enable);
 	}
 
 }

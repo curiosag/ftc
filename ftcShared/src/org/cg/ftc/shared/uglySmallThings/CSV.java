@@ -2,18 +2,13 @@ package org.cg.ftc.shared.uglySmallThings;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
-
 import javax.swing.table.TableModel;
-
 import org.cg.common.util.StringUtil;
-
 import com.opencsv.CSVWriter;
 
 public class CSV {
 
-	
 	public static String write(TableModel model, String fileName) {
 		try {
 			return processCsv(model, new FileWriter(fileName));
@@ -32,12 +27,9 @@ public class CSV {
 		}	
 	}
 	
-	
-	
 	public static String processCsv(TableModel model, Writer dest) throws IOException {
-		CSVWriter writer = new CSVWriter(dest, ';');
+		CSVWriter writer = new CSVWriter(dest, ';'); // CSVwriter closes dest
 		try {
-
 			String[] row = new String[model.getColumnCount()];
 
 			for (int j = 0; j < model.getColumnCount(); j++)

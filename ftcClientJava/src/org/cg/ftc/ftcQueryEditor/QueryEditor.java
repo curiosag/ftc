@@ -26,6 +26,7 @@ import org.cg.ftc.shared.interfaces.CompletionsSource;
 import org.cg.ftc.shared.interfaces.Event;
 import org.cg.ftc.shared.interfaces.SyntaxElementSource;
 import org.cg.ftc.shared.structures.ClientSettings;
+import org.cg.ftc.shared.structures.RunState;
 import org.cg.ftc.shared.uglySmallThings.Events;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.ErrorStrip;
@@ -126,10 +127,10 @@ public class QueryEditor extends JRootPane implements SyntaxConstants {
 	}
 
 	@Subscribe
-	public void eventBusOnLongOperation(Thread.State opState) {
-		if (opState == Thread.State.RUNNABLE)
+	public void eventBusOnLongOperation(RunState state) {
+		if (state == RunState.QUERYEXEC_STARTED)
 			waitStateDisplay.enterWaitState();
-		else
+		if (state == RunState.QUERYEXEC_FINISHED)
 			waitStateDisplay.exitWaitState();
 	}
 
