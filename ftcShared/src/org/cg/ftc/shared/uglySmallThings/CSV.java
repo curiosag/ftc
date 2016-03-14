@@ -10,25 +10,31 @@ import com.opencsv.CSVWriter;
 public class CSV {
 
 	public static String write(TableModel model, String fileName) {
+
 		try {
-			return processCsv(model, new FileWriter(fileName));
+			Writer w = new FileWriter(fileName);
+			try {
+				return processCsv(model, w);
+			} finally {
+				w.close();
+			}
 		} catch (IOException e) {
 			return String.format("Error writing to %s: %s", fileName, e.getMessage());
 		}
 	}
 
-	public static void write(TableModel model, Writer dest) 
-	{
+	public static void write(TableModel model, Writer dest) {
 		try {
 			processCsv(model, dest);
 		} catch (IOException e) {
 			System.err.println(StringUtil.getStackTrace(e));
 			throw new RuntimeException(e);
-		}	
+		}
 	}
-	
+
 	public static String processCsv(TableModel model, Writer dest) throws IOException {
-		CSVWriter writer = new CSVWriter(dest, ';'); // CSVwriter closes dest
+		
+		CSVWriter writer = new CSVWriter(dest, ';');
 		try {
 			String[] row = new String[model.getColumnCount()];
 
@@ -42,10 +48,12 @@ public class CSV {
 
 				writer.writeNext(row);
 			}
+			writer.flush();
 			return (String.format("Exported %d rows", model.getRowCount()));
 		} finally {
 			writer.close();
 		}
+
 	}
 
 }

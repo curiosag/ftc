@@ -14,6 +14,8 @@ import org.cg.common.check.Check;
 import org.cg.common.interfaces.OnTextFieldChangedEvent;
 import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
+import org.cg.common.io.CustomCloseActionWriterDecorator;
+import org.cg.common.io.WriterCloseAction;
 import org.cg.ftc.shared.uglySmallThings.CSV;
 
 public class CmdLineFrontEnd implements FrontEnd {
@@ -89,6 +91,7 @@ public class CmdLineFrontEnd implements FrontEnd {
 		return null;
 	}
 
+	private final static WriterCloseAction dontClose = null;
 	@Override
 	public Observer createResultDataObserver() {
 		return new Observer() {
@@ -99,7 +102,9 @@ public class CmdLineFrontEnd implements FrontEnd {
 				if (outputFilePath != null)
 					CSV.write(data, outputFilePath);
 				else
-					CSV.write(data, new BufferedWriter(new OutputStreamWriter(System.out)));
+					//System.out must not closed, therefore packed in CustomCloseActionWriterDecorator with doesen't close
+					// Even if OutputStreamWriter creates a leak (which it may not) it doesen't matter so much here
+					CSV.write(data, new BufferedWriter(new CustomCloseActionWriterDecorator(new OutputStreamWriter(System.out), dontClose)));
 			}
 		};
 	}

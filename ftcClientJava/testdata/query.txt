@@ -1,1 +1,2 @@
+SELECT id FROM classifiedAds;
 SELECT id, url FROM classifiedAds;

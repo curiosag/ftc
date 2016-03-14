@@ -68,7 +68,10 @@ public class CmdLineClient extends BaseClient {
 		frontEnd.startAsync();
 
 		if (allQueriesProcessed())
-			info("yo"); // somehow this gets lost when query result goes to stdout. but so what.
+		{
+			info("yo");
+			System.out.flush();
+		}
 	}
 
 	private static boolean allQueriesProcessed() {
