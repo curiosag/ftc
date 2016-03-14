@@ -95,7 +95,8 @@ You can pass query source- and optionally result destination file names as comma
         	 <li>Column ids can be used in queries, but they are not covered by semantic highlighting, so you get a blue wiggle line for them.</li>
         	 <li>Keyword "AS" is mandatory in definitions of table aliases. </li>
         	 <li>Handling huge amounts of data isn't the focus of the implementation nor of the Sql interface. That said, it may take you as far as the network, the computer's memory and the fusion tables service allows it to.</li>
-			 <li>Snippets aren't supported for each and every corner, just for the major cases: top level statements (SELECT, UPDATE...), &lt;column_spec&gt; including aggregate operations, GROUP BY, ORDER BY and WHERE clauses. </li><li>Single snippets can't be nested. E.g. if you use the SELECT snippet, parameter replacement only offers table and field names. You can not use another aggregate statement in the &lt;column_specs&gt;s or add a WHERE clause. Exit the parameter completion and toggle another snippet  in order to do so.</li>
+			 <li>Snippets aren't supported for each and every corner, just for the major cases: top level statements (SELECT, UPDATE...), &lt;column_spec&gt; including aggregate operations, GROUP BY, ORDER BY and WHERE clauses. It may also behave a bit surprising in certain situations. If you're editing around the end of a statement, just adding a terminal ";" at the end of it may be of help.</li>
+<li>Single snippets can't be nested. E.g. if you use the SELECT snippet, parameter replacement only offers table and field names. You can not use another aggregate statement in the &lt;column_specs&gt;s or add a WHERE clause. Exit the parameter completion and toggle another snippet  in order to do so.</li>
 			 <li>I guess the snippet aproach to Sql ran into its limits with the create view statement involving joins.</li>
         </ul>
 
