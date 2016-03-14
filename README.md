@@ -11,6 +11,7 @@ Google fusion tables client for easy and comfortable query prototyping. Find det
 * Augmented query syntax covering DROP TABLE and ALTER TABLE/RENAME
 * Query history
 * CSV export
+* Command line mode
 
 
 ### Requirements
