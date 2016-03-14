@@ -70,7 +70,7 @@ The client accepts some usual Sql terms not covered by Fusion Tables Sql and tra
 <tr><td>Ctrl+F5</td><td>Cancel query execution</td></tr>
 <tr><td>Alt+F5</td><td>View preprocessed query. Table name replaced by table Id and in case of SELECT added OFFSET and LIMIT clauses, if not defined anyway.</td></tr>
 <tr><td>F7</td><td>Execute all queries sequentially</td></tr>
-<tr><td>Ctrl+F</td><td>Focus editor text field</td></tr>
+<tr><td>F12</td><td>Focus editor text field</td></tr>
 <tr><td>Ctrl+space</td><td>Trigger code completion. Switch between proposed Sql snippets and table or column names</td></tr>
 <tr><td>Alt+left</td><td>Browse command history backwards</td></tr>
 <tr><td>Alt+right</td><td>Browse command history forward</td></tr>
@@ -81,6 +81,10 @@ The client accepts some usual Sql terms not covered by Fusion Tables Sql and tra
 <tr><td>Ctrl+O</td><td>Open file</td></tr>
 </table>
 
+<h3>Command line mode</h3>
+You can pass query source- and optionally result destination file names as command line parameters using ftc.sh (didn't bother myself with ftc.bat yet in this regard). Execution goes on without gui then. Command line execution relies on previously stored authentication credentials. Looks like this:
+
+ftc.sh [<query source file> [<result data destination file>]]
 
 <h3>Limitations</h3>
         <ul>
@@ -93,9 +97,9 @@ The client accepts some usual Sql terms not covered by Fusion Tables Sql and tra
 			 <li>I guess the snippet aproach to Sql ran into its limits with the create view statement involving joins.</li>
         </ul>
 
-<h3><a href="https://groups.google.com/forum/#!topic/fusion-tables-users-group/09XRxSJsOh8">Google throttling</a></h3>
+<h3>Google throttling</h3>
 
-<p>	When you start to see thinkgs like	"403 Forbidden - Rate Limit Exceeded" that's access limitations imposed by Google.</p>
+<p>	When you start to see thinkgs like	"403 Forbidden - Rate Limit Exceeded" that are <a href="https://groups.google.com/forum/#!topic/fusion-tables-users-group/09XRxSJsOh8"> access limitations imposed by Google</a>.</p>
 <table>
 <tr><td>Table API</td><td>200 queries per day</td></tr>
 <tr><td>SQL API</td><td>5 queries per second for read requests per user account or per IP, whichever comes first</td></tr>
