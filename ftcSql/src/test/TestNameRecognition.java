@@ -16,7 +16,7 @@ import manipulations.NameRecognitionTable;
 public class TestNameRecognition {
 
 	private NameRecognition getNR() {
-		return new NameRecognition();
+		return new NameRecognition(0, 0);
 	};
 
 	private String[] sa(String... values) {
@@ -60,7 +60,7 @@ public class TestNameRecognition {
 
 	@Test
 	public void testColumnNameRecognition() {
-		NameRecognitionColumn r = new NameRecognitionColumn();
+		NameRecognitionColumn r = new NameRecognitionColumn(0, 0);
 		digest(r, sa("a", ".", "b"));
 		assertTrue(r.TableName().equals(Optional.of("a")));
 		assertTrue(r.ColumnName().equals(Optional.of("b")));
@@ -68,7 +68,7 @@ public class TestNameRecognition {
 
 	@Test
 	public void testTableNameRecognition() {
-		NameRecognitionTable r = new NameRecognitionTable();
+		NameRecognitionTable r = new NameRecognitionTable(0, 0);
 		digest(r, sa("a", ".", "b"));
 		assertTrue(r.TableName().equals(Optional.of("a")));
 		assertTrue(r.TableAlias().equals(Optional.of("b")));

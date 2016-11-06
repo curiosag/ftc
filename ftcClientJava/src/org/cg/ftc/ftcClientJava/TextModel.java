@@ -14,11 +14,11 @@ public class TextModel extends Observable {
 	private String value = "";
 	private String valueAppended = "";
 	
-	String getValue() {
+	public String getValue() {
 		return value;
 	}
 	
-	String getValueAppended() {
+	public String getValueAppended() {
 		return valueAppended;
 	}
 	
@@ -29,13 +29,13 @@ public class TextModel extends Observable {
 		clearChanged();
 	}
 	
-	void setValue(String value) {
+	public void setValue(String value) {
 		this.value = value;
 		valueAppended = value;
 		notifyOnChange();
 	}
 
-	void append(String valueToAppend) {
+	public void append(String valueToAppend) {
 		value = value + valueToAppend;
 		valueAppended = valueToAppend;
 		notifyOnChange();

@@ -6,6 +6,10 @@ import com.google.common.base.Optional;
 
 public class NameRecognitionColumn extends NameRecognition {
 	
+	public NameRecognitionColumn(int stmtStartIndex, int stmtEndIndex) {
+		super(stmtStartIndex, stmtEndIndex);
+	}
+
 	public Optional<String> ColumnName() {
 		if (colNameIsName1())
 			return getName1();

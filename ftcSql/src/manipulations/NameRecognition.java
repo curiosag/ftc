@@ -17,16 +17,23 @@ public class NameRecognition {
 	private int totalLo = -1;
 	private int totalHi = -1;
 
+	// the start index of the sql statement parsed
+	public final int stmtStartIndex;
+	// the end index of the sql statement parsed
+	public final int stmtEndIndex;
+	
 	protected Map<NameRecognitionState, String> names = new HashMap<NameRecognitionState, String>();
 	protected Map<NameRecognitionState, OrderedIntTuple> boundaries = new HashMap<NameRecognitionState, OrderedIntTuple>();
-
+	
 	/**
 	 * reads token sequences <name1> [<separator> <name2>] where separator is
 	 * either "." or "AS" like for "field_name", "table_name.field_name",
 	 * "table_name" or "table_name AS alias"
 	 */
 
-	public NameRecognition() {
+	public NameRecognition(int stmtStartIndex, int stmtEndIndex) {
+		this.stmtStartIndex = stmtStartIndex;
+		this.stmtEndIndex = stmtEndIndex;
 		names.put(NameRecognitionState.NAME1, null);
 		names.put(NameRecognitionState.NAME2, null);
 		boundaries.put(NameRecognitionState.NAME1, null);

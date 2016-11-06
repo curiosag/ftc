@@ -1,6 +1,7 @@
 package org.cg.ftc.shared.uglySmallThings;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -34,6 +35,7 @@ public class AsyncWork {
 				try {
 					onDone.invoke(get());
 				} catch (InterruptedException ignore) {
+				} catch (CancellationException ignore) {
 				} catch (java.util.concurrent.ExecutionException e) {
 					Throwable cause = e.getCause();
 					log.Info(cause != null ? cause.getMessage() : e.getMessage());

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Ftc Editor"
+            extensions="ftsql"
+            icon="icons/sample.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="org.cg.ftceditor.FtcEditor"
+            id="ftceditor.FtcEditor">
+      </editor>
+   </extension>
+
+   <extension
+         id="org.cg.ftcparsermarker"
+         name="Ftc Parsing Problems"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
+    <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="%ftc.contextType.name"
+            class="org.cg.ftceditor.FtcContextType"
+            id="org.cg.ftc">
+      </contextType>
+      <resolver
+            name="%ftc.resolvers.t"
+            type="t"
+            icon="icons/sample.gif"
+            description="%ftc.resolvers.t.description"
+            contextTypeId="org.cg.ftc"
+            class="org.cg.ftceditor.FtcVariableResolver">
+      </resolver>
+      <resolver
+            name="%ftc.resolvers.f"
+            type="f"
+            icon="icons/sample.gif"
+            description="%ftc.resolvers.f.description"
+            contextTypeId="org.cg.ftc"
+            class="org.cg.ftceditor.FtcVariableResolver">
+      </resolver>
+   </extension>
+    <extension
+          point="org.eclipse.ui.views">
+       <category
+             id="ftcEditor"
+             name="ftcEditor">
+       </category>
+       <view
+             category="ftcEditor"
+             class="ftceditor.view.ResultView"
+             icon="icons/sample.gif"
+             id="ftceditor.view.ResultView"
+             name="Result Data">
+       </view>
+    </extension>
+
+</plugin>

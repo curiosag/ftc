@@ -16,6 +16,7 @@ import org.cg.common.structures.Tuple;
 import org.cg.common.util.Op;
 import org.cg.common.util.StringUtil;
 import org.cg.ftc.parser.FusionTablesSqlParser;
+import org.cg.ftc.parser.FusionTablesSqlParser.Sql_stmtContext;
 import org.cg.ftc.shared.interfaces.SyntaxElement;
 import org.cg.ftc.shared.uglySmallThings.Const;
 
@@ -36,6 +37,8 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	private ParserRuleContext parserRuleContext = null;
 	public final Stack<ParserRuleContext> parserRuleStack = new Stack<ParserRuleContext>();
 	public final List<NameRecognition> allNames = new ArrayList<NameRecognition>();
+
+	private Sql_stmtContext currentStatementContext;
 
 	/**
 	 * 
@@ -70,6 +73,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	public List<NameRecognitionTable> tableList = new ArrayList<NameRecognitionTable>();
 
 	private final FusionTablesSqlParser parser;
+
 
 	public CursorContextListener(int cursorIndex, FusionTablesSqlParser parser, BufferedTokenStream tokens) {
 		super(parser, tokens);
@@ -171,10 +175,21 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	 */
 
 	@Override
+	public void enterSql_stmt(FusionTablesSqlParser.Sql_stmtContext ctx) {
+		currentStatementContext = ctx;
+	}
+
+	@Override
+	public void exitSql_stmt(FusionTablesSqlParser.Sql_stmtContext ctx) {
+	}
+
+	@Override
 	public void enterTable_name_with_alias(FusionTablesSqlParser.Table_name_with_aliasContext ctx) {
 		super.enterTable_name_with_alias(ctx);
-		startNameRecognition(new NameRecognitionTable(), ctx);
+		startNameRecognition(createNameRecognitionTable(), ctx);
 	}
+
+	
 
 	@Override
 	public void exitTable_name_with_alias(FusionTablesSqlParser.Table_name_with_aliasContext ctx) {
@@ -185,7 +200,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterResult_column(FusionTablesSqlParser.Result_columnContext ctx) {
 		super.enterResult_column(ctx);
-		startNameRecognition(new NameRecognitionColumn(), ctx);
+		startNameRecognition(createNameRecognitionColumn(), ctx);
 	}
 
 	@Override
@@ -197,7 +212,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterOrdering_term(FusionTablesSqlParser.Ordering_termContext ctx) {
 		super.enterOrdering_term(ctx);
-		startNameRecognition(new NameRecognitionColumn(), ctx);
+		startNameRecognition(createNameRecognitionColumn(), ctx);
 	}
 
 	@Override
@@ -209,7 +224,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterExpr(FusionTablesSqlParser.ExprContext ctx) {
 		super.enterExpr(ctx);
-		startNameRecognition(new NameRecognitionColumn(), ctx);
+		startNameRecognition(createNameRecognitionColumn(), ctx);
 	}
 
 	@Override
@@ -222,7 +237,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterQualified_column_name(FusionTablesSqlParser.Qualified_column_nameContext ctx) {
 		super.enterQualified_column_name(ctx);
-		startNameRecognition(new NameRecognitionColumn(), ctx);
+		startNameRecognition(createNameRecognitionColumn(), ctx);
 	}
 
 	@Override
@@ -234,7 +249,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterColumn_name_beginning_expr(FusionTablesSqlParser.Column_name_beginning_exprContext ctx) {
 		super.enterColumn_name_beginning_expr(ctx);
-		startNameRecognition(new NameRecognitionColumn(), ctx);
+		startNameRecognition(createNameRecognitionColumn(), ctx);
 	}
 
 	@Override
@@ -246,7 +261,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterColumn_name_in_dml(FusionTablesSqlParser.Column_name_in_dmlContext ctx) {
 		super.enterColumn_name_in_dml(ctx);
-		startNameRecognition(new NameRecognitionColumn(), ctx);
+		startNameRecognition(createNameRecognitionColumn(), ctx);
 	}
 
 	@Override
@@ -258,7 +273,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterTable_name_in_ddl(FusionTablesSqlParser.Table_name_in_ddlContext ctx) {
 		super.enterTable_name_in_ddl(ctx);
-		startNameRecognition(new NameRecognitionTable(), ctx);
+		startNameRecognition(createNameRecognitionTable(), ctx);
 	}
 
 	@Override
@@ -270,7 +285,7 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	@Override
 	public void enterTable_name_in_dml(FusionTablesSqlParser.Table_name_in_dmlContext ctx) {
 		super.enterTable_name_in_dml(ctx);
-		startNameRecognition(new NameRecognitionTable(), ctx);
+		startNameRecognition(createNameRecognitionTable(), ctx);
 	}
 
 	@Override
@@ -514,5 +529,13 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	private void printDebug(String s) {
 		if (Const.debugCursorContextListener)
 			printDebug(s);
+	}
+	
+	private NameRecognitionTable createNameRecognitionTable() {
+		return new NameRecognitionTable(currentStatementContext.start.getStartIndex(), currentStatementContext.getStop().getStopIndex());
+	}
+	
+	private NameRecognitionColumn createNameRecognitionColumn() {
+		return new NameRecognitionColumn(currentStatementContext.start.getStartIndex(), currentStatementContext.getStop().getStopIndex());
 	}
 }

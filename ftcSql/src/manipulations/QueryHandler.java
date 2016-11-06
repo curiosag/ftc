@@ -567,22 +567,24 @@ public class QueryHandler extends Observable {
 		if (lastHighlighting != null && StringUtil.nullableEqual(query, lastQuery))
 			return lastHighlighting;
 
-		List<SyntaxElement> result = getSyntaxElements(createManipulator(query).getCursorContextListener(0));
+		List<SyntaxElement> result = getSyntaxElements(query);
 		lastQuery = query;
 		lastHighlighting = result;
 
 		return result;
 	}
 
-	private List<SyntaxElement> getSyntaxElements(CursorContextListener l) {
+	private List<SyntaxElement> getSyntaxElements(String query) {
+		CursorContextListener l = createManipulator(query).getCursorContextListener(0);
 		Semantics semantics = new Semantics();
 		for (NameRecognitionTable r : l.tableList) {
 			Optional<TableReference> ref = resolveTableReferenceInQuery(r);
 			if (ref.isPresent())
 				semantics.addReference(ref.get());
 		}
-
-		semantics.setSemanticAttributes(l.syntaxElements);
+		
+		for (Split s : createManipulator(query).splitStatements().splits) 
+			semantics.setSemanticAttributes(s, l.syntaxElements, l.tableList);
 
 		List<SyntaxElement> complete = addNonSyntaxTokens(l.syntaxElements, l.tokens);
 

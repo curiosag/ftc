@@ -109,7 +109,7 @@
 				<version>2.7</version>
 				<executions>
 					<execution>
-						<id>copy shell files</id>
+						<id>copy files</id>
 						<phase>install</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -126,6 +126,19 @@
 								</resource>
 							</resources>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>

@@ -66,7 +66,12 @@ public class ClientSettings {
 		prefs.put(keyEditorThemeXml, editorThemeXml);
 	}
 
-	private ClientSettings(Class<?> carrierNode) {
+	public ClientSettings()
+	{
+		prefs = null;
+	}
+	
+	public ClientSettings(Class<?> carrierNode) {
 		prefs = Preferences.userNodeForPackage(carrierNode);
 		clientId = prefs.get(keyClientId, "");
 		clientSecret = prefs.get(keyClientSecret, "");

@@ -6,6 +6,10 @@ import com.google.common.base.Optional;
 
 public class NameRecognitionTable extends NameRecognition {
 
+	public NameRecognitionTable(int stmtStartIndex, int stmtEndIndex) {
+		super(stmtStartIndex, stmtEndIndex);
+	}
+
 	public Optional<String> TableName()
 	{
 		return getName1();
