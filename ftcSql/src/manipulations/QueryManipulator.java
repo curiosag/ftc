@@ -113,7 +113,7 @@ public class QueryManipulator {
 		walker.walk(substi, stuff.parser.fusionTablesSql());
 
 		return new RefactoredSql(substi.tableIds, query, substi.tuted(), substi.kWhereStartIdx,
-				StringUtil.concat(tableAliasToName.problemsEncountered.orNull(),  errorListener.getErrors()));
+				StringUtil.concat(tableAliasToName.problemsEncountered.orNull(), errorListener.getErrors()));
 	}
 
 	private String getNextTerminal(Iterator<ParseTree> iter, FusionTablesSqlParser parser) {
@@ -206,6 +206,10 @@ public class QueryManipulator {
 	}
 
 	public CursorContextListener getCursorContextListener(int cursorPosition) {
+		return getCursorContextListener(query, cursorPosition);
+	}
+
+	public CursorContextListener getCursorContextListener(String query, int cursorPosition) {
 		Stuff stuff = Util.getParser(query);
 
 		CursorContextListener cursorContextListener = new CursorContextListener(cursorPosition, stuff.parser,
@@ -249,7 +253,7 @@ public class QueryManipulator {
 		int idxBeforeAlias = probeBeforeAlias(query, cursorPos);
 		if (idxBeforeAlias >= 0)
 			return idxBeforeAlias;
-		
+
 		cursorPos = moveToLastButOneBlank(query, cursorPos);
 
 		if (cursorInValidRange(query, cursorPos) && !symBoundary(query.charAt(cursorPos - 1)))
@@ -260,7 +264,7 @@ public class QueryManipulator {
 
 	private int probeBeforeAlias(String query, int cursorPos) {
 		int idx = moveToChar(query, cursorPos, 1);
-		
+
 		if (idx > 0 && query.substring(idx).toUpperCase().startsWith("AS "))
 			return idx;
 		else
@@ -279,16 +283,29 @@ public class QueryManipulator {
 	}
 
 	public CursorContext getCursorContext(int cursorPosition) {
+		return getCursorContext(query, cursorPosition);
+	}
+
+	public CursorContext getCursorContext(String query, int cursorPosition) {
 		Check.isTrue(cursorPosition >= 0
 				&& cursorPosition <= query.length()); /* it is <=, not < */
 
-		CursorContext result = CursorContext
-				.instance(getCursorContextListener(placeIntoValidTokenRange(query, cursorPosition)));
+		CursorContext result = CursorContext.instance(getCursorContextListener(query, cursorPosition));
 		return result;
 	}
 
 	public QueryPatching getPatcher(int cursorPosition) {
-		return new QueryPatching(tableInfoResolver, getCursorContext(cursorPosition), cursorPosition, query);
+		QueryPatching result = new QueryPatching(tableInfoResolver,
+				getCursorContext(placeIntoValidTokenRange(query, cursorPosition)), cursorPosition, query);
+
+		if (result.getCompletions().size() == 0) {
+			// in any case the query is less incomplete with a letter at the
+			// place where a patch should be made.
+			String retryQuery = StringUtil.insert(query, cursorPosition, "P");
+			result = new QueryPatching(tableInfoResolver, getCursorContext(retryQuery, cursorPosition), cursorPosition,
+					retryQuery);
+		}
+		return result;
 	}
 
 	public List<SyntaxElement> getSyntaxElements() {

@@ -101,11 +101,11 @@ public class QueryPatching {
 
 	private void addColumnsForRelatedTables(Completions result) {
 		String relatedTable = cursorContext.underlyingTableName.or(maybeResolvedByAliasPrefix());
-	
+
 		if (relatedTable.length() > 0) {
 			resoveTableAndAdd(result, relatedTable);
-		} else 
-			for (NameRecognitionTable t : cursorContext.getTableList()) 
+		} else
+			for (NameRecognitionTable t : cursorContext.getTableList())
 				resoveTableAndAdd(result, t.TableName().or(""));
 	}
 

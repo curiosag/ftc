@@ -36,13 +36,9 @@ public class FtcCompletionProvider extends DefaultCompletionProvider implements 
 		this.completionsSource = completionsSource;
 		this.syntaxElementSource = syntaxElementSource;
 		this.completionTypes = types;
+		setAutoActivationRules(false, ".");
 		setListCellRenderer(new FtcListCellRenderer());
 	}
-
-	@Override
-	public boolean isAutoActivateOkay(JTextComponent tc) {
-		return false;
-	};
 
 	@Override
 	public void clearParameterizedCompletionParams() {
