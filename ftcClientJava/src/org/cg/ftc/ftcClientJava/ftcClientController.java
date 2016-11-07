@@ -58,6 +58,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	private Stopwatch executionStopwatch = Stopwatch.createUnstarted();
 	private boolean isExecuting = false;
 	private boolean refreshTablesOngoing;
+	private Optional<File> lastFileUsed = Optional.absent();
 
 	public ftcClientController(ftcClientModel model, AbstractLogger logging, Connector connector,
 			ClientSettings clientSettings, StringStorage cmdHistoryStorage, Progress progress) {
@@ -137,6 +138,10 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			hdlFileSave();
 			break;
 
+		case Const.fileSaveAs:
+			hdlFileSaveAs();
+			break;	
+			
 		case Const.exportCsv:
 			hdlExportCsvAction(e);
 			break;
@@ -276,7 +281,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 		if (sqlStatementQueue.isEmpty())
 			logging.Info("no query at caret position");
-		
+
 		probeExecuteNextQuery();
 	}
 
@@ -364,36 +369,51 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	}
 
 	private void hdlFileOpen() {
-		new FileAction("Open", clientSettings.pathScriptFile, null, new OnFileAction() {
+		new FileAction(FileAction.FILE_OPEN, clientSettings.pathScriptFile, null, new OnFileAction() {
 
 			@Override
-			public void onFileAction(ActionEvent e, File file) {
-				model.queryText.setValue(FileUtil.readFromFile(file.getPath()));
-				clientSettings.pathScriptFile = FileUtil.getPathOnly(file);
+			public void onFileAction(ActionEvent e, Optional<File> file) {
+				if (file.isPresent()) {
+					model.queryText.setValue(FileUtil.readFromFile(file.get().getPath()));
+					clientSettings.pathScriptFile = FileUtil.getPathOnly(file.get());
+					lastFileUsed = file;
+				}
 			}
+
 		}).actionPerformed(null);
 	}
 
 	private void hdlFileSave() {
+		if (lastFileUsed.isPresent())
+			FileUtil.writeToFile(model.queryText.getValue(), lastFileUsed.get().getPath());
+		else
+			hdlFileSaveAs();
+	}
 
-		new FileAction("Save", clientSettings.pathScriptFile, null, new OnFileAction() {
+	private void hdlFileSaveAs() {
+		new FileAction(FileAction.FILE_SAVE_AS, clientSettings.pathScriptFile, null, new OnFileAction() {
 
 			@Override
-			public void onFileAction(ActionEvent e, File file) {
-				FileUtil.writeToFile(model.queryText.getValue(), file.getPath());
-				clientSettings.pathScriptFile = FileUtil.getPathOnly(file);
+			public void onFileAction(ActionEvent e, Optional<File> file) {
+				if (file.isPresent()) {
+					FileUtil.writeToFile(model.queryText.getValue(), file.get().getPath());
+					lastFileUsed = file;
+					clientSettings.pathScriptFile = FileUtil.getPathOnly(file.get());
+				}
 			}
 		}).actionPerformed(null);
 	}
 
 	private void hdlExportCsvAction(ActionEvent e) {
 		if (tablePopulated()) {
-			new FileAction("Export", clientSettings.pathCsvFile, null, new OnFileAction() {
+			new FileAction(FileAction.EXPORT_FILE, clientSettings.pathCsvFile, null, new OnFileAction() {
 
 				@Override
-				public void onFileAction(ActionEvent e, File file) {
-					clientSettings.pathCsvFile = FileUtil.getPathOnly(file);
-					logging.Info(CSV.write(model.resultData.getValue(), file.getPath()));
+				public void onFileAction(ActionEvent e, Optional<File> file) {
+					if (file.isPresent()) {
+						clientSettings.pathCsvFile = FileUtil.getPathOnly(file.get());
+						logging.Info(CSV.write(model.resultData.getValue(), file.get().getPath()));
+					}
 				}
 			}).actionPerformed(e);
 		} else
@@ -439,5 +459,5 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	public void setOnAllQueriesProcessed(Event e) {
 		this.allQueriesProcessed = e;
 	}
-	
+
 }

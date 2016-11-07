@@ -321,6 +321,8 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 		fileMenu.add(createMenuItem(KeyEvent.VK_O, KeyEvent.VK_O, ctrl, getAction("Open", Const.fileOpen)));
 		fileMenu.add(createMenuItem(KeyEvent.VK_S, KeyEvent.VK_S, ctrl, getAction("Save", Const.fileSave)));
+		fileMenu.add(createMenuItem(KeyEvent.VK_A, KeyEvent.VK_A, ctrl, getAction("Save as", Const.fileSaveAs)));
+		
 		fileMenu.add(
 				createMenuItem(KeyEvent.VK_E, KeyEvent.VK_E, ctrl, getAction(Const.tooltipExportCsv, Const.exportCsv)));
 		menuBar.add(fileMenu);

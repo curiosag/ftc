@@ -6,6 +6,7 @@ public class Const {
 	
 	public static final String fileOpen = "fileOpen";
 	public static final String fileSave = "fileSave";
+	public static final String fileSaveAs = "fileSaveAs";
 	public static final String exportCsv = "exportCsv";
 	public static final String execSql = "execSql";
 	public static final String execAllSql = "execAllSql";
@@ -34,6 +35,8 @@ public class Const {
 	
 	public static final String languageId = "text/ftSql";
 	public static final String tokenizerClassId = "org.cg.ftc.ftcQueryEditor.FtSQLTokenMaker";
+
+	
 
 	
 	

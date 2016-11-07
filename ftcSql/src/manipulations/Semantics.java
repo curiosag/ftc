@@ -114,7 +114,7 @@ public class Semantics {
 
 	private boolean anyHasColumn(String column, List<NameRecognitionTable> tableList) {
 		for (NameRecognitionTable t : tableList) {
-			String tableName = t.TableName().get();
+			String tableName = t.TableName().or("");
 			Integer tId = tables.get(tableName);
 			if (tId != null && hasColumn(column, tableReferences.get(tId)))
 				return true;
