@@ -115,7 +115,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			break;
 
 		case Const.viewPreprocessedQuery:
-			logging.Info(queryHandler.previewExecutedSql(model.queryText.getValue()));
+			hdlPreview();
 			break;
 
 		case Const.memorizeQuery:
@@ -140,8 +140,8 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 		case Const.fileSaveAs:
 			hdlFileSaveAs();
-			break;	
-			
+			break;
+
 		case Const.exportCsv:
 			hdlExportCsvAction(e);
 			break;
@@ -157,6 +157,13 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		default:
 			break;
 		}
+	}
+
+	private void hdlPreview() {
+		Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(model.queryText.getValue(), model.caretPositionQueryText,
+				RETURN_SINGLE_QUERY_ANYWAY);
+		if (query.isPresent())
+			logging.Info(queryHandler.previewExecutedSql(query.get().query));
 	}
 
 	private void hdlRefreshTables() {

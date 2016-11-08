@@ -17,7 +17,7 @@ public class TestQueryHandler {
 	public void test() {
 		QueryHandler q = new QueryHandler(new SystemLogger(), new MockConnector(), ClientSettings.instance(this.getClass()));
 		
-		String text = "Select * from table1;  Select a,b from table2;";
+		String text = "Select * from table1;  Select a,b from table2; select x from u          select b";
 
 		Optional<QueryAtHand> split = q.getQueryAtCaretPosition(text, 200, true);
 		assertFalse(split.isPresent());
@@ -45,6 +45,11 @@ public class TestQueryHandler {
 		assertTrue(split.isPresent());
 		assertEquals(5, split.get().caretPositon);
 		assertEquals("Select a,b from table2;", split.get().query);
+		
+		split = q.getQueryAtCaretPosition(text, 71, true); // 1 blank before "select b"
+		assertTrue(split.isPresent());
+		assertEquals(24, split.get().caretPositon);
+		assertEquals("select x from u          ", split.get().query);
 	}
 
 }

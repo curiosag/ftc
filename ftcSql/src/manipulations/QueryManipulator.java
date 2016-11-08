@@ -294,14 +294,29 @@ public class QueryManipulator {
 		return result;
 	}
 
+	private boolean afterFrom(String query, int cursorPosition) {
+		String FROM = "FROM";
+
+		int idxAfterFrom = query.toUpperCase().indexOf(FROM) + FROM.length();
+		return idxAfterFrom >= FROM.length() && idxAfterFrom <= cursorPosition
+				&& query.substring(idxAfterFrom, cursorPosition).trim().length() == 0;
+		
+	}
+
 	public QueryPatching getPatcher(int cursorPosition) {
+		String fixedQuery = query;
+		// in case the cursor is immediately after a FROM fix the query with a trailing ";"
+		if (query.indexOf(';') < 0 && afterFrom(query, cursorPosition))
+			fixedQuery =  query + ';';
+		
 		QueryPatching result = new QueryPatching(tableInfoResolver,
-				getCursorContext(placeIntoValidTokenRange(query, cursorPosition)), cursorPosition, query);
+				getCursorContext(placeIntoValidTokenRange(fixedQuery, cursorPosition)), cursorPosition, fixedQuery);
 
 		if (result.getCompletions().size() == 0) {
-			// in any case the query is less incomplete with a letter at the
+			// otherwise the query is less incomplete with a letter at the
 			// place where a patch should be made.
-			String retryQuery = StringUtil.insert(query, cursorPosition, "P");
+			
+			String retryQuery = StringUtil.insert(fixedQuery, cursorPosition, "P");
 			result = new QueryPatching(tableInfoResolver, getCursorContext(retryQuery, cursorPosition), cursorPosition,
 					retryQuery);
 		}

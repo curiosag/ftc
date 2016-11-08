@@ -38,8 +38,8 @@ public class CursorContext {
 		Check.notNull(c);
 		cursorContextListener = c;
 		this.cursorIndex = c.cursorIndex;
-		if (c.tableList.size() == 1)
-			underlyingTableName = CollectionUtil.last(c.tableList).TableName();
+		if (c.getTableList().size() == 1)
+			underlyingTableName = CollectionUtil.last(c.getTableList()).TableName();
 
 		if (c.nameAtCursor.isPresent())
 			this.totalNameBoundaries = c.nameAtCursor.get().getTotalBoundaries();
@@ -59,7 +59,7 @@ public class CursorContext {
 		NameRecognitionColumn atCursor = (NameRecognitionColumn) c.nameAtCursor.get();
 		name = atCursor.ColumnName();
 		boundaries = atCursor.BoundariesColumnName();
-		otherName = resolveTableName(atCursor.TableName(), c.tableList);
+		otherName = resolveTableName(atCursor.TableName(), c.getTableList());
 		otherBoundaries = atCursor.BoundariesTableName();
 
 		// don't try to change this. a valid result column value may have been
@@ -74,7 +74,7 @@ public class CursorContext {
 		addCompletionOption(SqlCompletionType.table);
 		NameRecognitionTable atCursor = (NameRecognitionTable) c.nameAtCursor.get();
 
-		name = resolveTableName(atCursor.TableName(), c.tableList);
+		name = resolveTableName(atCursor.TableName(), c.getTableList());
 		boundaries = atCursor.BoundariesTableName();
 		otherName = Optional.absent();
 		otherBoundaries = Optional.absent();
@@ -256,7 +256,7 @@ public class CursorContext {
 	}
 
 	public List<NameRecognitionTable> getTableList() {
-		return cursorContextListener.tableList;
+		return cursorContextListener.getTableList();
 	}
 
 	public List<SyntaxElement> getSyntaxElements() {

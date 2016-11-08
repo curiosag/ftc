@@ -70,10 +70,18 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 	 */
 	public Optional<NameRecognition> nameAtCursor = Optional.absent();
 
-	public List<NameRecognitionTable> tableList = new ArrayList<NameRecognitionTable>();
+	private List<NameRecognitionTable> tableList = new ArrayList<NameRecognitionTable>();
 
 	private final FusionTablesSqlParser parser;
 
+	/**
+	 * Returns a list of all table references in FROM clauses 
+	 * in the whole text parsed, also if more queries are involved
+	 * @return list of table references in query
+	 */
+	public List<NameRecognitionTable> getTableList(){
+		return tableList;
+	}
 
 	public CursorContextListener(int cursorIndex, FusionTablesSqlParser parser, BufferedTokenStream tokens) {
 		super(parser, tokens);

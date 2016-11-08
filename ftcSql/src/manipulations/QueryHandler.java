@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -577,14 +578,14 @@ public class QueryHandler extends Observable {
 	private List<SyntaxElement> getSyntaxElements(String query) {
 		CursorContextListener l = createManipulator(query).getCursorContextListener(0);
 		Semantics semantics = new Semantics();
-		for (NameRecognitionTable r : l.tableList) {
+		for (NameRecognitionTable r : l.getTableList()) {
 			Optional<TableReference> ref = resolveTableReferenceInQuery(r);
 			if (ref.isPresent())
 				semantics.addReference(ref.get());
 		}
-		
-		for (Split s : createManipulator(query).splitStatements().splits) 
-			semantics.setSemanticAttributes(s, l.syntaxElements, l.tableList);
+
+		for (Split s : createManipulator(query).splitStatements().splits)
+			semantics.setSemanticAttributes(s, l.syntaxElements, l.getTableList());
 
 		List<SyntaxElement> complete = addNonSyntaxTokens(l.syntaxElements, l.tokens);
 
@@ -658,8 +659,37 @@ public class QueryHandler extends Observable {
 
 	}
 
+	/**
+	 * restores trailing whitespace of single queries and sets the new end
+	 * index. Whitespace gets get cut off during parsing if statements are not
+	 * terminated with ";".
+	 * 
+	 * @param splits
+	 *            parsed splits
+	 * @param source
+	 * @return
+	 */
+	private List<Split> restoreTrailingWhitespace(List<Split> splits, String source) {
+		List<Split> result = new ArrayList<Split>();
+		for (Split split : splits)
+			if (split.text.endsWith(";"))
+				result.add(split);
+			else
+				result.add(restoreTrailingWhitespace(split, source));
+		return result;
+	}
+
+	private Split restoreTrailingWhitespace(Split split, String source) {
+		int i = split.stop;
+		while (i + 1 < source.length()
+				&& (source.charAt(i + 1) == ' ' || source.charAt(i + 1) == '\r' || source.charAt(i + 1) == '\n'))
+			i++;
+
+		return new Split(source.substring(split.start, i + 1), split.start, i);
+	}
+
 	public Optional<QueryAtHand> getQueryAtCaretPosition(String text, int pos, boolean returnSingleQueryAnyway) {
-		List<Split> splits = getQueries(text);
+		List<Split> splits = restoreTrailingWhitespace(getQueries(text), text);
 
 		if (returnSingleQueryAnyway && splits.size() == 1)
 			return Optional.of(new QueryAtHand(text, pos));
