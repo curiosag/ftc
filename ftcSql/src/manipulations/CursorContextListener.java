@@ -184,11 +184,13 @@ public class CursorContextListener extends SyntaxElementListener implements OnEr
 
 	@Override
 	public void enterSql_stmt(FusionTablesSqlParser.Sql_stmtContext ctx) {
+		super.enterSql_stmt(ctx);
 		currentStatementContext = ctx;
 	}
 
 	@Override
 	public void exitSql_stmt(FusionTablesSqlParser.Sql_stmtContext ctx) {
+		super.exitSql_stmt(ctx);
 	}
 
 	@Override

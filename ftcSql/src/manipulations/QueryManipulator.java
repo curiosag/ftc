@@ -199,7 +199,7 @@ public class QueryManipulator {
 		Stuff stuff = Util.getParser(query);
 		VerboseErrorListener errorListener = Util.addVerboseErrorListener(stuff.parser);
 
-		StatementSplitter splitter = new StatementSplitter(stuff.tokenStream);
+		BaseFtListener splitter = new BaseFtListener(stuff.tokenStream);
 
 		walker.walk(splitter, stuff.parser.fusionTablesSql());
 		return new Splits(splitter.splits, errorListener.getErrors());

@@ -1,5 +1,6 @@
 package manipulations;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,12 +37,11 @@ public class SyntaxElementListener extends BaseFtListener implements OnError {
 
 	@SuppressWarnings("unused")
 	private final FusionTablesSqlParser parser;
-	public final BufferedTokenStream tokens;
-
+	
 	public SyntaxElementListener(FusionTablesSqlParser parser, BufferedTokenStream tokens)
 	{
+		super(tokens);
 		this.parser = parser;
-		this.tokens = tokens;
 	}
 	
 	/**

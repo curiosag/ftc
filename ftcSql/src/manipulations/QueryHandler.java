@@ -584,7 +584,7 @@ public class QueryHandler extends Observable {
 				semantics.addReference(ref.get());
 		}
 
-		for (Split s : createManipulator(query).splitStatements().splits)
+		for (Split s : l.splits)
 			semantics.setSemanticAttributes(s, l.syntaxElements, l.getTableList());
 
 		List<SyntaxElement> complete = addNonSyntaxTokens(l.syntaxElements, l.tokens);
