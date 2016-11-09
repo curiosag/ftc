@@ -11,7 +11,7 @@ public class StatementSplitter extends FusionTablesSqlBaseListener {
 
 	private final BufferedTokenStream tokens;
 	public final List<Split> splits = new ArrayList<Split>();
-	
+
 	public StatementSplitter(BufferedTokenStream tokens) {
 		Check.notNull(tokens);
 		this.tokens = tokens;
@@ -19,7 +19,9 @@ public class StatementSplitter extends FusionTablesSqlBaseListener {
 
 	@Override
 	public void exitSql_stmt(FusionTablesSqlParser.Sql_stmtContext ctx) {
-		splits.add(new Split(tokens.getText(ctx.start, ctx.stop), ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
+		if (ctx != null && ctx.start != null && ctx.stop != null)
+			splits.add(
+					new Split(tokens.getText(ctx.start, ctx.stop), ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
 	}
 
 }

@@ -46,6 +46,10 @@ public class ClientSettings {
 			instance = new ClientSettings(carrierNode);
 		return instance;
 	}
+	
+	public Preferences getPreferences(){
+		return prefs;
+	}
 
 	public void write() {
 		prefs.put(keyClientId, clientId);

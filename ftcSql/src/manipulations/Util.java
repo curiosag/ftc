@@ -128,6 +128,10 @@ public class Util {
 		return getParser(getInput(input));
 	}
 	
+	public FusionTablesSqlLexer getLexer(String input) {
+		return new FusionTablesSqlLexer(getInput(input));
+	}
+	
 	public static Util.Stuff getParser(ANTLRInputStream input) {
 		FusionTablesSqlLexer lexer = new FusionTablesSqlLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);

@@ -25,7 +25,7 @@ public class SyntaxElementListener extends BaseFtListener implements OnError {
 
 	private static String[] ft_keywords = { "DESC", "AVERAGE", "COUNT", "CIRCLE", "ASC", "SUM", "WITH", "ST_DISTANCE",
 			"ST_INTERSECTS", "IN", "BETWEEN", "STARTS", "CASE", "CONTAINS", "RECTANGLE", "LATLNG", "DOES", "CONTAIN",
-			"ENDS", "IGNORING", "NOT", "EQUAL", "OF", "MATCHES", "MAXIMUM", "MINIMUM", };
+			"ENDS", "IGNORING", "NOT", "EQUAL", "OF", "MATCHES", "MAXIMUM", "MINIMUM", "DESCRIBE"};
 
 	private static List<String> sqlkeywords = CollectionUtil.sort(CollectionUtil.toList(sql_keywords));
 	private static List<String> ftkeywords = CollectionUtil.sort(CollectionUtil.toList(ft_keywords));
@@ -176,7 +176,7 @@ public class SyntaxElementListener extends BaseFtListener implements OnError {
 		else if (isSqlKeyword(node.getText()))
 			addElement(node.getSymbol(), SyntaxElementType.sql_keyword);
 		else if (isFtKeyword(node.getText()))
-			addElement(node.getSymbol(), SyntaxElementType.ft_keyword);
+			addElement(node.getSymbol(), SyntaxElementType.sql_keyword);
 	}
 
 	@Override
