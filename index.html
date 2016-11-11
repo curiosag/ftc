@@ -29,14 +29,39 @@
       </header>
       
       <section>
-      For a quick start with Google  <a target="_blank" href="https://developers.google.com/fusiontables/docs/v2/sql-reference">fusion tables sql</a>: code completion, context sensitive Sql snippets with table or column parameters, refer to tables by name or ID, syntax highlighting covering syntactic and semantic errors. Delete, rename and copy tables by sql, export csv.
+      For a quick start with Google  <a target="_blank" href="https://developers.google.com/fusiontables/docs/v2/sql-reference">fusion tables sql</a>: syntax highlighting, syntactic and semantic error markers, content assist, refer to tables by name or ID. Delete, rename and copy tables by sql, export csv. Available as Eclipse plugin and stand alone application with UI or command line mode.
       
       </section>
+
+
       
  <wide_section>
+<br>
+It allows to avoid things like the one on the left when instead you can have it like shown on the right, which was the reason to start the project in the first place.<br><br>
+
+<table>
+<tr>
+<td>
+<font size="-1">CREATE VIEW V AS <br>(SELECT t1.total, t2.id, t1.jobwohnen, t2.datumB<br>
+FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6 AS t1 <br>
+LEFT OUTER JOIN 1XNksblRgD3OvBTmyN5Kpeq-2bGSjdWHpL-20tmUg as t2 <br>
+ON t1.total = t2.datumB);</font>
+</td>
+<td>
+
+<font size="-1">CREATE VIEW <font color="#0000FF">V</font> AS <br>(SELECT <font color="#0000FF">t1</font><font color="#0000FF">.total</font>, <font color="#0000FF">t2</font>.<font color="#0000FF">id</font>, 
+<font color="#0000FF">t1.jobwohnen</font>, <font color="#0000FF">t2.datumB</font><br>
+FROM <font color="#0000FF">statDataB</font> AS <font color="#0000FF">t1</font> <br>
+LEFT OUTER JOIN <font color="#0000FF">vFFuetterungen</font> as <font color="#0000FF">t2</font> <br>
+ON <font color="#0000FF">t1</font>.<font color="#0000FF">total</font> = <font color="#0000FF">t2</font>.<font color="#0000FF">datumB</font>);</font>
+</td></tr>
+</table>
+<br>
     
  <img src="ftc.gif" width="825" height="548" alt=""> 
         <p></p>
+
+
 <h3>Get started</h3>
 You need  <a target="_blank" href="https://support.google.com/fusiontables">some fusion tables you own</a> or some  <a target="_blank" href="https://research.google.com/tables?hl=en&ei=xYqhVpuCJsHipQOqzLiIDw&corpus=fusion&q=dog">external table IDs</a>, a  <a target="_blank" href="https://console.developers.google.com">google developers project</a> with  <a target="_blank" href="https://console.developers.google.com/apis"> activated fusion tables api</a> and an  <a target="_blank" href="https://console.developers.google.com/apis/credentials"> <a target="_blank" href="https://console.developers.google.com/apis/credentials">OAuth2 client ID</a></a> (with application type "other") for the project. </small>
 <p></p>Download the packaged JAR archive, extract it, run ftc.bat (Windows), ftc.sh (make sure it is executable) for unix-like systems or "java -jar ftcClientJava-0.1.jar" otherwise. Requires Java 7.
@@ -44,7 +69,7 @@ You need  <a target="_blank" href="https://support.google.com/fusiontables">some
 <p></p>Enter client id and secret, then press  <img src="authButton.gif" alt="authenticate">. The authentication workflow will try to open your default browser and take you through further steps. If it doesen't show up, you can find the required URL in the log pane, proceed manually in this case. If anything goes wrong with the authentication, the client waits for the defined timeout period and then cancels. In case of success the client stores the credentials and authenticates automatically in future sessions.
         <p></p>Once authenticated press ctrl+space in the empty editor window for a list of top level Sql statements.
 <p></p>
-<h3>Covers</h3>
+<h3><a name="coverage"></a>Covers</h3>
         <p></p>
       SELECT, CREATE VIEW, INSERT, UPDATE, DELETE, DESCRIBE and SHOW TABLES.
 <p></p>
@@ -120,19 +145,9 @@ Can look like this then:<br><br>
 
 
 <h3>Open Issues</h3>
-Find the  <a target="_blank" href="https://github.com/curiosag/ftc/issues">list at GitHub</a>.        
+Find the <a target="_blank" href="https://github.com/curiosag/ftc/issues">list at GitHub</a>.        
  <p></p>
 
-
-<h3>Things to come, maybe</h3>
-        <ul>
-			 <li>Text terminal interface</li>
-			 <li>Extend copy table command to external tables</li>
-        	 <li>Multiple files/tab sheets</li>
-        	 <li>Full SELECT clause in CREATE TABLE statement</li>
-        	 <li>Allow WHERE clause in CREATE VIEW statement with JOIN clause</li>
-			 <li>And all the rest like import, export and stuff</li>
-        </ul>
 
       </wide_section>
 
