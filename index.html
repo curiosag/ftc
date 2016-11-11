@@ -47,7 +47,7 @@ FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6 AS t1
 LEFT OUTER JOIN 1XNksblRgD3OvBTmyN5Kpeq-2bGSjdWHpL-20tmUg as t2 
 ON t1.total = t2.datumB);</font><br><br>
 
-Before execution symbolic table names get replaced by their table IDs. You can get the preprocessed query with menu entry <strong>Fu -> View preprocessed query at cursor</strong>. 
+Before execution symbolic table names get replaced by their table IDs. You can get the preprocessed query with the <strong>Show preprocessed query</strong> menu and toolbar entry. 
 <br>
 <br>
 <br>
@@ -59,7 +59,7 @@ You need  <a target="_blank" href="https://support.google.com/fusiontables">some
 <p></p>Enter client id and secret, then press  <img src="authButton.gif" alt="authenticate">. The authentication workflow will try to open your default browser and take you through further steps. If it doesen't show up, you can find the required URL in the log pane, proceed manually in this case. If anything goes wrong with the authentication, the client waits for the defined timeout period and then cancels. In case of success the client stores the credentials and authenticates automatically in future sessions.
         <p></p>Once authenticated press ctrl+space in the empty editor window for a list of top level Sql statements.
 <p></p>
-<h3><a name="coverage"></a>Covers</h3>
+<h3><a name="covers"></a>Covers</h3>
         <p></p>
       SELECT, CREATE VIEW, INSERT, UPDATE, DELETE, DESCRIBE and SHOW TABLES.
 <p></p>
