@@ -1,1 +1,6 @@
+SELECT colname FROM classifiedAdsView;
+
 SELECT colname FROM vvFuetterungenB;
+SELECT uhrzeitB, id, mengeB FROM vvFuetterungenB;
+
+

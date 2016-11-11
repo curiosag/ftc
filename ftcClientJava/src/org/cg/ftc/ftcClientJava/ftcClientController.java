@@ -24,6 +24,7 @@ import org.cg.common.io.StringStorage;
 import org.cg.common.misc.CmdDestination;
 import org.cg.common.misc.CmdHistory;
 import org.cg.common.threading.Function;
+import org.cg.common.util.Op;
 import org.cg.ftc.shared.interfaces.*;
 import org.cg.ftc.shared.structures.*;
 import org.cg.ftc.shared.uglySmallThings.*;
@@ -60,6 +61,8 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	private boolean refreshTablesOngoing;
 	private Optional<File> lastFileUsed = Optional.absent();
 
+	private boolean offline;
+
 	public ftcClientController(ftcClientModel model, AbstractLogger logging, Connector connector,
 			ClientSettings clientSettings, StringStorage cmdHistoryStorage, Progress progress) {
 		this.model = model;
@@ -94,6 +97,10 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+
+		if (offline && Op.in(e.getActionCommand(), Const.execSql, Const.execAllSql, Const.listTables, Const.authorize,
+				Const.refreshTables))
+			return;
 
 		switch (e.getActionCommand()) {
 		case Const.execSql:
@@ -160,8 +167,8 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	}
 
 	private void hdlPreview() {
-		Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(model.queryText.getValue(), model.caretPositionQueryText,
-				RETURN_SINGLE_QUERY_ANYWAY);
+		Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(model.queryText.getValue(),
+				model.caretPositionQueryText, RETURN_SINGLE_QUERY_ANYWAY);
 		if (query.isPresent())
 			logging.Info(queryHandler.previewExecutedSql(query.get().query));
 	}
@@ -347,7 +354,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		}
 	};
 
-	private void hdlAuthenticate() {
+	public void hdlAuthenticate() {
 		connector.clearStoredLoginData();
 		authenticate();
 	}
@@ -358,12 +365,12 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		Events.ui.post(RunState.AUTHENTICATION_STARTED);
 		try {
 			connectionWorker.execute();
-			logging.Info("attempting to authorize");
-			String msgAuthFailed = "authorization failed: ";
+			logging.Info("attempting to authenticate");
+			String msgAuthFailed = "authentication failed: ";
 			try {
 				ConnectionStatus result = connectionWorker.get(clientSettings.authTimeout, TimeUnit.SECONDS);
 				if (result.status == HttpStatus.SC_OK)
-					logging.Info("authorization succeeded");
+					logging.Info("authentication succeeded");
 				else
 					logging.Info(msgAuthFailed + result.message.or("unknown reason"));
 			} catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -465,6 +472,15 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 	public void setOnAllQueriesProcessed(Event e) {
 		this.allQueriesProcessed = e;
+	}
+
+	public boolean isOffline() {
+		return offline;
+	}
+
+	public void setOffline(boolean offline) {
+		this.offline = offline;
+		queryHandler.setOffline(offline);
 	}
 
 }

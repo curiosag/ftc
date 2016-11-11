@@ -75,13 +75,24 @@ public class QueryHandler extends Observable {
 		}
 	};
 	private CompositeQueryExecutor compositeQueryExecutor;
+	private boolean offline;
 
 	public QueryHandler(Logging logger, Connector connector, ClientSettings settings) {
-		Check.notNull(logger);
 		Check.notNull(connector);
 		this.logger = logger;
 		this.connector = connector;
 		this.settings = settings;
+	}
+
+	public void setOffline(boolean value) {
+		boolean recent = value;
+		offline = value;
+		if (offline != recent)
+			reloadTableList();
+	}
+
+	private boolean isOffline() {
+		return offline;
 	}
 
 	public ConnectionStatus reset(Dictionary<String, String> connectionInfo) {
@@ -202,7 +213,8 @@ public class QueryHandler extends Observable {
 	private synchronized List<TableInfo> loadTableCaches(boolean reload) {
 		if (tableInfo.isEmpty() || reload) {
 			tableInfo.clear();
-			tableInfo.addAll(connector.getTableInfo());
+			if (!isOffline())
+				tableInfo.addAll(connector.getTableInfo());
 			populateTableMaps(tableInfo);
 		}
 		return tableInfo;
@@ -577,6 +589,16 @@ public class QueryHandler extends Observable {
 
 	private List<SyntaxElement> getSyntaxElements(String query) {
 		CursorContextListener l = createManipulator(query).getCursorContextListener(0);
+		if (!offline)
+			addSemantics(l);
+
+		List<SyntaxElement> complete = addNonSyntaxTokens(l.syntaxElements, l.tokens);
+		debug(complete);
+
+		return complete;
+	}
+
+	private void addSemantics(CursorContextListener l) {
 		Semantics semantics = new Semantics();
 		for (NameRecognitionTable r : l.getTableList()) {
 			Optional<TableReference> ref = resolveTableReferenceInQuery(r);
@@ -586,12 +608,6 @@ public class QueryHandler extends Observable {
 
 		for (Split s : l.splits)
 			semantics.setSemanticAttributes(s, l.syntaxElements, l.getTableList());
-
-		List<SyntaxElement> complete = addNonSyntaxTokens(l.syntaxElements, l.tokens);
-
-		debug(complete);
-
-		return complete;
 	}
 
 	private List<SyntaxElement> addNonSyntaxTokens(List<SyntaxElement> syntaxElements, BufferedTokenStream tokens) {

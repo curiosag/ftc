@@ -81,7 +81,7 @@ public class QueryPatching {
 		for (SqlCompletionType c : cursorContext.completionOptions)
 			switch (c) {
 			case table:
-				result.addAll(toCompletions(tableInfoResolver.listTables(), !addColumnDetails));
+					result.addAll(toCompletions(tableInfoResolver.listTables(), !addColumnDetails));
 				break;
 
 			case column:
