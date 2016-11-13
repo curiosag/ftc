@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/FtcPlugin_1.0.0.jar" id="FtcPlugin" version="1.0.0" nl="en">
+      <category name="Tool"/>
+   </feature>
+   <category-def name="Tool" label="Tool"/>
+</site>

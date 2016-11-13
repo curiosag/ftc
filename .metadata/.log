@@ -17,3 +17,38 @@ Command-line arguments:  -data /home/sp/dev/tool/eclipse/ftc_workspace_ghpages -
 
 !ENTRY org.eclipse.core.jobs 2 2 2016-02-11 16:18:42.511
 !MESSAGE Job found still running after platform shutdown.  Jobs should be canceled by the plugin that scheduled them during shutdown: org.eclipse.epp.internal.logging.aeri.ui.log.ProblemsDatabaseUpdateJob
+!SESSION 2016-04-08 16:15:37.485 -----------------------------------------------
+eclipse.buildId=4.5.1.M20150904-0015
+java.version=1.8.0_60
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.java.product --showsplash org.eclipse.platform
+Command-line arguments:  -data /home/sp/dev/tool/eclipse/ftc_workspace_ghpages -os linux -ws gtk -arch x86_64 -product org.eclipse.epp.package.java.product --showsplash org.eclipse.platform
+
+!ENTRY org.eclipse.ui 2 2 2016-04-08 16:15:50.501
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.base, page: com.android.ide.eclipse.common.preferences.UsagePreferencePage)
+
+!ENTRY org.eclipse.ui 2 2 2016-04-08 16:15:50.514
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.ddms, page: com.android.ide.eclipse.ddms.preferences.PreferencePage)
+
+!ENTRY org.eclipse.ui 2 2 2016-04-08 16:15:50.514
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.ddms, page: com.android.ide.eclipse.ddms.preferences.LogCatPreferencePage)
+!SESSION 2016-10-16 12:55:39.208 -----------------------------------------------
+eclipse.buildId=4.5.1.M20150904-0015
+java.version=1.8.0_60
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.java.product --showsplash org.eclipse.platform
+Command-line arguments:  -os linux -ws gtk -arch x86_64 -product org.eclipse.epp.package.java.product --showsplash org.eclipse.platform
+
+!ENTRY org.eclipse.ui 2 2 2016-10-16 12:56:17.802
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.base, page: com.android.ide.eclipse.common.preferences.UsagePreferencePage)
+
+!ENTRY org.eclipse.ui 2 2 2016-10-16 12:56:17.825
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.ddms, page: com.android.ide.eclipse.ddms.preferences.PreferencePage)
+
+!ENTRY org.eclipse.ui 2 2 2016-10-16 12:56:17.825
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.ddms, page: com.android.ide.eclipse.ddms.preferences.LogCatPreferencePage)
+
+!ENTRY org.eclipse.core.jobs 2 2 2016-10-16 12:56:36.981
+!MESSAGE Job found still running after platform shutdown.  Jobs should be canceled by the plugin that scheduled them during shutdown: org.eclipse.epp.internal.logging.aeri.ui.log.ProblemsDatabaseUpdateJob

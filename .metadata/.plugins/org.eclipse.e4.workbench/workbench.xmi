@@ -3,13 +3,13 @@
   <persistedState key="memento" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xA;&lt;workbench>&#xA;&lt;mruList/>&#xA;&lt;/workbench>"/>
   <tags>ModelMigrationProcessor.001</tags>
   <tags>activeSchemeId:org.eclipse.ui.defaultAcceleratorConfiguration</tags>
-  <children xsi:type="basic:TrimmedWindow" xmi:id="_m4jt4dDSEeWO249I31QSBw" elementId="IDEWindow" contributorURI="platform:/plugin/org.eclipse.platform" selectedElement="_n5qlkNDSEeWO249I31QSBw" label="%trimmedwindow.label.eclipseSDK" x="10" y="34" width="1024" height="768">
+  <children xsi:type="basic:TrimmedWindow" xmi:id="_m4jt4dDSEeWO249I31QSBw" elementId="IDEWindow" contributorURI="platform:/plugin/org.eclipse.platform" selectedElement="_n5qlkNDSEeWO249I31QSBw" label="%trimmedwindow.label.eclipseSDK" x="10" y="34" width="1012" height="766">
     <persistedState key="coolBarVisible" value="true"/>
     <persistedState key="perspectiveBarVisible" value="true"/>
     <persistedState key="isRestored" value="true"/>
     <persistedState key="show_in_time" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xA;&lt;show_in_time/>"/>
     <persistedState key="workingSets" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#xA;&lt;workingSets/>"/>
-    <persistedState key="aggregateWorkingSetId"/>
+    <persistedState key="aggregateWorkingSetId" value="Aggregate for window 1460124947538"/>
     <tags>topLevel</tags>
     <children xsi:type="basic:PartSashContainer" xmi:id="_n5qlkNDSEeWO249I31QSBw" selectedElement="_n5qlkdDSEeWO249I31QSBw" horizontal="true">
       <children xsi:type="advanced:PerspectiveStack" xmi:id="_n5qlkdDSEeWO249I31QSBw" elementId="org.eclipse.ui.ide.perspectivestack" containerData="7500" selectedElement="_plMTQNDSEeWO249I31QSBw">
@@ -172,7 +172,7 @@
       </children>
       <children xsi:type="menu:ToolBar" xmi:id="_od1CkNDSEeWO249I31QSBw" elementId="org.eclipse.ui.workbench.file">
         <tags>Draggable</tags>
-        <children xsi:type="menu:HandledToolItem" xmi:id="_oeM2ANDSEeWO249I31QSBw" elementId="print" visible="false" iconURI="platform:/plugin/org.eclipse.ui/icons/full/etool16/print_edit.png" tooltip="Print" enabled="false" command="_m8iPItDSEeWO249I31QSBw"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_I20iYJOPEeahja59i9Aktw" elementId="print" visible="false" iconURI="platform:/plugin/org.eclipse.ui/icons/full/etool16/print_edit.png" tooltip="Print" command="_m8iPItDSEeWO249I31QSBw"/>
       </children>
       <children xsi:type="menu:ToolBar" xmi:id="_od1CkdDSEeWO249I31QSBw" elementId="additions" toBeRendered="false">
         <tags>toolbarSeparator</tags>
@@ -190,7 +190,7 @@
       </children>
       <children xsi:type="menu:ToolBar" xmi:id="_od2QsNDSEeWO249I31QSBw" elementId="org.eclipse.ui.workbench.navigate">
         <tags>Draggable</tags>
-        <children xsi:type="menu:HandledToolItem" xmi:id="_oeS8oNDSEeWO249I31QSBw" elementId="org.eclipse.ui.window.pinEditor" visible="false" iconURI="platform:/plugin/org.eclipse.ui/icons/full/etool16/pin_editor.png" tooltip="Pin Editor" type="Check" command="_m8hA1dDSEeWO249I31QSBw"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_I27QEJOPEeahja59i9Aktw" elementId="org.eclipse.ui.window.pinEditor" visible="false" iconURI="platform:/plugin/org.eclipse.ui/icons/full/etool16/pin_editor.png" tooltip="Pin Editor" type="Check" command="_m8hA1dDSEeWO249I31QSBw"/>
       </children>
       <children xsi:type="menu:ToolBar" xmi:id="_od2QsdDSEeWO249I31QSBw" elementId="group.editor" toBeRendered="false">
         <tags>toolbarSeparator</tags>
@@ -403,9 +403,6 @@
     <bindings xmi:id="_m_xJKtDSEeWO249I31QSBw" keySequence="ALT+SHIFT+R" command="_m8Wox9DSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_xwNdDSEeWO249I31QSBw" keySequence="F5" command="_m8RwTtDSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_xwOtDSEeWO249I31QSBw" keySequence="ALT+SHIFT+L" command="_m8M3w9DSEeWO249I31QSBw"/>
-    <bindings xmi:id="_m_3PwtDSEeWO249I31QSBw" keySequence="CTRL+SHIFT+F6" command="_m8cIVdDSEeWO249I31QSBw">
-      <tags>deleted</tags>
-    </bindings>
     <bindings xmi:id="_m_3Pw9DSEeWO249I31QSBw" keySequence="ALT+F5" command="_m8Uzk9DSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_320NDSEeWO249I31QSBw" keySequence="ALT+SHIFT+F7" command="_m8fLvdDSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_320tDSEeWO249I31QSBw" keySequence="CTRL+P" command="_m8iPItDSEeWO249I31QSBw"/>
@@ -443,9 +440,6 @@
     <bindings xmi:id="_nAErINDSEeWO249I31QSBw" keySequence="CTRL+F11" command="_m8kEMdDSEeWO249I31QSBw"/>
     <bindings xmi:id="_nAErIdDSEeWO249I31QSBw" keySequence="CTRL+SHIFT+O" command="_m8krZNDSEeWO249I31QSBw"/>
     <bindings xmi:id="_nAFSMNDSEeWO249I31QSBw" keySequence="ALT+-" command="_m8ZsHdDSEeWO249I31QSBw"/>
-    <bindings xmi:id="_nAFSMdDSEeWO249I31QSBw" keySequence="CTRL+F6" command="_m8HYOdDSEeWO249I31QSBw">
-      <tags>deleted</tags>
-    </bindings>
     <bindings xmi:id="_nAF5QdDSEeWO249I31QSBw" keySequence="ALT+CR" command="_m8hA4tDSEeWO249I31QSBw"/>
     <bindings xmi:id="_nAF5QtDSEeWO249I31QSBw" keySequence="ALT+F7" command="_m8ZsM9DSEeWO249I31QSBw"/>
     <bindings xmi:id="_nAF5Q9DSEeWO249I31QSBw" keySequence="ALT+SHIFT+W" command="_m8krdtDSEeWO249I31QSBw"/>
@@ -465,9 +459,6 @@
     <bindings xmi:id="_nAIVgNDSEeWO249I31QSBw" keySequence="ALT+CTRL+SHIFT+ARROW_DOWN" command="_m8qK39DSEeWO249I31QSBw"/>
     <bindings xmi:id="_nAIVgdDSEeWO249I31QSBw" keySequence="CTRL+SHIFT+B" command="_m8HYR9DSEeWO249I31QSBw"/>
     <bindings xmi:id="_nAIVgtDSEeWO249I31QSBw" keySequence="ALT+SHIFT+C" command="_m8iO-dDSEeWO249I31QSBw"/>
-    <bindings xmi:id="_nAI8ktDSEeWO249I31QSBw" keySequence="ALT+CTRL+B" command="_m8fLotDSEeWO249I31QSBw">
-      <tags>deleted</tags>
-    </bindings>
     <bindings xmi:id="_nAI8ldDSEeWO249I31QSBw" keySequence="ALT+SHIFT+X Q" command="_m8ImVtDSEeWO249I31QSBw"/>
     <bindings xmi:id="_nAI8ltDSEeWO249I31QSBw" keySequence="ALT+SHIFT+Q C" command="_m8d9idDSEeWO249I31QSBw">
       <parameters xmi:id="_nAI8l9DSEeWO249I31QSBw" elementId="org.eclipse.ui.views.showView.viewId" name="org.eclipse.ui.views.showView.viewId" value="org.eclipse.ui.console.ConsoleView"/>
@@ -559,9 +550,6 @@
     <bindings xmi:id="_m_xwMdDSEeWO249I31QSBw" keySequence="ALT+5" command="_m8OtANDSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_3PwdDSEeWO249I31QSBw" keySequence="SHIFT+F12" command="_m8i2DdDSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_320dDSEeWO249I31QSBw" keySequence="CTRL+NUMPAD_SUBTRACT" command="_m8iPKtDSEeWO249I31QSBw"/>
-    <bindings xmi:id="_m_3209DSEeWO249I31QSBw" keySequence="CTRL+P" command="_m8krZdDSEeWO249I31QSBw">
-      <tags>deleted</tags>
-    </bindings>
     <bindings xmi:id="_m_321dDSEeWO249I31QSBw" keySequence="F2" command="_m8Ne3NDSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_3219DSEeWO249I31QSBw" keySequence="ALT+SHIFT+0" command="_m8fLqtDSEeWO249I31QSBw"/>
     <bindings xmi:id="_m_4d59DSEeWO249I31QSBw" keySequence="CTRL+SHIFT+Y" command="_m8SXV9DSEeWO249I31QSBw"/>
