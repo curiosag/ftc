@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>gFTC</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h2>Fusion Tables Console Eclipse Plugin</h2>
+        <p></p>
+
+		<ul>
+        	 <li> <a target="_blank" href="https://github.com/curiosag/ftcEclipsePluginUpdateSite/blob/master/ftcplugin.zip"> Update site<strong>ZIP File</strong></a></li>
+          <li> <a target="_blank" href="https://github.com/curiosag/ftcEclipsePlugin/tarball/master">Source Code<strong>TAR Ball</strong></a></li>
+          <li> <a target="_blank" href="https://github.com/curiosag/ftcEclipsePlugin/zipball/master">Source Code<strong>ZIP Ball</strong></a></li>          
+        </ul>
+
+        <p class="view">View on <a target="_blank" href="https://github.com/curiosag/ftcEclipsePlugin"> GitHub </small></a></p>
+
+      </header>
+      
+      <section>
+      For an easier start with Google  <a target="_blank" href="https://developers.google.com/fusiontables/docs/v2/sql-reference">fusion tables sql</a>. Comes with the usual Eclipse code editor features including warning markers for non-existing tables and fields. You can refer to tables by name or ID, delete, rename and copy tables by sql and  export csv. Available also as <a href="http://curiosag.github.io/ftc/">stand alone application</a>  with UI and command line mode.
+      
+     <br><br>
+      
+      </section>
+
+
+      
+ <wide_section>
+
+<br>
+    <br>
+ <img src="ftcPlugin.gif" width="80%" height="80%" alt=""> 
+        <p></p>
+
+<br>
+<h3>At a Glance</h3>
+A fusion tables query looks like <strong><em><font size="-1">SELECT * FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6</font></em></strong>.<br> 
+You can use the table name instead for tables you own: <em><font size="-1"><strong>SELECT * FROM Customer</font></strong></em>
+<br>
+View the actual query issued selecting menu <strong>Fu -> View preprocessed query at cursor</strong>.
+<br>
+<br>
+Fusion tables sql limits DELETE and UPDATE statements to single ROWIDs like in <strong><em><font size="-1">DELETE FROM Emp WHERE ROWID = 11038</font></em></strong>, alternatively in case of DELETE one may omit the WHERE clause altogether.
+<br>
+<br>
+
+
+For DELETE and UPDATE the client accepts the same conditions in the WHERE clause that you have in SELECT statements. <br>So you can use e.g. <strong><em><font size="-1">DELETE FROM Emp WHERE Salary > 11038</font></em></strong>. Such statements get broken down to as sequence of single DELETEs, each one issued separately.
+ 
+
+ 
+<br>
+<br>
+<br>
+<h3>Get started</h3>
+You need  <a target="_blank" href="https://support.google.com/fusiontables">some fusion tables you own</a> or some  <a target="_blank" href="https://research.google.com/tables?hl=en&ei=xYqhVpuCJsHipQOqzLiIDw&corpus=fusion&q=dog">external table IDs</a>, a  <a target="_blank" href="https://console.developers.google.com">google developers project</a> with  <a target="_blank" href="https://console.developers.google.com/apis"> activated fusion tables api</a> and an  <a target="_blank" href="https://console.developers.google.com/apis/credentials"> <a target="_blank" href="https://console.developers.google.com/apis/credentials">OAuth2 client ID</a></a> (with application type "other") for the project. </small>
+<p></p>Download the update site file (ftcplugin.zip), in Eclipse go to <strong>Help -> Install new software -> Add</strong>, choose <strong>Archive</strong> and select ftcplugin.zip.   
+
+<br>
+    <br>
+     <img src="pluginInstall.gif" width="60%" height="60%" alt=""> 
+        <p></p>
+
+<p></p>   Choose the new created software site and the plugin therein, continue with <strong>Next</strong> and some more <strong>OK</strong>s.
+
+
+<br>
+    <br>
+ <img src="pluginInstall2.gif" width="61%" height="61%" alt=""> 
+        <p></p>
+
+After Eclipse restarted go to <strong>Window -> Open perspective -> Other</strong> and choose the Fusion Tables perspective to enable the <strong>Fu</strong> menu entry and the <strong>Export Fu Data</strong> entry in the <strong>File</strong> menu.
+
+<br>
+    <br>
+ <img src="pluginPerspective.gif"  width="30%" height="30%" alt=""> 
+        <p></p>
+
+
+<p></p><strong>Choose Window -> Preferences -> Fusion Tables Console</strong>, enter client id and secret, then press <strong>Authenticate</strong>. The authentication workflow will try to open your default browser and take you through further steps. If it doesen't show up, you can find the required URL in the log pane, proceed manually in this case. If anything goes wrong with the authentication, the client waits for the defined timeout period and then cancels. In case of success the client stores the credentials and authenticates automatically in future sessions.
+        <p></p>Once authenticated press ctrl+space in the empty editor window for a list of top level Sql statements.
+<p></p>
+
+
+It is somewhat tested on Ubuntu 15, Oracle Java(TM) SE Runtime Environment (build 1.8.0_60-b27), Eclipse Luna and Mars 1+2. Requires Java 7.
+<br>
+<br>
+    <br>
+<h3>Further information</h3>
+
+
+A detailed description of the functionality and some remarks on the fusion tables service itself you can find with the <a href="http://curiosag.github.io/ftc/index.html#covers">description of the standalone client</a>. 
+Please note that the key code mapping described there is different from the plugin version. It also contains some less mainstream features that the plugin version has not.  
+
+<br>
+    <br>
+There is a <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=438598">known issue</a> with GTK under Linux when Eclipse tries to access the desktop, which is precisely what the authentication workflow does. If that happens to you, please refer to the straight forward workaround in the <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=438598">bug description</a>.
+It cleared the issue for me with Mars 2, with Luna it didn't happen in the first place. 
+
+
+<br>
+<br>
+    <br>
+<h3>Credits</h3>
+<a href="http://www.famfamfam.com/">Silk icon set</a> by Mark James.<br>
+<em>Google Fusion Tables™ service</em> is a trademark of Google Inc.
+      </wide_section>
+
+
+      <footer>
+        <p>This project is maintained by  <a target="_blank" href="https://github.com/curiosag">curiosag</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by  <a target="_blank" href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>

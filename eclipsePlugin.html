@@ -32,7 +32,6 @@
       For an easier start with Google  <a target="_blank" href="https://developers.google.com/fusiontables/docs/v2/sql-reference">fusion tables sql</a>. Comes with the usual Eclipse code editor features including warning markers for non-existing tables and fields. You can refer to tables by name or ID, delete, rename and copy tables by sql and  export csv. Available also as <a href="http://curiosag.github.io/ftc/">stand alone application</a>  with UI and command line mode.
       
      <br><br>
-     <font size="-1"><em>Google Fusion Tables™ service is a trademark of Google Inc.</em></font>
       
       </section>
 
@@ -46,13 +45,22 @@
         <p></p>
 
 <br>
-You can avoid queries like this one, which was the reason to start the project in the first place:
-<font size="-1">CREATE VIEW V AS (SELECT t1.total, t2.id, t1.jobwohnen, t2.datumB
-FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6 AS t1 
-LEFT OUTER JOIN 1XNksblRgD3OvBTmyN5Kpeq-2bGSjdWHpL-20tmUg as t2 
-ON t1.total = t2.datumB);</font><br><br>
+<h3>At a Glance</h3>
+A fusion tables query looks like <strong><em><font size="-1">SELECT * FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6</font></em></strong>.<br> 
+You can use the table name instead for tables you own like in <em><font size="-1"><strong>SELECT * FROM Customer</font></strong></em>
+<br>
+View the actual query issued selecting menu <strong>Fu -> View preprocessed query at cursor</strong>.
+<br>
+<br>
+Fusion tables sql limits DELETE and UPDATE statements to single ROWIDs like in <strong><em><font size="-1">DELETE FROM Emp WHERE ROWID = 11038</font></em></strong>, alternatively in case of DELETE one may omit the WHERE clause altogether.
+<br>
+<br>
 
-Before execution symbolic table names get replaced by their table IDs. You can get the preprocessed query with menu entry <strong>Fu -> View preprocessed query at cursor</strong>. 
+
+For DELETE and UPDATE the client accepts the same conditions in the WHERE clause that you have in SELECT statements. <br>So you can use e.g. <strong><em><font size="-1">DELETE FROM Emp WHERE Salary > 11038</font></em></strong>. Such statements get broken down to as sequence of single DELETEs, each one issued separately.
+ 
+
+ 
 <br>
 <br>
 <br>
@@ -101,6 +109,13 @@ Please note that the key code mapping described there is different from the plug
 There is a <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=438598">known issue</a> with GTK under Linux when Eclipse tries to access the desktop, which is precisely what the authentication workflow does. If that happens to you, please refer to the straight forward workaround in the <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=438598">bug description</a>.
 It cleared the issue for me with Mars 2, with Luna it didn't happen in the first place. 
 
+
+<br>
+<br>
+    <br>
+<h3>Credits</h3>
+<a href="http://www.famfamfam.com/">Silk icon set</a> by Mark James.<br>
+<em>Google Fusion Tables™ service</em> is a trademark of Google Inc.
       </wide_section>
 
 
@@ -109,7 +124,6 @@ It cleared the issue for me with Mars 2, with Luna it didn't happen in the first
         <p><small>Hosted on GitHub Pages &mdash; Theme by  <a target="_blank" href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-
 
     <script src="javascripts/scale.fix.js"></script>
     
