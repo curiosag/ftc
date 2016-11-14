@@ -1,0 +1,24 @@
+		
+ftcClientController
+public Completions get(String text, int cursorPos) { ... cursorPos not used
+optionale re-evaluation bei gleich bleibender query in syntaxelementsource.get()
+
+
+completions with description
+	
+Convention stuff
+
+ftcClientController
+logger.Info
+
+ftcClientController.authenticate() authorize -> authenticate
+    
+# plugin.properties
+in Manifest.MF of plugin.xml add: Bundle-Localization: plugin
+add plugin.properties in build.properties
+
+$ git show REVISION:path/to/file
+
+For example, to show the 4th last commit of the file src/main.c, use:
+
+$ git show HEAD~4:src/main.c
