@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.cg.eclipse.feature.ftcplugin_1.0.0.jar" id="org.cg.eclipse.feature.ftcplugin" version="1.0.0" nl="en">
+   <feature url="features/org.cg.eclipse.feature.ftcplugin_0.1.0.jar" id="org.cg.eclipse.feature.ftcplugin" version="0.1">
       <category name="Tool"/>
    </feature>
    <category-def name="Tool" label="Tool"/>
