@@ -29,7 +29,9 @@
       </header>
       
       <section>
-      For a quick start with Google  <a target="_blank" href="https://developers.google.com/fusiontables/docs/v2/sql-reference">fusion tables sql</a>: syntax highlighting, syntactic and semantic error markers, content assist, refer to tables by name or ID. Delete, rename and copy tables by sql, export csv. Available as Eclipse plugin and stand alone application with UI or command line mode.
+      For a quick start with Google  <a target="_blank" href="https://developers.google.com/fusiontables/docs/v2/sql-reference">fusion tables sql</a>: 
+      syntax highlighting, syntactic and semantic error markers, content assist, refer to tables by name or ID. Delete, rename and copy tables by sql, export csv. 
+      Can be used with graphical UI or command line mode, also available as <a href="http://curiosag.github.io/ftc/eclipsePlugin.html">Eclipse plugin</a>.
       
       </section>
 
@@ -41,15 +43,6 @@
  <img src="ftc.gif" width="825" height="548" alt=""> 
         <p></p>
 <br>
-You can avoid queries like this one, which was the reason to start the project in the first place:
-<font size="-1">CREATE VIEW V AS (SELECT t1.total, t2.id, t1.jobwohnen, t2.datumB
-FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6 AS t1 
-LEFT OUTER JOIN 1XNksblRgD3OvBTmyN5Kpeq-2bGSjdWHpL-20tmUg as t2 
-ON t1.total = t2.datumB);</font><br><br>
-
-Before execution symbolic table names get replaced by their table IDs. You can get the preprocessed query with the <strong>Show preprocessed query</strong> menu and toolbar entry. 
-<br>
-<br>
 <br>
 
 <h3>Get started</h3>
@@ -59,7 +52,7 @@ You need  <a target="_blank" href="https://support.google.com/fusiontables">some
 <p></p>Enter client id and secret, then press  <img src="authButton.gif" alt="authenticate">. The authentication workflow will try to open your default browser and take you through further steps. If it doesen't show up, you can find the required URL in the log pane, proceed manually in this case. If anything goes wrong with the authentication, the client waits for the defined timeout period and then cancels. In case of success the client stores the credentials and authenticates automatically in future sessions.
         <p></p>Once authenticated press ctrl+space in the empty editor window for a list of top level Sql statements.
 <p></p>
-<h3><a name="covers"></a>Covers</h3>
+<h3>Covers</h3>
         <p></p>
       SELECT, CREATE VIEW, INSERT, UPDATE, DELETE, DESCRIBE and SHOW TABLES.
 <p></p>
@@ -103,7 +96,7 @@ You can pass query source- and optionally result destination file names as comma
 <br><br>ftc.sh [&#60;query source file&#62; [&#60;result data destination file&#62;]]
 </p>
 
-<h3>Limitations</h3>
+<h3><a name="limitations"></a>Limitations</h3>
         <ul>
         	<li>Some augmented operations are composites and not  <a target="_blank" href="https://www.youtube.com/watch?v=1Tko1G6XRiQ" > atomic </a>. 
         	E.g. "create table as select" in fact is "copy table" followed by "rename". Say copy succeed, still rename may fail for whatever reason. This leaves a copy with the default name: "Copy of [original name]". Issue another rename in this case. UPDATE and DELETE for multiple ROWIDs may fail anytime in between leaving the operation incomplete, but potentially repeatable. Another issue here is limited possibility for query parallelization. Only 2 threads do this now and give you occasional "503 - service not available" errors, which become more frequent with more threads. Covered by a retry mechanism, until success or manual cancellation. </li>
