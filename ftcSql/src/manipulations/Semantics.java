@@ -96,7 +96,7 @@ public class Semantics {
 	}
 
 	private boolean invalidColumn(List<SyntaxElement> tokens, int current, List<NameRecognitionTable> tableList) {
-		String columnName = tokens.get(current).value;
+		String columnName = StringUtil.stripQuotes(tokens.get(current).value);
 		Optional<TableReference> table = Optional.absent();
 
 		Optional<SyntaxElement> aliasToken = getAlias(tokens, current);
@@ -159,7 +159,9 @@ public class Semantics {
 	}
 
 	private Optional<SyntaxElement> getAlias(List<SyntaxElement> tokens, int columnTokenIndex) {
-		if (columnTokenIndex >= 1 && tokens.get(columnTokenIndex - 1).type == SyntaxElementType.tableName)
+		boolean caseLeadingTableName = columnTokenIndex >= 1 && tokens.get(columnTokenIndex - 1).type == SyntaxElementType.tableName;
+		boolean caseInsertStmt = columnTokenIndex >= 2 && tokens.get(columnTokenIndex - 2).value.toLowerCase().equals("into");
+		if (caseLeadingTableName && ! caseInsertStmt)
 			return Optional.of(tokens.get(columnTokenIndex - 1));
 		return Optional.absent();
 	}
