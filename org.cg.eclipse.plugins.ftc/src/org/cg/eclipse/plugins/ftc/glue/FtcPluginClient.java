@@ -49,6 +49,7 @@ import com.google.common.base.Optional;
 public class FtcPluginClient extends BaseClient {
 
 	private static FtcPluginClient _default;
+	private boolean debug = false;
 
 	private final ClientSettings clientSettings = ClientSettings.instance(GuiClient.class);
 	private final ftcClientModel model = new ftcClientModel(clientSettings);
@@ -88,6 +89,11 @@ public class FtcPluginClient extends BaseClient {
 		model.caretPositionQueryText = cursorPos;
 
 		Completions completions = controller.get(text, cursorPos);
+
+		if (debug)
+			MessageConsoleLogger.getDefault().Info(
+					String.format("%d completions at index %d for query:\n->%s", completions.size(), cursorPos, text));
+
 		return new EclipseStyleCompletions(completions);
 	}
 

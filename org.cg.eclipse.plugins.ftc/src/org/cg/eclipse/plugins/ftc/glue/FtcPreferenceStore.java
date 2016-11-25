@@ -67,7 +67,7 @@ public class FtcPreferenceStore extends Observable implements IPreferenceStore {
 	}
 
 	@Override
-	public boolean getBoolean(String name) {
+	 public boolean getBoolean(String name) {
 		return clientSettings.getPreferences().getBoolean(name, getDefaultBoolean(name));
 	}
 

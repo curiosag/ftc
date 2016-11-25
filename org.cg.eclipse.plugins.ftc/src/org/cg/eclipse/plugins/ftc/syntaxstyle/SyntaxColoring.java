@@ -71,7 +71,7 @@ public class SyntaxColoring extends Observable {
 
 	public SyntaxStyle getStyle(SyntaxElementType type) {
 		SyntaxStyle result = syntaxStyles.get(mapType(type));
-		if (result == null || ! result.enable)
+		if (result == null || !result.enable)
 			result = defaultStyle;
 
 		return result;
@@ -127,7 +127,7 @@ public class SyntaxColoring extends Observable {
 	private void debugRanges(ArrayList<StyleRange> result) {
 		StringBuilder b = new StringBuilder();
 		for (StyleRange r : result)
-			b.append(String.format("%d %d %s\n", r.start, r.length, r.token.value));
+			b.append(String.format("%s %d %d %s\n", r.token.type.name(), r.start, r.length, r.token.value));
 		MessageConsoleLogger.getDefault().Info(b.toString());
 	}
 
@@ -154,10 +154,14 @@ public class SyntaxColoring extends Observable {
 		for (StyleRange r : ranges)
 			indices.add(r.start);
 		Collections.sort(indices);
-
+		boolean quoted = false;
 		for (int i = idxFrom; i < Math.min(idxTo, text.length()); i++) {
 			String current = String.valueOf(text.charAt(i));
-			if (Collections.binarySearch(indices, i) < 0 && (structuralChars.indexOf(text.charAt(i)) >= 0))
+
+			if (current.equals("'"))
+				quoted = !quoted;
+
+			if ((!quoted) && Collections.binarySearch(indices, i) < 0 && (structuralChars.indexOf(text.charAt(i)) >= 0))
 				ranges.add(
 						getStyleRange(SyntaxElement.create(current, i, i, 0, SyntaxElementType.unknown), defaultStyle));
 		}

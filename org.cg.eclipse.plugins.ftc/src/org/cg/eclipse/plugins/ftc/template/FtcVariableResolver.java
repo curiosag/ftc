@@ -16,7 +16,7 @@ public class FtcVariableResolver extends TemplateVariableResolver {
 
 	private static final String DUMMY_COLNAME = "colname";
 	private static final String LEADING_CHAR_COLUMNVAR = "c";
-	private static boolean debug = true;
+	private static boolean debug = false;
 
 	@Override
 	protected String[] resolveAll(TemplateContext context) {
