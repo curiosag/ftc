@@ -66,12 +66,12 @@ public class CmdLineFrontEnd implements FrontEnd {
 
 	@Override
 	public Observer createClientIdObserver() {
-		return unObserver;
+		return Observism.unObserver;
 	}
 
 	@Override
 	public Observer createClientSecretObserver() {
-		return unObserver;
+		return Observism.unObserver;
 	}
 
 	@Override
@@ -88,10 +88,11 @@ public class CmdLineFrontEnd implements FrontEnd {
 
 	@Override
 	public Observer createQueryObserver() {
-		return null;
+		return Observism.unObserver;
 	}
 
 	private final static WriterCloseAction dontClose = null;
+
 	@Override
 	public Observer createResultDataObserver() {
 		return new Observer() {
@@ -102,17 +103,14 @@ public class CmdLineFrontEnd implements FrontEnd {
 				if (outputFilePath != null)
 					CSV.write(data, outputFilePath);
 				else
-					//System.out must not closed, therefore packed in CustomCloseActionWriterDecorator with doesen't close
-					// Even if OutputStreamWriter creates a leak (which it may not) it doesen't matter so much here
-					CSV.write(data, new BufferedWriter(new CustomCloseActionWriterDecorator(new OutputStreamWriter(System.out), dontClose)));
+					// System.out must not get closed, therefore packed in
+					// CustomCloseActionWriterDecorator with doesen't close
+					// Even if OutputStreamWriter creates a leak (which it may
+					// not) it doesen't matter so much here
+					CSV.write(data, new BufferedWriter(
+							new CustomCloseActionWriterDecorator(new OutputStreamWriter(System.out), dontClose)));
 			}
 		};
 	}
-
-	private static Observer unObserver = new Observer() {
-		@Override
-		public void update(Observable o, Object arg) {
-		}
-	};
 
 }

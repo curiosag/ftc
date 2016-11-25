@@ -2,6 +2,8 @@ package org.cg.ftc.ftcClientJava;
 
 import java.io.File;
 
+import org.cg.common.check.Check;
+import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
 import org.cg.common.io.PreferencesStringStorage;
 import org.cg.common.util.StringUtil;
@@ -14,6 +16,17 @@ public class CmdLineClient extends BaseClient {
 	private static int EXIT_SUCCESS = 0;
 	private static int EXIT_FAILURE = 1;
 	private static boolean done = false;
+
+	final Progress progress = createProgress();
+
+	final ClientSettings clientSettings = ClientSettings.instance(GuiClient.class);
+	final ftcClientModel model = new ftcClientModel(clientSettings);
+	final ftcClientController controller = new ftcClientController(model, logging, getConnector(), clientSettings,
+			new PreferencesStringStorage(org.cg.ftc.shared.uglySmallThings.Const.PREF_ID_CMDHISTORY,
+					GuiClient.class),
+			progress);
+
+	private CmdLineClient _default = null;
 
 	// quote issues with cmd line parameters:
 	// http://stackoverflow.com/questions/4771755/how-to-pass-arguments-from-wrapper-shell-script-to-java-application
@@ -30,7 +43,7 @@ public class CmdLineClient extends BaseClient {
 				error("Empty file " + inputFilePath);
 			else {
 				feedbackProcessingInfo(inputFilePath, outputFilePath);
-				startup(queries, outputFilePath);
+				new CmdLineClient(queries, outputFilePath);
 			}
 
 		} catch (Exception e) {
@@ -43,24 +56,13 @@ public class CmdLineClient extends BaseClient {
 		return EXIT_SUCCESS;
 	}
 
-	private static void startup(String queries, String outputFilePath) {
-		final Progress progress = createProgress();
-
-		final ClientSettings clientSettings = ClientSettings.instance(GuiClient.class);
-		final ftcClientModel model = new ftcClientModel(clientSettings);
-		final ftcClientController controller = new ftcClientController(model, logging, getConnector(), clientSettings,
-				new PreferencesStringStorage(org.cg.ftc.shared.uglySmallThings.Const.PREF_ID_CMDHISTORY,
-						GuiClient.class),
-				progress);
-
+	private CmdLineClient(String queries, String outputFilePath) {
+		Check.isTrue(_default == null);
+		_default = this;
+		
 		CmdLineFrontEnd frontEnd = new CmdLineFrontEnd(outputFilePath);
+		setUp(clientSettings, model, controller, frontEnd);
 
-		frontEnd.setActionListener(controller);
-		model.resultData.addObserver(frontEnd.createResultDataObserver());
-		model.resultText.addObserver(frontEnd.createOpResultObserver());
-
-		model.clientId.setValue(clientSettings.clientId);
-		model.clientSecret.setValue(clientSettings.clientSecret);
 		model.queryText.append(queries);
 
 		controller.setOnAllQueriesProcessed(getOnAllQueriesProcessed());
@@ -93,6 +95,15 @@ public class CmdLineClient extends BaseClient {
 		};
 	}
 
+	@Override
+	protected OnValueChanged<Integer> createQueryCaretChangedListener(final ftcClientModel model) {
+		return new OnValueChanged<Integer>() {
+			@Override
+			public void notify(Integer value) {
+			}
+		};
+	}
+
 	private static void feedbackProcessingInfo(String inputFilePath, String outputFilePath) {
 		info("Running queries in " + inputFilePath);
 		if (outputFilePath != null)
@@ -111,7 +122,8 @@ public class CmdLineClient extends BaseClient {
 		System.err.println(value);
 	}
 
-	private static Progress createProgress() {
+	
+	private Progress createProgress() {
 		return new Progress() {
 
 			int max;

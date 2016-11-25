@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import org.cg.common.check.Check;
+import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.io.FileUtil;
 import org.cg.common.io.PreferencesStringStorage;
 import org.cg.common.util.Op;
@@ -350,5 +351,16 @@ public class FtcPluginClient extends BaseClient {
 	@Subscribe
 	public void eventBusOnLongOperation(RunState state) {
 		busy = Op.in(state, RunState.AUTHENTICATION_STARTED, RunState.QUERYEXEC_STARTED);
+	}
+
+	@Override
+	protected OnValueChanged<Integer> createQueryCaretChangedListener(ftcClientModel model) {
+		return new OnValueChanged<Integer>(){
+
+			@Override
+			public void notify(Integer value) {
+				// TODO Auto-generated method stub
+				
+			}};
 	}
 }

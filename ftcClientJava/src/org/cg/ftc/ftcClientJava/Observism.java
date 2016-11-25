@@ -104,8 +104,9 @@ public class Observism {
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				if (!value.equals(textField.getText()))
-					onFocus.notify(textField);
+				String val = textField.getText();
+				if (!value.equals(val))
+					onFocus.notify(val);
 			}
 		};
 
@@ -115,5 +116,11 @@ public class Observism {
 	public static void addValueChangedListener(JTextField f, OnTextFieldChangedEvent delegate) {
 		f.addFocusListener(createValueChangedListener(f, delegate));
 	}
+
+	static Observer unObserver = new Observer() {
+		@Override
+		public void update(Observable o, Object arg) {
+		}
+	};
 
 }
