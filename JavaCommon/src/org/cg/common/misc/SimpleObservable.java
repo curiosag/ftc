@@ -16,6 +16,12 @@ public class SimpleObservable<T> extends Observable {
 		return ((SimpleObservable<?>) o).getValue();
 	}
 	
+	public static boolean getBoolValue(Observable o){
+		Object result = getValue(o);
+		Check.isTrue(result instanceof Boolean);
+		return ((Boolean) result).booleanValue();
+	}
+	
 	public SimpleObservable(T value){
 		this.value = value;
 	}

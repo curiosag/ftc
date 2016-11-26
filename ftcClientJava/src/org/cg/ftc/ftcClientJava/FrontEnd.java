@@ -3,8 +3,6 @@ package org.cg.ftc.ftcClientJava;
 import java.awt.event.ActionListener;
 import java.util.Observer;
 
-import javax.swing.event.DocumentListener;
-
 import org.cg.common.interfaces.OnTextFieldChangedEvent;
 import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
@@ -19,11 +17,13 @@ public interface FrontEnd {
 
 	void addClientSecretChangedListener(OnTextFieldChangedEvent e);
 
-	void addResultTextChangedListener(DocumentListener listener);
+	void addResultTextChangedListener(OnTextFieldChangedEvent e);
 
-	void addQueryTextChangedListener(DocumentListener listener);
+	void addQueryTextChangedListener(OnTextFieldChangedEvent e);
 	
 	void addQueryCaretChangedListener(OnValueChanged<Integer> onChange);
+	
+	void addOfflineChangedListener(OnValueChanged<Boolean> onChange);
 
 	Observer createClientIdObserver();
 

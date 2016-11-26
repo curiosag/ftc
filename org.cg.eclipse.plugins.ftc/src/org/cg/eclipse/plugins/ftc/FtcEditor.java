@@ -2,18 +2,16 @@ package org.cg.eclipse.plugins.ftc;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -22,6 +20,8 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import java.util.List;
 
 import org.cg.common.check.Check;
+import org.cg.common.interfaces.OnTextFieldChangedEvent;
+import org.cg.common.interfaces.OnValueChanged;
 import org.cg.eclipse.plugins.ftc.glue.FtcPluginClient;
 import org.cg.eclipse.plugins.ftc.glue.FtcPreferenceStore;
 import org.cg.eclipse.plugins.ftc.glue.Unbox;
@@ -29,16 +29,18 @@ import org.cg.eclipse.plugins.ftc.syntaxstyle.FtcStyledText;
 import org.cg.ftc.shared.interfaces.SyntaxElement;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
-import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 
 public class FtcEditor extends TextEditor {
 
 	private final FtcSourceViewerConfiguration sourceViewerConfiguration;
 	private final MessageConsoleLogger logging = MessageConsoleLogger.getDefault();
-	
+
+	private OnValueChanged<Integer> caretListener = null;
+	private OnTextFieldChangedEvent documentChangedListener = null;
+
 	private boolean showCaretPosition;
-	
+
 	@Override
 	public void doSetInput(IEditorInput input) throws CoreException {
 		super.doSetInput(input);
@@ -90,20 +92,21 @@ public class FtcEditor extends TextEditor {
 		super();
 		sourceViewerConfiguration = new FtcSourceViewerConfiguration();
 		setSourceViewerConfiguration(sourceViewerConfiguration);
-		
+
 		IPreferenceStore pref = FtcPluginClient.getDefault().getPreferenceStore();
 		showCaretPosition = pref.getBoolean(FtcPreferenceStore.KEY_SHOW_CARETPOS);
-		
-		pref.addPropertyChangeListener(new IPropertyChangeListener(){
+
+		pref.addPropertyChangeListener(new IPropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
-				if (event.getProperty().equals(FtcPreferenceStore.KEY_SHOW_CARETPOS)){
+				if (event.getProperty().equals(FtcPreferenceStore.KEY_SHOW_CARETPOS)) {
 					showCaretPosition = Unbox.asBoolean(event.getNewValue());
-					if (! showCaretPosition)
+					if (!showCaretPosition)
 						setStatusLineMessage("");
-				}		
-			}});
-		
+				}
+			}
+		});
+
 		FtcPluginClient.getDefault().registerEditor(this);
 	}
 
@@ -119,17 +122,42 @@ public class FtcEditor extends TextEditor {
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
 		addEditorListeners();
-		addCaretListener();
-
+		addCaretListenerForUIdisplay();
+		//internalSetDocumentChangedListener(documentChangedListener);
+		//internalSetCaretListener(caretListener);
 		logging.reveal();
 		Check.isTrue(getSourceViewer() instanceof FtcSourceViewer);
 
 		// not of any use now
-		//IContextService contextService = (IContextService) getSite().getService(IContextService.class);
-		//contextService.activateContext(PluginConst.FTC_CONTEXT_ID);
+		// IContextService contextService = (IContextService)
+		// getSite().getService(IContextService.class);
+		// contextService.activateContext(PluginConst.FTC_CONTEXT_ID);
 	}
 
-	private void addCaretListener() {
+	private void internalSetCaretListener(OnValueChanged<Integer> l) {
+		getStyledText().addCaretListener(new CaretListener() {
+
+			@Override
+			public void caretMoved(CaretEvent event) {
+				l.notify(event.caretOffset);
+			}
+		});		
+	}
+
+	private void internalSetDocumentChangedListener(OnTextFieldChangedEvent e) {
+		getSourceViewer().getDocument().addDocumentListener(new IDocumentListener() {
+			@Override
+			public void documentAboutToBeChanged(DocumentEvent de) {
+			}
+
+			@Override
+			public void documentChanged(DocumentEvent de) {
+				e.notify(de.getText());
+			}
+		});
+	}
+
+	private void addCaretListenerForUIdisplay() {
 		getStyledText().addCaretListener(new CaretListener() {
 
 			@Override
@@ -143,6 +171,14 @@ public class FtcEditor extends TextEditor {
 			}
 		});
 
+	}
+
+	public void setCaretListener(OnValueChanged<Integer> onChange) {
+		caretListener = onChange;
+	}
+
+	public void setDocumentChangedListener(OnTextFieldChangedEvent e) {
+		documentChangedListener = e;
 	}
 
 	private void addEditorListeners() {
@@ -179,7 +215,7 @@ public class FtcEditor extends TextEditor {
 	public void invalidateTextRepresentation() {
 		resetAnythingCached();
 		getFtcSourceViewer().invalidateTextPresentation();
-		//getFtcSourceViewer().getSyntaxColoring().resetMarkers();
+		// getFtcSourceViewer().getSyntaxColoring().resetMarkers();
 	}
 
 	private List<SyntaxElement> resetAnythingCached() {

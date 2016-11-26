@@ -7,7 +7,6 @@ import java.io.OutputStreamWriter;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 
 import org.cg.common.check.Check;
@@ -53,17 +52,21 @@ public class CmdLineFrontEnd implements FrontEnd {
 	}
 
 	@Override
-	public void addResultTextChangedListener(DocumentListener listener) {
+	public void addResultTextChangedListener(OnTextFieldChangedEvent e){
 	}
 
 	@Override
-	public void addQueryTextChangedListener(DocumentListener listener) {
+	public void addQueryTextChangedListener(OnTextFieldChangedEvent e) {
 	}
 
 	@Override
 	public void addQueryCaretChangedListener(OnValueChanged<Integer> onChange) {
 	}
 
+	@Override
+	public void addOfflineChangedListener(OnValueChanged<Boolean> onChange) {	
+	}
+	
 	@Override
 	public Observer createClientIdObserver() {
 		return Observism.unObserver;
@@ -112,5 +115,6 @@ public class CmdLineFrontEnd implements FrontEnd {
 			}
 		};
 	}
+
 
 }

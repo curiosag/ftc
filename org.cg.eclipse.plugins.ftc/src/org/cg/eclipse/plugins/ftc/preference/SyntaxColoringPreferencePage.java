@@ -32,14 +32,17 @@ public class SyntaxColoringPreferencePage extends org.eclipse.jface.preference.P
 			return org.eclipse.jface.dialogs.Dialog.convertHeightInCharsToPixels(fFontMetrics, chars);
 		}
 
+		@SuppressWarnings("unused")
 		public int convertHorizontalDLUsToPixels(int dlus) {
 			return org.eclipse.jface.dialogs.Dialog.convertHorizontalDLUsToPixels(fFontMetrics, dlus);
 		}
 
+		@SuppressWarnings("unused")
 		public int convertVerticalDLUsToPixels(int dlus) {
 			return org.eclipse.jface.dialogs.Dialog.convertVerticalDLUsToPixels(fFontMetrics, dlus);
 		}
 
+		@SuppressWarnings("unused")
 		public int convertWidthInCharsToPixels(int chars) {
 			return org.eclipse.jface.dialogs.Dialog.convertWidthInCharsToPixels(fFontMetrics, chars);
 		}

@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.cg.eclipse.plugins.ftc;
 
-import org.cg.common.check.Check;
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
-import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateContextType;
 
 public class FtcContextType extends TemplateContextType {

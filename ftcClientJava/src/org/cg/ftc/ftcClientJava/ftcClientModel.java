@@ -16,6 +16,7 @@ public class ftcClientModel {
 	public final TextModel resultText = new TextModel();
 
 	public final SimpleObservable<TableModel> resultData = new SimpleObservable<TableModel>(null);
+	public final SimpleObservable<Boolean> offline = new SimpleObservable<Boolean>(Boolean.FALSE);
 
 	public ftcClientModel(ClientSettings clientSettings) {
 		Check.notNull(clientSettings);

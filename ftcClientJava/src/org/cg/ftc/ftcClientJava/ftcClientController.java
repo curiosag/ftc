@@ -7,6 +7,8 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +25,7 @@ import org.cg.common.io.FileUtil;
 import org.cg.common.io.StringStorage;
 import org.cg.common.misc.CmdDestination;
 import org.cg.common.misc.CmdHistory;
+import org.cg.common.misc.SimpleObservable;
 import org.cg.common.threading.Function;
 import org.cg.common.util.Op;
 import org.cg.ftc.shared.interfaces.*;
@@ -73,6 +76,16 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		history = new CmdHistory(cmdHistoryStorage);
 		this.progress = progress;
 		registerForQueryFinishedEvent();
+		model.offline.addObserver(createOfflineListener());
+	}
+
+	private Observer createOfflineListener() {
+		return new Observer() {
+			@Override
+			public void update(Observable o, Object arg) {
+				setOffline(SimpleObservable.getBoolValue(o));
+			}
+		};
 	}
 
 	private synchronized void setStateQueryIsExecuting(boolean value) {
@@ -281,7 +294,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	private void hdlExecSql(boolean executeAll) {
 		String text = model.queryText.getValue();
 
-		if (!executeAll) {
+		if (nowOnline(executeAll)) {
 			Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText,
 					RETURN_SINGLE_QUERY_ANYWAY);
 			if (query.isPresent())
@@ -359,7 +372,14 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		authenticate();
 	}
 
+	/**
+	 * authenticates using existing credentials without triggering the auth workflow
+	 * does nothing if offline
+	 */
 	public void authenticate() {
+		if (offline)
+			return;
+		
 		SwingWorker<ConnectionStatus, Object> connectionWorker = AsyncWork.goUnderground(authFunction,
 				authContinuation);
 		Events.ui.post(RunState.AUTHENTICATION_STARTED);
@@ -478,9 +498,21 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		return offline;
 	}
 
-	public void setOffline(boolean offline) {
-		this.offline = offline;
+	private void setOffline(boolean offlineNow) {
+
+		if (offlineStatusChanged(offlineNow) && nowOnline(offlineNow))
+			authenticate();
+
+		offline = offlineNow;
 		queryHandler.setOffline(offline);
+	}
+
+	private boolean nowOnline(boolean offlineNow) {
+		return !offlineNow;
+	}
+
+	private boolean offlineStatusChanged(boolean offlineNow) {
+		return offline != offlineNow;
 	}
 
 }

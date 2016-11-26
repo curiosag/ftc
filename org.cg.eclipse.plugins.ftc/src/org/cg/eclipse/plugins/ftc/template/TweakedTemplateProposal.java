@@ -4,11 +4,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
 import org.cg.common.check.Check;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.internal.ui.text.template.contentassist.PositionBasedCompletionProposal;
@@ -33,7 +28,6 @@ import org.eclipse.jface.text.link.InclusivePositionUpdater;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
-import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.text.templates.DocumentTemplateContext;
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.Template;
@@ -398,7 +392,6 @@ public class TweakedTemplateProposal implements ICompletionProposal, ICompletion
 	 */
 	public String getDisplayString() {
 		if (fDisplayString == null) {
-			String[] arguments = new String[] { fTemplate.getName(), fTemplate.getDescription() };
 			fDisplayString = fTemplate.getName();
 		}
 		return fDisplayString;

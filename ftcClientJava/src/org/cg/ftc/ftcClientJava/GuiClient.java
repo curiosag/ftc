@@ -38,17 +38,6 @@ public class GuiClient extends BaseClient {
 		controller.authenticate();
 	}
 
-	@Override
-	protected OnValueChanged<Integer> createQueryCaretChangedListener(final ftcClientModel model) {
-		return new OnValueChanged<Integer>() {
-
-			@Override
-			public void notify(Integer value) {
-				model.caretPositionQueryText = value;
-			}
-		};
-	}
-
 	private static void forkSystemOutput(final TextModel model) {
 		OnLineWritten redirect = new OnLineWritten() {
 			@Override

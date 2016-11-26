@@ -3,7 +3,6 @@ package org.cg.ftc.ftcClientJava;
 import java.io.File;
 
 import org.cg.common.check.Check;
-import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
 import org.cg.common.io.PreferencesStringStorage;
 import org.cg.common.util.StringUtil;
@@ -91,15 +90,6 @@ public class CmdLineClient extends BaseClient {
 			@Override
 			public void fire() {
 				done = true;
-			}
-		};
-	}
-
-	@Override
-	protected OnValueChanged<Integer> createQueryCaretChangedListener(final ftcClientModel model) {
-		return new OnValueChanged<Integer>() {
-			@Override
-			public void notify(Integer value) {
 			}
 		};
 	}

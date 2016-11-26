@@ -4,12 +4,10 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.TableModel;
 import org.cg.common.check.Check;
 import org.cg.common.interfaces.OnTextFieldChangedEvent;
 import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
-import org.cg.common.misc.SimpleObservable;
 import org.cg.common.swing.WindowClosingListener;
 import org.cg.common.util.Op;
 import org.cg.ftc.ftcQueryEditor.QueryEditor;
@@ -185,13 +183,13 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 	}
 
 	@Override
-	public void addResultTextChangedListener(DocumentListener listener) {
-		opResult.getDocument().addDocumentListener(listener);
+	public void addResultTextChangedListener(OnTextFieldChangedEvent e) {
+		opResult.getDocument().addDocumentListener(new SwingDocumentListenerAdapter(e));
 	}
 
 	@Override
-	public void addQueryTextChangedListener(DocumentListener listener) {
-		queryEditor.getDocument().addDocumentListener(listener);
+	public void addQueryTextChangedListener(OnTextFieldChangedEvent e) {
+		queryEditor.getDocument().addDocumentListener(new SwingDocumentListenerAdapter(e));
 	}
 
 	@Override
@@ -199,6 +197,10 @@ public class FtcGui extends JFrame implements ActionListener, FrontEnd {
 		queryEditor.queryText.getCaret().addChangeListener(createCaretChangedListener(onChange));
 	}
 
+	@Override
+	public void addOfflineChangedListener(OnValueChanged<Boolean> onChange) {	
+	}
+	
 	private ChangeListener createCaretChangedListener(final OnValueChanged<Integer> onChange) {
 		return new ChangeListener() {
 

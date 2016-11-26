@@ -117,7 +117,7 @@ public class Observism {
 		f.addFocusListener(createValueChangedListener(f, delegate));
 	}
 
-	static Observer unObserver = new Observer() {
+	public static Observer unObserver = new Observer() {
 		@Override
 		public void update(Observable o, Object arg) {
 		}

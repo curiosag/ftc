@@ -18,6 +18,7 @@ public class ClientSettings {
 	public boolean lineNumbersEnabled;
 	public boolean highlightCurrentLine;
 	public boolean tabLines;
+	public boolean offline;
 	public String editorThemeXml;
 
 	public final static String keyClientId = "clientId";

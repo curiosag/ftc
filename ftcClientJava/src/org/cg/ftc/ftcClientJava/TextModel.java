@@ -2,12 +2,8 @@ package org.cg.ftc.ftcClientJava;
 
 import java.util.Observable;
 
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-
 import org.cg.common.check.Check;
+import org.cg.common.interfaces.OnTextFieldChangedEvent;
 
 public class TextModel extends Observable {
 
@@ -40,38 +36,22 @@ public class TextModel extends Observable {
 		valueAppended = valueToAppend;
 		notifyOnChange();
 	}
-	
-	public DocumentListener getListener() {
-		return new DocumentListener() {
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				sync(e);
-			}
+	 
+	public OnTextFieldChangedEvent getListener() {
+		
+		return new OnTextFieldChangedEvent() {
 
 			@Override
-			public void changedUpdate(DocumentEvent e) {
-				sync(e);
-			}
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				sync(e);
-			}
-			
+			public void notify(String valueChanged) {
+				if (valueChanged == null)
+					value = "";
+				else
+					value = valueChanged;
+				
+			}			
 		};
 	}
 
-	private void sync(DocumentEvent e) {
-		Document doc = e.getDocument();
-		if (doc.getLength() > 0)
-			try {
-				value = doc.getText(0, doc.getLength());
-			} catch (BadLocationException ex) {
-				Check.fail(ex);
-			}
-		else
-			value = "";
-	}
 	
 	public static TextModel getTextModel(Observable o) {
 		Check.isTrue(o instanceof TextModel);

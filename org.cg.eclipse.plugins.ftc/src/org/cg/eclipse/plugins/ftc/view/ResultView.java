@@ -8,31 +8,21 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-
 import javax.swing.table.TableModel;
 
 import org.cg.eclipse.plugins.ftc.PluginConst;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import com.opencsv.CSVWriter;
 
 public class ResultView extends ViewPart {
 
 	Clipboard clipboard;
 	public static final String ID = PluginConst.RESULT_VIEW_ID;
 	private Table table;
-
-	public ResultView() {
-		TableViewer t;
-	}
 
 	public void createPartControl(Composite parent) {
 		table = new Table(parent, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);

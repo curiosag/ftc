@@ -9,7 +9,6 @@ import java.util.Observable;
 import org.cg.eclipse.plugins.ftc.preference.StyleAspect;
 import org.cg.ftc.shared.structures.ClientSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 
