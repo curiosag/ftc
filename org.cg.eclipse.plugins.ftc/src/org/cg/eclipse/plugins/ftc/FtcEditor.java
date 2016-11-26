@@ -154,7 +154,7 @@ public class FtcEditor extends TextEditor {
 			}
 		});
 	}
-	
+
 	private void addCaretListenerForUIdisplay() {
 		getStyledText().addCaretListener(new CaretListener() {
 

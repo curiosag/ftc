@@ -53,7 +53,7 @@ public class FtcPluginFrontEnd implements FrontEnd {
 	}
 
 	public void registerEditor(FtcEditor e) {
-		if (editors.indexOf(e) < 0){
+		if (editors.indexOf(e) < 0) {
 			editors.add(e);
 			Check.notNull(queryCaretChangedListener);
 			e.setCaretListener(queryCaretChangedListener);
@@ -69,7 +69,7 @@ public class FtcPluginFrontEnd implements FrontEnd {
 	public void onEditorActivated(IWorkbenchPart e) {
 		activeEditor = Optional.of((FtcEditor) e);
 	}
-	
+
 	public void hdlExportCsv() {
 		String delim = preferenceStore.getString(FtcPreferenceStore.KEY_CSV_DELIMITER);
 		String quote = preferenceStore.getString(FtcPreferenceStore.KEY_CSV_QUOTECHAR);

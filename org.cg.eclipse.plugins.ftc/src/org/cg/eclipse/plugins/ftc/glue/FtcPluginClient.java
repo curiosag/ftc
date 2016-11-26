@@ -197,12 +197,8 @@ public class FtcPluginClient extends BaseClient {
 	}
 
 	public void runCommand(String commandId) {
-		if (frontEnd.activeEditorPresent()) {
-			// TODO is it ok mvced?
-			//model.caretPositionQueryText = activeEditor.get().getCaretOffset();
-			//model.queryText.setValue(activeEditor.get().getText());
-
-			if (busy && commandId.equals(Const.cancelExecution)) {
+  	if (frontEnd.activeEditorPresent()) {
+		if (busy && commandId.equals(Const.cancelExecution)) {
 				progress.cancel();
 				doControllerAction(convertCmd(commandId));
 			} else {
