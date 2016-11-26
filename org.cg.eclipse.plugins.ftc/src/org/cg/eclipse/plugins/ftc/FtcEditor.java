@@ -107,7 +107,6 @@ public class FtcEditor extends TextEditor {
 			}
 		});
 
-		FtcPluginClient.getDefault().registerEditor(this);
 	}
 
 	protected void initializeEditor() {
@@ -123,11 +122,10 @@ public class FtcEditor extends TextEditor {
 		super.createPartControl(parent);
 		addEditorListeners();
 		addCaretListenerForUIdisplay();
-		//internalSetDocumentChangedListener(documentChangedListener);
-		//internalSetCaretListener(caretListener);
 		logging.reveal();
 		Check.isTrue(getSourceViewer() instanceof FtcSourceViewer);
 
+		FtcPluginClient.getDefault().registerEditor(this);
 		// not of any use now
 		// IContextService contextService = (IContextService)
 		// getSite().getService(IContextService.class);
@@ -141,7 +139,7 @@ public class FtcEditor extends TextEditor {
 			public void caretMoved(CaretEvent event) {
 				l.notify(event.caretOffset);
 			}
-		});		
+		});
 	}
 
 	private void internalSetDocumentChangedListener(OnTextFieldChangedEvent e) {
@@ -152,11 +150,11 @@ public class FtcEditor extends TextEditor {
 
 			@Override
 			public void documentChanged(DocumentEvent de) {
-				e.notify(de.getText());
+				e.notify(de.getDocument().get());
 			}
 		});
 	}
-
+	
 	private void addCaretListenerForUIdisplay() {
 		getStyledText().addCaretListener(new CaretListener() {
 
@@ -181,14 +179,30 @@ public class FtcEditor extends TextEditor {
 		documentChangedListener = e;
 	}
 
+	private void hdlDocumentChangedEvent(String value) {
+		Check.notNull(documentChangedListener);
+		documentChangedListener.notify(getText());
+	}
+
+	void hdlCaretChangedEvent(int value) {
+		Check.notNull(caretListener);
+		caretListener.notify(value);
+	}
+
 	private void addEditorListeners() {
 		FtcEditor thisEditor = this;
 		getSite().getPage().addPartListener(new IPartListener() {
 
 			@Override
 			public void partActivated(IWorkbenchPart part) {
-				if (part == thisEditor)
+				if (part == thisEditor) {
 					FtcPluginClient.getDefault().onEditorActivated(thisEditor);
+					internalSetDocumentChangedListener(documentChangedListener);
+					internalSetCaretListener(caretListener);
+					// won't get fired initially from editor or document
+					hdlDocumentChangedEvent(thisEditor.getText());
+					hdlCaretChangedEvent(getCaretOffset());
+				}
 			}
 
 			@Override
