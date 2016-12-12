@@ -6,7 +6,7 @@ import org.cg.common.check.Check;
 import org.cg.common.misc.SimpleObservable;
 import org.cg.ftc.shared.structures.ClientSettings;
 
-public class ftcClientModel {
+public class ClientModel {
 
 	public final TextModel clientId = new TextModel();
 	public final TextModel clientSecret = new TextModel();
@@ -18,7 +18,7 @@ public class ftcClientModel {
 	public final SimpleObservable<TableModel> resultData = new SimpleObservable<TableModel>(null);
 	public final SimpleObservable<Boolean> offline = new SimpleObservable<Boolean>(Boolean.FALSE);
 
-	public ftcClientModel(ClientSettings clientSettings) {
+	public ClientModel(ClientSettings clientSettings) {
 		Check.notNull(clientSettings);
 		clientId.setValue(clientSettings.clientId);
 		clientSecret.setValue(clientSettings.clientSecret);

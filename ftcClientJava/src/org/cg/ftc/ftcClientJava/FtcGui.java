@@ -3,7 +3,6 @@ package org.cg.ftc.ftcClientJava;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentListener;
 import org.cg.common.check.Check;
 import org.cg.common.interfaces.OnTextFieldChangedEvent;
 import org.cg.common.interfaces.OnValueChanged;

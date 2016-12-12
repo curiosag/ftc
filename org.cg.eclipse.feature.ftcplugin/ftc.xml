@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <bundle id="org.cg.eclipse.plugins.ftc" version="0.1.0">
+   <feature url="features/org.cg.eclipse.feature.ftcplugin_0.1.0.jar" id="org.cg.eclipse.feature.ftcplugin" version="0.1.0">
       <category name="Tool"/>
-   </bundle>
+   </feature>
    <category-def name="Tool" label="Fusion Tables Console"/>
 </site>

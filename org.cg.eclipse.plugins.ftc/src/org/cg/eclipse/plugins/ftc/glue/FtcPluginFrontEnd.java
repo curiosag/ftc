@@ -1,30 +1,32 @@
 package org.cg.eclipse.plugins.ftc.glue;
 
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-
 import org.cg.common.check.Check;
 import org.cg.common.core.Logging;
 import org.cg.common.interfaces.OnTextFieldChangedEvent;
 import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.interfaces.Progress;
-import org.cg.common.io.FileUtil;
 import org.cg.eclipse.plugins.ftc.FtcEditor;
 import org.cg.eclipse.plugins.ftc.PluginConst;
 import org.cg.eclipse.plugins.ftc.WorkbenchUtil;
 import org.cg.eclipse.plugins.ftc.view.ResultView;
+import org.cg.ftc.ftcClientJava.Const;
 import org.cg.ftc.ftcClientJava.FrontEnd;
 import org.cg.ftc.ftcClientJava.Observism;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobFunction;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
 import com.google.common.base.Optional;
@@ -52,6 +54,14 @@ public class FtcPluginFrontEnd implements FrontEnd {
 		return activeEditor.isPresent();
 	}
 
+	/**
+	 * will activate the active editor, if there is any
+	 */
+	public void acivateActiveEditor() {
+		if (activeEditor.isPresent())
+			WorkbenchUtil.activatePart(activeEditor.get());
+	}
+
 	public void registerEditor(FtcEditor e) {
 		if (editors.indexOf(e) < 0) {
 			editors.add(e);
@@ -68,26 +78,6 @@ public class FtcPluginFrontEnd implements FrontEnd {
 
 	public void onEditorActivated(IWorkbenchPart e) {
 		activeEditor = Optional.of((FtcEditor) e);
-	}
-
-	public void hdlExportCsv() {
-		String delim = preferenceStore.getString(FtcPreferenceStore.KEY_CSV_DELIMITER);
-		String quote = preferenceStore.getString(FtcPreferenceStore.KEY_CSV_QUOTECHAR);
-		String csvData = getResultView().getCsv(delim, quote);
-
-		FileDialog dialog = new FileDialog(WorkbenchUtil.getShell(), SWT.SAVE);
-
-		dialog.setFilterPath(preferenceStore.getString(FtcPreferenceStore.KEY_LAST_EXPORT_PATH));
-		dialog.setFilterNames(new String[] { "csv files", "All Files (*.*)" });
-		dialog.setFilterExtensions(new String[] { "*.csv", "*.*" });
-		String fullPath = dialog.open();
-
-		if (fullPath != null) {
-			File f = new File(fullPath);
-			String path = f.getPath();
-			FileUtil.writeToFile(csvData, fullPath);
-			preferenceStore.setValue(FtcPreferenceStore.KEY_LAST_EXPORT_PATH, path);
-		}
 	}
 
 	private ResultView getResultView() {
@@ -217,5 +207,5 @@ public class FtcPluginFrontEnd implements FrontEnd {
 		});
 
 	}
-
+	
 }

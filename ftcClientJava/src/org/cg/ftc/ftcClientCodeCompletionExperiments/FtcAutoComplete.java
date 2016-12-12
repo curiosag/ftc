@@ -79,6 +79,7 @@ public class FtcAutoComplete {
 		ac.install(c);
 	}
 
+	@SuppressWarnings("unused")
 	private CompletionProvider createCompletionProvider() {
 
 		// A DefaultCompletionProvider is the simplest concrete implementation

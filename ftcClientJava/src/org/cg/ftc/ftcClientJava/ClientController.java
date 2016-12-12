@@ -2,7 +2,6 @@ package org.cg.ftc.ftcClientJava;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -21,7 +20,6 @@ import org.cg.common.core.AbstractLogger;
 import org.cg.common.http.HttpStatus;
 import org.cg.common.interfaces.Continuation;
 import org.cg.common.interfaces.Progress;
-import org.cg.common.io.FileUtil;
 import org.cg.common.io.StringStorage;
 import org.cg.common.misc.CmdDestination;
 import org.cg.common.misc.CmdHistory;
@@ -39,14 +37,14 @@ import com.google.common.eventbus.Subscribe;
 import manipulations.QueryHandler;
 import manipulations.Split;
 
-public class ftcClientController implements ActionListener, SyntaxElementSource, CompletionsSource {
+public abstract class ClientController implements ActionListener, SyntaxElementSource, CompletionsSource {
 
-	public final ftcClientModel model;
+	protected final ClientModel model;
 	private final QueryHandler queryHandler;
-	private final AbstractLogger logging;
-	private final ClientSettings clientSettings;
+	protected final AbstractLogger logging;
+	protected final ClientSettings clientSettings;
 	private final Connector connector;
-	private final Progress progress;
+	protected final Progress progress;
 	private final Queue<String> sqlStatementQueue = new LinkedList<String>();
 	private Event allQueriesProcessed = null;
 
@@ -62,11 +60,10 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	private Stopwatch executionStopwatch = Stopwatch.createUnstarted();
 	private boolean isExecuting = false;
 	private boolean refreshTablesOngoing;
-	private Optional<File> lastFileUsed = Optional.absent();
 
 	private boolean offline;
 
-	public ftcClientController(ftcClientModel model, AbstractLogger logging, Connector connector,
+	public ClientController(ClientModel model, AbstractLogger logging, Connector connector,
 			ClientSettings clientSettings, StringStorage cmdHistoryStorage, Progress progress) {
 		this.model = model;
 		this.queryHandler = new QueryHandler(logging, connector, clientSettings);
@@ -131,7 +128,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			break;
 
 		case Const.listTables:
-			model.resultData.setValue(queryHandler.getTableInfo());
+			hdlListTables();
 			break;
 
 		case Const.viewPreprocessedQuery:
@@ -178,6 +175,20 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 			break;
 		}
 	}
+
+	private void hdlListTables() {
+		Events.ui.post(RunState.QUERYEXEC_STARTED);
+		model.resultData.setValue(queryHandler.getTableInfo());
+		Events.ui.post(RunState.QUERYEXEC_FINISHED);
+	}
+
+	protected abstract void hdlFileOpen();
+
+	protected abstract void hdlFileSave();
+
+	protected abstract void hdlFileSaveAs();
+
+	protected abstract void hdlExportCsvAction(ActionEvent e);
 
 	private void hdlPreview() {
 		Optional<QueryAtHand> query = queryHandler.getQueryAtCaretPosition(model.queryText.getValue(),
@@ -373,13 +384,13 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 	}
 
 	/**
-	 * authenticates using existing credentials without triggering the auth workflow
-	 * does nothing if offline
+	 * authenticates using existing credentials without triggering the auth
+	 * workflow does nothing if offline
 	 */
 	public void authenticate() {
 		if (offline)
 			return;
-		
+
 		SwingWorker<ConnectionStatus, Object> connectionWorker = AsyncWork.goUnderground(authFunction,
 				authContinuation);
 		Events.ui.post(RunState.AUTHENTICATION_STARTED);
@@ -402,62 +413,6 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 		}
 	}
 
-	private void hdlFileOpen() {
-		new FileAction(FileAction.FILE_OPEN, clientSettings.pathScriptFile, null, new OnFileAction() {
-
-			@Override
-			public void onFileAction(ActionEvent e, Optional<File> file) {
-				if (file.isPresent()) {
-					model.queryText.setValue(FileUtil.readFromFile(file.get().getPath()));
-					clientSettings.pathScriptFile = FileUtil.getPathOnly(file.get());
-					lastFileUsed = file;
-				}
-			}
-
-		}).actionPerformed(null);
-	}
-
-	private void hdlFileSave() {
-		if (lastFileUsed.isPresent())
-			FileUtil.writeToFile(model.queryText.getValue(), lastFileUsed.get().getPath());
-		else
-			hdlFileSaveAs();
-	}
-
-	private void hdlFileSaveAs() {
-		new FileAction(FileAction.FILE_SAVE_AS, clientSettings.pathScriptFile, null, new OnFileAction() {
-
-			@Override
-			public void onFileAction(ActionEvent e, Optional<File> file) {
-				if (file.isPresent()) {
-					FileUtil.writeToFile(model.queryText.getValue(), file.get().getPath());
-					lastFileUsed = file;
-					clientSettings.pathScriptFile = FileUtil.getPathOnly(file.get());
-				}
-			}
-		}).actionPerformed(null);
-	}
-
-	private void hdlExportCsvAction(ActionEvent e) {
-		if (tablePopulated()) {
-			new FileAction(FileAction.EXPORT_FILE, clientSettings.pathCsvFile, null, new OnFileAction() {
-
-				@Override
-				public void onFileAction(ActionEvent e, Optional<File> file) {
-					if (file.isPresent()) {
-						clientSettings.pathCsvFile = FileUtil.getPathOnly(file.get());
-						logging.Info(CSV.write(model.resultData.getValue(), file.get().getPath()));
-					}
-				}
-			}).actionPerformed(e);
-		} else
-			logging.Info("no data to export");
-	}
-
-	private boolean tablePopulated() {
-		return model.resultData.getValue() != null && model.resultData.getValue().getRowCount() > 0;
-	}
-
 	@Override
 	public List<SyntaxElement> get(String query) {
 		return queryHandler.getHighlighting(query);
@@ -465,7 +420,7 @@ public class ftcClientController implements ActionListener, SyntaxElementSource,
 
 	@Override
 	public Completions get(String text, int cursorPos) {
-		Optional<QueryAtHand> split = queryHandler.getQueryAtCaretPosition(text, model.caretPositionQueryText,
+		Optional<QueryAtHand> split = queryHandler.getQueryAtCaretPosition(text, cursorPos,
 				!RETURN_SINGLE_QUERY_ANYWAY);
 
 		String query = "";

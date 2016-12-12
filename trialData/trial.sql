@@ -1,1 +1,2 @@
-SELECT colname FROM World Population Clock 2016;
+SELECT jobwohnen FROM statDataB;
+SELECT 'Assets adjusted to the year 2012' FROM  'wiki_cpdata';

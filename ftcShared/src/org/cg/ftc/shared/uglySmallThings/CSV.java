@@ -9,7 +9,24 @@ import com.opencsv.CSVWriter;
 
 public class CSV {
 
-	public static String write(TableModel model, String fileName) {
+	private  char DELIMITER = ';';
+	private  char QUOTE = CSVWriter.DEFAULT_QUOTE_CHARACTER;
+	
+	public CSV(){
+		super();
+	}
+
+	public CSV withDelimiter(char delimiter){
+		DELIMITER = delimiter;
+		return this;
+	}
+	
+	public CSV withQuote(char quote){
+		QUOTE = quote;
+		return this;
+	}
+	
+	public String write(TableModel model, String fileName) {
 
 		try {
 			Writer w = new FileWriter(fileName);
@@ -23,7 +40,7 @@ public class CSV {
 		}
 	}
 
-	public static void write(TableModel model, Writer dest) {
+	public void write(TableModel model, Writer dest) {
 		try {
 			processCsv(model, dest);
 		} catch (IOException e) {
@@ -32,9 +49,9 @@ public class CSV {
 		}
 	}
 
-	public static String processCsv(TableModel model, Writer dest) throws IOException {
+	private String processCsv(TableModel model, Writer dest) throws IOException {
 		
-		CSVWriter writer = new CSVWriter(dest, ';');
+		CSVWriter writer = new CSVWriter(dest, DELIMITER, QUOTE);
 		try {
 			String[] row = new String[model.getColumnCount()];
 
@@ -56,4 +73,5 @@ public class CSV {
 
 	}
 
+	
 }

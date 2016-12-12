@@ -58,7 +58,7 @@ public class TestCursorContextTableName {
 		String query = "Select  from ";
 		c = getCursorContext(query, shift(11));
 
-		assertEquals(c.getModelElementType(), SqlCompletionType.unknown);
+		assertEquals(c.getModelElementType(), SqlCompletionType.table);
 		assertFalse(c.name.isPresent());
 
 		query = "Select  from x";

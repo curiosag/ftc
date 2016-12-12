@@ -55,7 +55,7 @@ public class FtcCompletionProcessor extends TweakedTemplateCompletionProcessor {
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int documentOffset) {
 	
-		currentCompletions = getFtcCompletions(viewer.getTextWidget().getText(), documentOffset);
+		currentCompletions = getCompletions(viewer.getDocument().get(), documentOffset);
 		
 		ICompletionProposal[] templates = super.computeCompletionProposals(viewer, documentOffset);
 		ICompletionProposal[] completions = getModelElementProposals(currentCompletions.modelElements, documentOffset, sourceViewer.getSelectedRange().y);
@@ -75,8 +75,8 @@ public class FtcCompletionProcessor extends TweakedTemplateCompletionProcessor {
 		return result;
 	}
 
-	private static EclipseStyleCompletions getFtcCompletions(String text, int documentOffset) {
-		return FtcPluginClient.getDefault().getCompletions(text, documentOffset);
+	private static EclipseStyleCompletions getCompletions(String text, int cursorPos) {
+		return FtcPluginClient.getDefault().getCompletions(text, cursorPos);
 	}
 
 	private static CompletionProposal[] getModelElementProposals(List<ModelElementCompletion> modelElements, int replacementOffset, int replacementLength) {
@@ -101,7 +101,7 @@ public class FtcCompletionProcessor extends TweakedTemplateCompletionProcessor {
 
 	public static CompletionProposal[] getModelElementProposals(String text, int replacementOffset, int replacementLength)
 	{
-		return getModelElementProposals(getFtcCompletions(text, replacementOffset).modelElements, replacementOffset, replacementLength);
+		return getModelElementProposals(getCompletions(text, replacementOffset).modelElements, replacementOffset, replacementLength);
 	}
 	
 	@Override

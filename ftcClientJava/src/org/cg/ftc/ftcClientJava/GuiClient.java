@@ -4,7 +4,6 @@ import javax.swing.SwingUtilities;
 
 import org.cg.common.check.Check;
 import org.cg.common.core.AbstractLogger;
-import org.cg.common.interfaces.OnValueChanged;
 import org.cg.common.io.PreferencesStringStorage;
 import org.cg.common.io.logging.DelegatingOutputStream;
 import org.cg.common.io.logging.OnLineWritten;
@@ -15,9 +14,9 @@ public class GuiClient extends BaseClient {
 
 	final DelegatingProgress progress = new DelegatingProgress();
 	final ClientSettings clientSettings = ClientSettings.instance(GuiClient.class);
-	final ftcClientModel model = new ftcClientModel(clientSettings);
+	final ClientModel model = new ClientModel(clientSettings);
 	final Connector connector = getConnector();
-	final ftcClientController controller = new ftcClientController(model, logging, connector, clientSettings,
+	final ClientController controller = new FtcGuiController(model, logging, connector, clientSettings,
 			new PreferencesStringStorage(org.cg.ftc.shared.uglySmallThings.Const.PREF_ID_CMDHISTORY, GuiClient.class),
 			progress);
 	

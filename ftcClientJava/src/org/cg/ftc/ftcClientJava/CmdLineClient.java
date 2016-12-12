@@ -19,8 +19,8 @@ public class CmdLineClient extends BaseClient {
 	final Progress progress = createProgress();
 
 	final ClientSettings clientSettings = ClientSettings.instance(GuiClient.class);
-	final ftcClientModel model = new ftcClientModel(clientSettings);
-	final ftcClientController controller = new ftcClientController(model, logging, getConnector(), clientSettings,
+	final ClientModel model = new ClientModel(clientSettings);
+	final ClientController controller = new CmdlineController(model, logging, getConnector(), clientSettings,
 			new PreferencesStringStorage(org.cg.ftc.shared.uglySmallThings.Const.PREF_ID_CMDHISTORY,
 					GuiClient.class),
 			progress);

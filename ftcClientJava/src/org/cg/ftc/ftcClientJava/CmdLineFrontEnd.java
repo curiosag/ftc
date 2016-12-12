@@ -103,14 +103,15 @@ public class CmdLineFrontEnd implements FrontEnd {
 			@Override
 			public void update(Observable o, Object arg) {
 				TableModel data = Observism.decodeTableModelObservable(o);
+				CSV csv = new CSV();
 				if (outputFilePath != null)
-					CSV.write(data, outputFilePath);
+					csv.write(data, outputFilePath);
 				else
 					// System.out must not get closed, therefore packed in
 					// CustomCloseActionWriterDecorator with doesen't close
 					// Even if OutputStreamWriter creates a leak (which it may
 					// not) it doesen't matter so much here
-					CSV.write(data, new BufferedWriter(
+					csv.write(data, new BufferedWriter(
 							new CustomCloseActionWriterDecorator(new OutputStreamWriter(System.out), dontClose)));
 			}
 		};

@@ -51,8 +51,13 @@ public class FtcPreferencePage extends FieldEditorPreferencePage implements IWor
 		new Label(parent, SWT.LEFT).setText("Csv export settings");
 		new Label(parent, SWT.LEFT);
 
-		addField(new StringFieldEditor(FtcPreferenceStore.KEY_CSV_DELIMITER, "Delimiter", parent));
-		addField(new StringFieldEditor(FtcPreferenceStore.KEY_CSV_QUOTECHAR, "Quote character", parent));
+		StringFieldEditor delim = new StringFieldEditor(FtcPreferenceStore.KEY_CSV_DELIMITER, "Delimiter", parent);
+		delim.setTextLimit(1);
+		addField(delim);
+		
+		StringFieldEditor quote = new StringFieldEditor(FtcPreferenceStore.KEY_CSV_QUOTECHAR, "Quote character", parent);
+		quote.setTextLimit(1);
+		addField(quote);
 
 		new Label(parent, SWT.LEFT);
 

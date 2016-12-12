@@ -52,12 +52,12 @@ public class FtcVariableResolver extends TemplateVariableResolver {
 			
 			CompletionProposal dummyProposal = new CompletionProposal(patch, variablePosition, replacementLength,
 					patch.length());
-			// 2 dummy proposals to trigger use of a TweakedProposalPosition in TweakedTemplateProposal
+			// 2 dummy proposals needed to trigger the use of a TweakedProposalPosition in TweakedTemplateProposal
 			// no handling of this kind for tables, though, to cover the case where there's one table only too
 			proposals = new CompletionProposal[] { dummyProposal, dummyProposal };
-			debug(String.format("column at %d ", variablePosition));
-
+			
 		} else {
+			debug(String.format("table at %d ", variablePosition));
 
 			debug("pattern: " + pattern);
 			debug(String.format("completion offset %d, variable type %s calculated variable position %d",
@@ -66,6 +66,7 @@ public class FtcVariableResolver extends TemplateVariableResolver {
 
 			proposals = FtcCompletionProcessor.getModelElementProposals(patchedText, variablePosition,
 					replacementLength);
+			
 			debug(String.format("%d proposals", proposals.length));
 		}
 		return proposals;

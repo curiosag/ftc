@@ -19,6 +19,7 @@ public class DelegatingOutputStream extends ByteArrayOutputStream {
 		this.redirect = redirect;
 	}
 
+	@Override
 	public void flush() throws IOException {
 
 		synchronized (this) {

@@ -20,17 +20,17 @@ import manipulations.results.TableInfoResolver;
 public class Util {
 
 	public static QueryManipulator getManipulator(String query) {
-		 List<TableInfo> tableInfos = new LinkedList<TableInfo>();
+		 final List<TableInfo> tableInfos = new LinkedList<TableInfo>();
 		 TableInfoResolver resolver = new TableInfoResolver(){
 
 			@Override
 			public Optional<TableInfo> getTableInfo(String nameOrId) {
-				return null;
+				return Optional.absent();
 			}
 
 			@Override
 			public List<TableInfo> listTables() {
-				return null;
+				return tableInfos;
 			}}; 
 		return new QueryManipulator(resolver, new TableNameToIdMapper(tableInfos), new SystemLogger(), query);
 	}

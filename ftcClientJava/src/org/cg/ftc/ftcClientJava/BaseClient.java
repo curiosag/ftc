@@ -50,8 +50,8 @@ public abstract class BaseClient {
 		};
 	}
 
-	protected void setUp(final ClientSettings clientSettings, final ftcClientModel model,
-			final ftcClientController controller, FrontEnd ui) {
+	protected void setUp(final ClientSettings clientSettings, final ClientModel model,
+			final ClientController controller, FrontEnd ui) {
 
 		model.resultData.addObserver(ui.createResultDataObserver());
 		model.clientId.addObserver(ui.createClientIdObserver());
