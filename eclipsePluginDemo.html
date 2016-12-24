@@ -49,16 +49,16 @@
 SELECT, CREATE VIEW, INSERT, UPDATE, DELETE, DESCRIBE and SHOW TABLES.
 <p></p>
 <h4>Table ID substitution</h4> 
-For tables owned by yourself you can use table names instead of table IDs. Make sure, there are no naming collisions. A fusion tables query actually looks like <strong><em><font size="-1">SELECT * FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6</font></em></strong>.
-Instead you can use the table name for tables you own like in <em><font size="-1"><strong>SELECT * FROM Customer</font></strong></em>. View the actual query issued with menu item <strong>Fu -> View preprocessed query at cursor</strong>. Make sure, that table names are unique and there is no naming collision.
+For tables owned by yourself you can use table names instead of table IDs. Make sure, there are no naming collisions. A fusion tables query actually looks like <em><font size="-1">&quot;SELECT * FROM 1echZ_63RosRjW43qItffBErXayC9VXFiB6quHXA6&quot;</font></em>.
+Instead you can use the table name for tables you own like in <em><font size="-1">&quot;SELECT * FROM Customer&quot;</font></em>. View the actual query issued with menu item <em>Fu -> View preprocessed query at cursor</em>. Make sure, that table names are unique and there is no naming collision.
 
 <p></p>
 <h4>Extended Sql statments</h4> 
 The client accepts some usual Sql terms not covered by Fusion Tables Sql and translates them to api calls. 
-Fusion tables sql limits DELETE and UPDATE statements to single ROWIDs like in <strong><em><font size="-1">DELETE FROM Emp WHERE ROWID = 11038</font></em></strong>, alternatively in case of DELETE one may omit the WHERE clause altogether.
+Fusion tables sql limits DELETE and UPDATE statements to single ROWIDs like in <em><font size="-1">&quot;DELETE FROM Emp WHERE ROWID = 11038&quot;</font></em>, alternatively in case of DELETE one may omit the WHERE clause altogether.
 For them the client accepts the same &lt;filter_condition&gt;  in the WHERE clause  as SELECT ({ WHERE &lt;filter_condition&gt; | &lt;spatial_condition&gt; { AND &lt;filter_condition&gt; }* }). 
 
- <br><br>So you can use e.g. <strong><em><font size="-1">DELETE FROM Emp WHERE Salary > 11038</font></em></strong>. Such statements get broken down to as sequence of single DELETEs, each one issued separately. Note that such statements are not atomic in their execution and there is no transaction mechanism for them. Cancellation or failure leaves the data partially changed.
+ <br><br>So you can use e.g. <em><font size="-1">&quot;DELETE FROM Emp WHERE Salary > 11038&quot;</font></em>. Such statements get broken down to as sequence of single DELETEs, each one issued separately. Note that such statements are not atomic in their execution and there is no transaction mechanism for them. Cancellation or failure leaves the data partially changed.
 <br><br>Find below the definition for the extended sql syntax.
 
  
@@ -120,7 +120,10 @@ After Eclipse restarted go to <strong>Window -> Open perspective -> Other</stron
         <p></p>
 
 
-<p></p><strong>Choose Window -> Preferences -> Fusion Tables Console</strong>, enter client id and secret, then press <strong>Authenticate</strong>. The authentication workflow will try to open your default browser and take you through further steps. If it doesen't show up, you can find the required URL in the log pane, proceed manually in this case. If anything goes wrong with the authentication, the client waits for the defined timeout period and then cancels. In case of success the client stores the credentials and authenticates automatically in future sessions.
+<p></p><strong>Choose Window -> Preferences -> Fusion Tables Console</strong>, enter <strong>client id </strong> and  <strong>client secret</strong>, then press <strong>Authenticate</strong>. The authentication workflow will try to open your default browser and take you through further steps. If it doesen't show up, you can find the required URL in the log pane, proceed manually in this case. 
+If anything goes wrong with the authentication, the client waits for the defined timeout period and then cancels. 
+In case of success the client stores the credentials and authenticates automatically in future sessions.
+<em>Please note a known issue described below where multiple GTK versions used by Eclipse may cause a problem.</em> 
         <p></p>Once authenticated create a new .sql or .fts file and open it with the Fusion Tables editor. Press ctrl+space in the empty editor window for a list of top level Sql statements.
 <p></p>
 
